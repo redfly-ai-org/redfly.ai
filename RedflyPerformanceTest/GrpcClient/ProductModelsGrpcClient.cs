@@ -44,8 +44,9 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 Console.WriteLine($"Starting the Test from {grpcUrl}...");
 
-                await TestGetRowCount(productModelsClient, token);
-                
+                var rowCountResponse = await TestGetRowCount(productModelsClient, token);
+                var actualDbRowCount = rowCountResponse?.Result ?? 0;
+
                 Console.WriteLine("");
 
                 int pageNo = 1;
@@ -104,9 +105,12 @@ namespace RedflyPerformanceTest.GrpcClient
                 {
                     DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the Insert > Update > GetSingle > Delete test");
 
+                    var insertedRowCount = 0;
+
                     while (runCount < remainingRunCount)
                     {
                         var inserted = await TestInsertRow(productModelsClient, token);
+                        insertedRowCount++;
 
                         if (inserted != null)
                         {
@@ -114,9 +118,13 @@ namespace RedflyPerformanceTest.GrpcClient
 
                             await TestGetSingle(productModelsClient, token, testResults, runCount, totalRuns, inserted.ProductModelId);
 
-                            // Server will only let you delete rows that did not exist in the database originally 
-                            // (i.e., someone else like you created them).
-                            await TestDelete(productModelsClient, token, inserted!.ProductModelId);
+                            //Let the row count increase till 100k.
+                            if ((actualDbRowCount + insertedRowCount) > 100000)
+                            {
+                                // Server will only let you delete rows that did not exist in the database originally 
+                                // (i.e., someone else like you created them).
+                                await TestDelete(productModelsClient, token, inserted!.ProductModelId);
+                            }
 
                             runCount++;
                         }
@@ -133,7 +141,7 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task TestGetRowCount(ProductModelsService.ProductModelsServiceClient client, string token)
+        private static async Task<GetRowCountResponse?> TestGetRowCount(ProductModelsService.ProductModelsServiceClient client, string token)
         {
             try
             {
@@ -147,10 +155,13 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.WriteLine("    Executing GetRowCount Request with JWT Token...");
                 var response = await client.GetRowCountAsync(request, headers);
                 Console.WriteLine($"    RowCount: {response.Result}, Message: {response.Message}");
+
+                return response;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                return null;
             }
         }
 
