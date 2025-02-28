@@ -53,6 +53,8 @@ namespace RedflyPerformanceTest.GrpcClient
                 GetManyResponse? response = null;
                 var validResponses = new List<GetManyResponse?>();
 
+                Console.WriteLine("Starting with the GetMany test");
+
                 do
                 {
 
@@ -74,7 +76,9 @@ namespace RedflyPerformanceTest.GrpcClient
                 var remainingRunCount = (totalRuns - runCount);
 
                 if (remainingRunCount > 0)
-                { 
+                {
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Starting GetSingle test");
+
                     foreach (var validResponse in validResponses)
                     {
                         foreach (var result in validResponse!.Results)
@@ -96,6 +100,8 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 if (remainingRunCount > 0)
                 {
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Starting Insert > Update > GetSingle > Delete test");
+
                     while (runCount < remainingRunCount)
                     {
                         var inserted = await TestInsertRow(productModelsClient, token);
@@ -195,6 +201,13 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.Write(new string(' ', progressWidth - progress));
                 Console.Write($"] {index}/{total} ({percentage:P0})");
             }
+        }
+
+        private static void DisplayMessageDuringProgress(string message)
+        {
+            // Clear the progress bar line
+            Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
+            Console.WriteLine(message);
         }
 
         private static bool getSingleCallSqlFirst = true;
