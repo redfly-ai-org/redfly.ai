@@ -6,7 +6,7 @@ namespace RedflyPerformanceTest
 {
     internal class Program
     {
-        static async Task Main(string[] args)
+        internal static async Task Main(string[] args)
         {
             try
             {
@@ -18,7 +18,9 @@ namespace RedflyPerformanceTest
                 Console.WriteLine("2. We can generate the backend code for any database with Redis caching built-in.");
                 Console.WriteLine("3. This is hosted over Grpc.");
 
-                Console.WriteLine("\r\n Now imagine you being able to do that with your database, without any manual effort! That's what our product does. Contact us at developer@redfly.ai to directly work with us so you can do the same thing with your database (cloud/ on-premises) - no matter how large or complex it is, redfly.ai can do it! \r\n");
+                Console.WriteLine("\r\nNow imagine you being able to do that with your database, without any manual effort! That's what our product does.");
+                Console.WriteLine("Contact us at developer@redfly.ai to directly work with us so you can do the same thing with your database (cloud/ on-premises).");
+                Console.WriteLine("No matter how large or complex your DB is, redfly.ai can do it! \r\n");
 
                 Console.WriteLine("Press any key to start the performance test...");
                 Console.ReadKey();
@@ -46,8 +48,8 @@ namespace RedflyPerformanceTest
                     Console.WriteLine("==============================================================");
                     Console.WriteLine($"RUNS: {totalRuns}\r\n");
                     
-                    Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimings.Min()} < {testResults.SqlOverGrpcTimings.Average()} < {testResults.SqlOverGrpcTimings.Max()}", ConsoleColor.Magenta);
-                    Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min()} < {testResults.RedflyOverGrpcTimings.Average()} < {testResults.RedflyOverGrpcTimings.Max()}", ConsoleColor.Cyan);
+                    Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimings.Min():F2} (MIN) < {testResults.SqlOverGrpcTimings.Average():F2} (AVG) < {testResults.SqlOverGrpcTimings.Max():F2} (MAX)", ConsoleColor.Magenta);
+                    Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min():F2} (MIN) < {testResults.RedflyOverGrpcTimings.Average():F2} (AVG) < {testResults.RedflyOverGrpcTimings.Max():F2} (MAX)", ConsoleColor.Cyan);
 
                     Console.WriteLine("");
 
