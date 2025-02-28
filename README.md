@@ -5,21 +5,15 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 
 Provide source code that:
 
-1. Let you easily verify that our system performs better than conventional techniques for data access at scale (Done, also some WIP).
+1. Let you easily verify that our system performs better than conventional techniques for data access at scale.
 2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (TBD).
 3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
-Even though these are intended as fully functional demos, items 2 and 3 are quite ambitious and complex to implement. We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
+Even though these are intended as fully functional demos, items 2 and 3 are ambitious and complex to implement. We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
 
 These applications do not require complex configuration or modifications to work. They will be simple console applications written in C# and using the latest version of .NET Core. 
-
-**Compatibility**
-
-We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases in the future (like Postgres). Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
-
-_We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
 
 **Pre-requisites**
 
@@ -28,7 +22,21 @@ https://transparent.azurewebsites.net/Identity/Account/Register
 
 Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
 
-The proof is in the pudding: All our cloud services run on our technology.  
+The proof is in our pudding. All our cloud services run on our technology.  
+
+**Compatibility**
+
+We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like Postgres) in the future. Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
+
+_We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
+
+**Caveats**
+
+Relational Databases perform well for a small number of rows without a lot of use. The longer and harder you run the test (feel free to pound it), and the more data is in the DB table, the better redfly.ai will perform relative to SQL.
+
+A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
+
+We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Today, when the DB is slow, the entire app, from login to reports, is slow. That's what we are good at solving.
 
 **Documentation**
 
