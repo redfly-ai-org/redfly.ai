@@ -59,6 +59,8 @@ namespace RedflyPerformanceTest.GrpcClient
                 {
 
                     response = await TestGetMany(productModelsClient, token, testResults, runCount, totalRuns, pageNo, pageSize);
+
+                    pageNo++;
                     runCount++;
 
                     if (response != null &&
