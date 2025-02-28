@@ -4,13 +4,18 @@ redfly.ai lets you synchronize your database with Redis transparently and genera
 At this time, this repo aims to provide open-source source code that:
 
 1. Let you easily verify that our system performs better than conventional techniques for data access at scale (This is v1 - this is ready to go & will be published soon).
-2. Provide a way for anybody to test our Redis synchronization service (TBD).
+2. Provide a way for anybody to test our Redis synchronization service from anywhere (TBD).
 
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here: https://transparent.azurewebsites.net/Identity/Account/Register
 
 Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
 
-All our cloud services run on our platform, so when you register with us or log in, you are using our platform. 
+All our cloud services run on our technology.  
+
+More details can be found here:
+
+https://redfly.ai
+https://nautilus2k.com
 
 Companies interested in using our platform directly can find more details here: https://azuremarketplace.microsoft.com/en-us/marketplace/apps/redfly.redfly-offer-1?tab=overview
 
