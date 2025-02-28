@@ -1,22 +1,28 @@
 # redfly.ai
 redfly.ai lets you synchronize your database with Redis transparently and generate a data access layer that integrates data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out our system.
 
-At this time, this repo aims to provide open-source source code that:
+At this time, this repo aims to provide source code that:
 
 1. Let you easily verify that our system performs better than conventional techniques for data access at scale (This is v1 - this is ready to go & will be published soon).
 2. Provide a way for anybody to test our Redis synchronization service from anywhere (TBD).
 3. Provide a way for anybody to generate their data access backend services on our cloud (TBD).
 
+No complex configuration or modifications are intended for these applications to work. These will be simple console applications written in C# and the latest version of .NET Core available. 
+
+We currently support SQL Server, Redis, Azure Search & Azure cloud. We intend to support other relational databases in the future (like Postgres). Eventually, we plan to support all disk based databases, and other public clouds like AWS & GCP. 
+
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/>
 https://transparent.azurewebsites.net/Identity/Account/Register
+
+We have a list of customers who are waiting for Postgres support. If you are interested, please let us know at: developer at redfly dot ai
 
 Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
 
 All our cloud services run on our technology.  
 
 More details can be found here:<br/>
-https://redfly.ai <br/>
-https://nautilus2k.netlify.app <br/>
+Higher-level overview: https://redfly.ai <br/>
+More technical: https://nautilus2k.netlify.app <br/>
 
 Companies interested in using our platform directly can find more details here:<br/>
 https://azuremarketplace.microsoft.com/en-us/marketplace/apps/redfly.redfly-offer-1?tab=overview
