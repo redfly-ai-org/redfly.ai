@@ -53,7 +53,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 GetManyResponse? response = null;
                 var validResponses = new List<GetManyResponse?>();
 
-                Console.WriteLine("Starting with the GetMany test");
+                Console.WriteLine("Running the GetMany test");
 
                 do
                 {
@@ -79,7 +79,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 if (remainingRunCount > 0)
                 {
-                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Starting GetSingle test");
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the GetSingle test");
 
                     foreach (var validResponse in validResponses)
                     {
@@ -102,7 +102,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 if (remainingRunCount > 0)
                 {
-                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Starting Insert > Update > GetSingle > Delete test");
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the Insert > Update > GetSingle > Delete test");
 
                     while (runCount < remainingRunCount)
                     {
