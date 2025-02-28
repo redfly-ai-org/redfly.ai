@@ -56,7 +56,8 @@ namespace RedflyPerformanceTest.GrpcClient
                 };
 
                 Console.WriteLine($"Logging in to {grpcUrl}");
-                Console.WriteLine("(please be patient)");
+                Console.WriteLine("Please be patient - these are small servers.");
+                Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
 
                 var cts = new CancellationTokenSource();
                 var progressTask = ShowProgressAnimation(cts.Token);

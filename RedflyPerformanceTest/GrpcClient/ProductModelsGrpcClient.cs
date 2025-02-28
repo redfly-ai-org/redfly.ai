@@ -81,9 +81,9 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 var request = new GetRowCountRequest { ExecutionMode = (int)ReadExecutionMode.Balanced };
 
-                Console.WriteLine("Executing GetRowCount Request with JWT Token...");
+                Console.WriteLine("    Executing GetRowCount Request with JWT Token...");
                 var response = await client.GetRowCountAsync(request, headers);
-                Console.WriteLine($"RowCount: {response.Result}, Message: {response.Message}");
+                Console.WriteLine($"    RowCount: {response.Result}, Message: {response.Message}");
             }
             catch (Exception ex)
             {
@@ -111,14 +111,14 @@ namespace RedflyPerformanceTest.GrpcClient
                     }
                 };
 
-                Console.WriteLine("Executing Insert Request with JWT Token...");
+                Console.WriteLine("    Executing Insert Request with JWT Token...");
                 var restWatch = new Stopwatch();
                 restWatch.Start();
                 var response = await client.InsertAsync(request, headers);
                 restWatch.Stop();
-                Console.WriteLine($"Inserted ProductModelId: {response.Result.ProductModelId}, Message: {response.Message}");
+                Console.WriteLine($"    Inserted ProductModelId: {response.Result.ProductModelId}, Message: {response.Message}");
 
-                Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds}ms, Result: {response?.Result.ProductModelId}");
+                //Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds}ms, Result: {response?.Result.ProductModelId}");
 
                 return response?.Result;
             }
@@ -217,14 +217,14 @@ namespace RedflyPerformanceTest.GrpcClient
                     }
                 };
 
-                Console.WriteLine("Executing Update Request with JWT Token...");
+                Console.WriteLine("    Executing Update Request with JWT Token...");
                 var restWatch = new Stopwatch();
                 restWatch.Start();
                 var response = await client.UpdateAsync(request, headers);
                 restWatch.Stop();
-                Console.WriteLine($"Updated Rows: {response.Result}, Message: {response.Message}");
+                Console.WriteLine($"    Updated Rows: {response.Result}, Message: {response.Message}");
 
-                Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds}ms, Result: {response.Result}");
+                //Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds}ms, Result: {response.Result}");
             }
             catch (Exception ex)
             {
@@ -246,14 +246,14 @@ namespace RedflyPerformanceTest.GrpcClient
                     ProductModelId = productModelId
                 };
 
-                Console.WriteLine("Executing Delete Request with JWT Token...");
+                Console.WriteLine("    Executing Delete Request with JWT Token...");
                 var restWatch = new Stopwatch();
                 restWatch.Start();
                 var response = await client.DeleteAsync(request, headers);
                 restWatch.Stop();
-                Console.WriteLine($"Delete Success: {response.Success}, Message: {response.Message}");
+                Console.WriteLine($"    Delete Success: {response.Success}, Message: {response.Message}");
 
-                Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds} ms, Result: {response.Message}");
+                //Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds} ms, Result: {response.Message}");
             }
             catch (Exception ex)
             {
