@@ -46,7 +46,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.WriteLine("Enter your user name:");
                 var userName = Console.ReadLine();
 
-                Console.WriteLine("Enter your password.");
+                Console.WriteLine("Enter your password:");
                 var passwordBuilder = GetPasswordFromConsole();
 
                 var loginRequest = new LoginRequest
