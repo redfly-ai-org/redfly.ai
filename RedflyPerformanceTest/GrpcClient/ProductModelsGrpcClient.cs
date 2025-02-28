@@ -49,39 +49,48 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 Console.WriteLine("");
 
-                int pageNo = 1;
                 int pageSize = 10;
                 int runCount = 0;
-                GetManyResponse? response = null;
+
+                var noOfPagedCalls = (int)Math.Ceiling((double)actualDbRowCount / pageSize);
+
+                var getManyTasks = new List<Task<GetManyResponse?>>();
+
+                Console.WriteLine($"{totalRuns} runs remaining. Running {noOfPagedCalls} GetMany tests in parallel.");
+
+                for (int pageNo=1;pageNo<noOfPagedCalls;pageNo++)
+                {
+                    getManyTasks.Add(TestGetMany(productModelsClient, token, testResults, runCount, totalRuns, pageNo, pageSize));
+
+                    runCount++;
+                    
+                    if (runCount >= totalRuns)
+                    {
+                        //Satisfied!
+                        break;
+                    }
+                }
+
+                var responses = await Task.WhenAll(getManyTasks);
                 var validResponses = new List<GetManyResponse?>();
 
-                Console.WriteLine($"{totalRuns} runs remaining. Running the GetMany test");
-
-                do
+                foreach (var response in responses)
                 {
-                    response = await TestGetMany(productModelsClient, token, testResults, runCount, totalRuns, pageNo, pageSize);
-
-                    pageNo++;
-                    runCount++;
-
                     if (response != null &&
-                       response.Results != null &&
-                       response.Results.Count > 0)
+                        response.Results != null &&
+                        response.Results.Count > 0)
                     {
                         validResponses.Add(response);
                     }
                 }
-                while (runCount <= totalRuns &&
-                       response != null &&
-                       response.Results != null &&
-                       response.Results.Count > 0);
 
+                getManyTasks.Clear();
                 var tasks = new List<Task>();
                 var remainingRunCount = (totalRuns - runCount);
 
                 if (remainingRunCount > 0)
                 {
-                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the GetSingle test");
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running ~{validResponses.Count*10} GetSingle tests in parallel");
 
                     foreach (var validResponse in validResponses)
                     {
