@@ -4,8 +4,10 @@ redfly.ai lets you synchronize your database with Redis transparently and genera
 At this time, this repo aims to provide source code that:
 
 1. Let you easily verify that our system performs better than conventional techniques for data access at scale (This is v1 - this is ready to go & will be published soon).
-2. Provide a way for anybody to test our Redis synchronization service from anywhere (TBD).
-3. Provide a way for anybody to generate their data access backend services on our cloud (TBD).
+2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (TBD).
+3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD).
+
+Even though these are intended as fully-functional demos, items 2 & 3 are quite ambitious and complex to implement. Currently, we do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work from our part.
 
 No complex configuration or modifications are intended for these applications to work. These will be simple console applications written in C# and the latest version of .NET Core available. 
 
