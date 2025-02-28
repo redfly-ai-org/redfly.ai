@@ -55,7 +55,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     Password = passwordBuilder.ToString()
                 };
 
-                Console.WriteLine($"Logging in to {grpcUrl}");
+                Console.WriteLine($"\r\nLogging in to {grpcUrl}");
                 Console.WriteLine("Please be patient - these are small servers.");
                 Console.WriteLine("Contact us at developer@redfly.ai if you need to.\r\n");
 

@@ -107,7 +107,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                     var insertedRowCount = 0;
 
-                    while (runCount < remainingRunCount)
+                    while (runCount < totalRuns)
                     {
                         var inserted = await TestInsertRow(productModelsClient, token);
                         insertedRowCount++;
