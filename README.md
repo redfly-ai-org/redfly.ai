@@ -30,14 +30,13 @@ The proof is in the pudding: All our cloud services run on our technology.
 
 **Documentation**
 
-More details can be found here:<br/>
 Higher-level overview: https://redfly.ai <br/>
 More technical: https://nautilus2k.netlify.app <br/>
 
 **Sales**
 
-Companies interested in using our platform directly can find more details here:<br/>
+In the Azure Marketplace:<br/>
 https://azuremarketplace.microsoft.com/en-us/marketplace/apps/redfly.redfly-offer-1?tab=overview
 
-If you have access to the Azure Portal, you can find us here:<br/>
+In the Azure Portal:<br/>
 https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/redfly.redfly-offer-1/selectionMode~/false/resourceGroupId//resourceGroupLocation//dontDiscardJourney~/false/selectedMenuId/home/launchingContext~/%7B%22galleryItemId%22%3A%22redfly.redfly-offer-1dpssp%22%2C%22source%22%3A%5B%22GalleryFeaturedMenuItemPart%22%2C%22VirtualizedTileDetails%22%5D%2C%22menuItemId%22%3A%22home%22%2C%22subMenuItemId%22%3A%22Search%20results%22%2C%22telemetryId%22%3A%22d25c8cae-a836-4037-a2dd-9cd2f8e9e001%22%7D/searchTelemetryId/2783b73c-f204-4ae8-a1f7-b5bb83db4e73
