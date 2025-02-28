@@ -1,5 +1,5 @@
 # redfly.ai
-redfly.ai lets you synchronize your database with Redis transparently and generate a data access layer that integrates data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out our system.
+redfly.ai lets you synchronize your database with Redis <i>transparently</i> and <i>generate</i> a data access layer that <i>integrates</i> data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out our system.
 
 At this time, this repo aims to provide source code that:
 
