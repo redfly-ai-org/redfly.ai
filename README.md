@@ -9,15 +9,17 @@ Provide source code that:
 2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (TBD).
 3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD).
 
-Even though these are intended as fully-functional demos, items 2 & 3 are quite ambitious and complex to implement. Currently, we do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work from our part.
+This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
-No complex configuration or modifications are intended for these applications to work. These will be simple console applications written in C# and the latest version of .NET Core available. 
+Even though these are intended as fully functional demos, items 2 and 3 are quite ambitious and complex to implement. We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
+
+These applications do not require complex configuration or modifications to work. They will be simple console applications written in C# and using the latest version of .NET Core. 
 
 **Compatibility**
 
-We currently support SQL Server, Redis, Azure Search & Azure cloud. We intend to support other relational databases in the future (like Postgres). Eventually, we plan to support all disk based databases, and other public clouds like AWS & GCP. 
+We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases in the future (like Postgres). Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
 
-_We have a list of customers who are waiting for Postgres support. If you are interested, please let us know at: developer at redfly dot ai_.
+_We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
 
 **Pre-requisites**
 
