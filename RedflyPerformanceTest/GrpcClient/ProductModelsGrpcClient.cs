@@ -62,7 +62,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     await TestGetMany(productModelsClient, token, testResults, i, totalRuns);
                 }
 
-                Console.WriteLine("\r\nTest Completed");
+                Console.WriteLine("\r\n\r\nTest Completed");
             }
             catch (Exception ex)
             {

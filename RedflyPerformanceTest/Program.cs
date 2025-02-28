@@ -31,6 +31,7 @@ namespace RedflyPerformanceTest
                     grpcAuthToken.Length == 0)
                 {
                     Console.WriteLine("Failed to authenticate with the gRPC server.");
+                    Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
                     return;
                 }
 
@@ -43,12 +44,18 @@ namespace RedflyPerformanceTest
                 if (testResults.Populated())
                 {
                     Console.WriteLine("==============================================================");
-                    Console.WriteLine($"RUNS: {totalRuns}");
+                    Console.WriteLine($"RUNS: {totalRuns}\r\n");
                     
                     Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimings.Min()} < {testResults.SqlOverGrpcTimings.Average()} < {testResults.SqlOverGrpcTimings.Max()}", ConsoleColor.Magenta);
                     Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min()} < {testResults.RedflyOverGrpcTimings.Average()} < {testResults.RedflyOverGrpcTimings.Max()}", ConsoleColor.Cyan);
 
-                    Console.WriteLine($"redfly.ai is {testResults.SqlOverGrpcTimings.Average()/ testResults.RedflyOverGrpcTimings.Average()}x faster");
+                    Console.WriteLine("");
+
+                    Console.WriteLine($"At the minimum, redfly.ai is {testResults.SqlOverGrpcTimings.Min() / testResults.RedflyOverGrpcTimings.Min():F2}x faster");
+
+                    Console.WriteLine($"On average, redfly.ai is {testResults.SqlOverGrpcTimings.Average()/ testResults.RedflyOverGrpcTimings.Average():F2}x faster");
+
+                    Console.WriteLine($"In the worst case, redfly.ai is {testResults.SqlOverGrpcTimings.Max() / testResults.RedflyOverGrpcTimings.Max():F2}x faster");
 
                     Console.WriteLine("--------------------------------------------------------------");
                 }
@@ -60,6 +67,7 @@ namespace RedflyPerformanceTest
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
             }
 
             Console.WriteLine("Press any key to exit...");
