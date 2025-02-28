@@ -129,6 +129,21 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
+        private static void DisplayProgress(int index, int total, int updateInterval = 2)
+        {
+            if (index % updateInterval == 0 || index == total - 1)
+            {
+                int progressWidth = 50; // Width of the progress bar
+                double percentage = (double)index / total;
+                int progress = (int)(percentage * progressWidth);
+
+                Console.Write("\r[");
+                Console.Write(new string('#', progress));
+                Console.Write(new string(' ', progressWidth - progress));
+                Console.Write($"] {index}/{total} ({percentage:P0})");
+            }
+        }
+
         private static async Task TestGetSingle(
             ProductModelsService.ProductModelsServiceClient client, 
             string token, 
@@ -138,7 +153,7 @@ namespace RedflyPerformanceTest.GrpcClient
         {
             try
             {
-                Console.Write($"\r {index}/{total}                    ");
+                DisplayProgress(index, total);
 
                 var headers = new Metadata
                 {
@@ -255,7 +270,7 @@ namespace RedflyPerformanceTest.GrpcClient
         {
             try
             {
-                Console.Write($"\r {index}/{total}                    ");
+                DisplayProgress(index, total);
 
                 var headers = new Metadata
                 {
