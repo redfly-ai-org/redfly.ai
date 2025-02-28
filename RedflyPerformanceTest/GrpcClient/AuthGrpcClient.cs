@@ -55,9 +55,16 @@ namespace RedflyPerformanceTest.GrpcClient
                     Password = passwordBuilder.ToString()
                 };
 
-                Console.WriteLine($"Logging in to {grpcUrl}...");
+                Console.WriteLine($"Logging in to {grpcUrl}");
                 Console.WriteLine("(please be patient)");
+
+                var cts = new CancellationTokenSource();
+                var progressTask = ShowProgressAnimation(cts.Token);
+
                 var loginResponse = await authServiceClient.LoginAsync(loginRequest);
+
+                cts.Cancel();
+                await progressTask;
 
                 var token = loginResponse.Token;
                 Console.WriteLine($"Token is Valid: {!string.IsNullOrEmpty(token)} ({token.Length} characters)");
@@ -98,6 +105,20 @@ namespace RedflyPerformanceTest.GrpcClient
 
             Console.WriteLine();
             return password;
+        }
+
+        private static async Task ShowProgressAnimation(CancellationToken token)
+        {
+            var animation = new[] { '/', '-', '\\', '|' };
+            int counter = 0;
+
+            while (!token.IsCancellationRequested)
+            {
+                Console.Write(animation[counter % animation.Length]);
+                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                counter++;
+                await Task.Delay(100);
+            }
         }
 
         private static async Task TestSecureGrpcCall(AuthService.AuthServiceClient client, string token)

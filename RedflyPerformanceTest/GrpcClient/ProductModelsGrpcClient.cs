@@ -138,6 +138,8 @@ namespace RedflyPerformanceTest.GrpcClient
         {
             try
             {
+                Console.Write($"\r {index}/{total}                    ");
+
                 var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {token}" }
@@ -156,7 +158,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 var response = await client.GetSingleAsync(request, headers);
                 restWatch.Stop();
                 testResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                Console.Write($"\r {index}/{total}|SQL| ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
+                //Console.Write($"\r {index}/{total}|SQL| ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
 
                 request = new GetSingleRequest
                 {
@@ -171,7 +173,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 response = await client.GetSingleAsync(request, headers);
                 restWatch.Stop();
                 testResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                Console.Write($"\r {index}/{total}|redfly|  ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
+                //Console.Write($"\r {index}/{total}|redfly|  ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
             }
             catch (Exception ex)
             {
@@ -253,6 +255,8 @@ namespace RedflyPerformanceTest.GrpcClient
         {
             try
             {
+                Console.Write($"\r {index}/{total}                    ");
+
                 var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {token}" }
@@ -272,7 +276,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 var response = await client.GetManyAsync(request, headers);
                 restWatch.Stop();
                 testResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                Console.Write($"\r {index}/{total}|SQL| Total Products: {response.Results.Count}, Message: {response.Message}");
+                //Console.Write($"\r {index}/{total}|SQL| Total Products: {response.Results.Count}, Message: {response.Message}");
 
                 request = new GetManyRequest
                 {
@@ -288,7 +292,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 response = await client.GetManyAsync(request, headers);
                 restWatch.Stop();
                 testResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                Console.Write($"\r {index}/{total}|redfly| Total Products: {response.Results.Count}, Message: {response.Message}");
+                //Console.Write($"\r {index}/{total}|redfly| Total Products: {response.Results.Count}, Message: {response.Message}");
             }
             catch (Exception ex)
             {
