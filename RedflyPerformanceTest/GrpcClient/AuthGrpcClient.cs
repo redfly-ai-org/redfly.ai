@@ -72,7 +72,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 await TestSecureGrpcCall(authServiceClient, token);
 
-                Console.WriteLine("Authentication is complete!");
+                Console.WriteLine("Authentication is complete!\r\n");
 
                 return token;
             }

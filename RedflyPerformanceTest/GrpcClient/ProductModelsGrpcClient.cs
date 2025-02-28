@@ -118,29 +118,65 @@ namespace RedflyPerformanceTest.GrpcClient
                 {
                     DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the Insert > Update > GetSingle > Delete tests asynchronously");
 
-                    var insertedRowCount = 0;                    
-                    while (runCount < totalRuns)
+                    var currentRunCount = runCount;
+                    var insertTasks = new List<Task<ApiProductModel?>>();
+
+                    var cts = new CancellationTokenSource();
+                    var animationTask = ShowProgressAnimation(cts.Token, "Inserting rows asynchronously");
+
+                    while (currentRunCount < totalRuns)
                     {
-                        var inserted = await TestInsertRow(productModelsClient, token);
-                        insertedRowCount++;
+                        insertTasks.Add(TestInsertRow(productModelsClient, token));
+                        currentRunCount++;
+                    }
 
-                        if (inserted != null)
+                    var insertedRows = await Task.WhenAll(insertTasks);
+                    insertedRows = insertedRows.Where(x => x != null).ToArray();
+
+                    cts.Cancel();
+                    await animationTask;
+
+                    var getSingleTasks = new List<Task>();
+
+                    DisplayMessageDuringProgress($"Reading rows asynchronously...");
+
+                    foreach (var insertedRow in insertedRows)
+                    {
+                        //Not needed for performance test.
+                        //await TestUpdateRow(productModelsClient, token, inserted);
+
+                        getSingleTasks.Add(TestGetSingle(productModelsClient, token, testResults, runCount, totalRuns, insertedRow!.ProductModelId));
+
+                        runCount++;
+                    }
+
+                    await Task.WhenAll(getSingleTasks);
+
+                    cts = new CancellationTokenSource();
+                    animationTask = ShowProgressAnimation(cts.Token, "Deleting rows asynchronously");
+
+                    var deleteTasks = new List<Task>();
+
+                    int deletedRowCount = 0;
+                    foreach (var insertedRow in insertedRows)
+                    {
+                        //Let the row count increase till 100k.
+                        if ((actualDbRowCount + insertedRows.Count() - deletedRowCount) > 100000)
                         {
-                            await TestUpdateRow(productModelsClient, token, inserted);
-
-                            await TestGetSingle(productModelsClient, token, testResults, runCount, totalRuns, inserted.ProductModelId);
-
-                            //Let the row count increase till 100k.
-                            if ((actualDbRowCount + insertedRowCount) > 100000)
-                            {
-                                // Server will only let you delete rows that did not exist in the database originally 
-                                // (i.e., someone else like you created them).
-                                await TestDelete(productModelsClient, token, inserted!.ProductModelId);
-                            }
-
-                            runCount++;
+                            // Server will only let you delete rows that did not exist in the database originally 
+                            // (i.e., someone else like you created them).
+                            deleteTasks.Add(TestDelete(productModelsClient, token, insertedRow!.ProductModelId));
+                            deletedRowCount++;
                         }
                     }
+
+                    if (deleteTasks.Count > 0)
+                    {
+                        await Task.WhenAll(deleteTasks);
+                    }
+
+                    cts.Cancel();
+                    await animationTask;
                 }
 
                 DisplayProgress(runCount, totalRuns, force: true);
@@ -151,6 +187,22 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+
+        private static async Task ShowProgressAnimation(CancellationToken token, string message)
+        {
+            var animation = new[] { '/', '-', '\\', '|' };
+            int counter = 0;
+
+            while (!token.IsCancellationRequested)
+            {
+                Console.Write($"\r{message} {animation[counter % animation.Length]}");
+                counter++;
+                await Task.Delay(100);
+            }
+
+            // Clear the animation line
+            Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
         }
 
         private static async Task<GetRowCountResponse?> TestGetRowCount(ProductModelsService.ProductModelsServiceClient client, string token)
