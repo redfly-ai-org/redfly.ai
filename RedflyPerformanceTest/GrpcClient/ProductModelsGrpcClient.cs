@@ -11,6 +11,7 @@ using System.Security.Authentication;
 using Microsoft.Extensions.Logging;
 using ClientDatabaseAPI.Common.Library;
 using System.Net;
+using System.Reflection;
 
 namespace RedflyPerformanceTest.GrpcClient
 {
@@ -122,6 +123,8 @@ namespace RedflyPerformanceTest.GrpcClient
                     }
                 }
 
+                DisplayProgress(runCount, totalRuns, force: true);
+
                 Console.WriteLine("\r\n\r\nTest Completed");
             }
             catch (Exception ex)
@@ -189,9 +192,9 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static void DisplayProgress(int index, int total, int updateInterval = 2)
+        private static void DisplayProgress(int index, int total, int updateInterval = 2, bool force = false)
         {
-            if (index % updateInterval == 0 || index == total - 1)
+            if (index % updateInterval == 0 || index == total - 1 || force)
             {
                 int progressWidth = 50; // Width of the progress bar
                 double percentage = (double)index / total;
