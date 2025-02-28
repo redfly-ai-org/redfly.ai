@@ -290,7 +290,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.Write("\r[");
                 Console.Write(new string('#', progress));
                 Console.Write(new string(' ', progressWidth - progress));
-                Console.Write($"] {index}/{total} ({percentage:P0})                                   ");
+                Console.Write($"] {index}/{total} ({percentage:P0})");
             }
         }
 
