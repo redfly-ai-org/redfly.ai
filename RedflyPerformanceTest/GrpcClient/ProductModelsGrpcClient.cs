@@ -90,7 +90,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 if (remainingRunCount > 0)
                 {
-                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running ~{validResponses.Count*10} GetSingle tests asynchronously.");
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running ~{validResponses.Count* pageSize} GetSingle tests asynchronously.");
 
                     foreach (var validResponse in validResponses)
                     {
