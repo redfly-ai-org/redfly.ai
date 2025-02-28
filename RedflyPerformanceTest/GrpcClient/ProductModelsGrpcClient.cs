@@ -167,13 +167,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     ExecutionMode = (int)ReadExecutionMode.Balanced
                 };
 
-                //Console.Write($"\r Executing GetSingle Request with JWT Token...");
-                var restWatch = new Stopwatch();
-                restWatch.Start();
-                var response = await client.GetSingleAsync(request, headers);
-                restWatch.Stop();
-                testResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                //Console.Write($"\r {index}/{total}|SQL| ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
+                await GetSingleWithSql(client, testResults, headers, request);
 
                 request = new GetSingleRequest
                 {
@@ -181,19 +175,34 @@ namespace RedflyPerformanceTest.GrpcClient
                     UseCache = true,
                     ExecutionMode = (int)ReadExecutionMode.Balanced
                 };
-
-                //Console.Write($"\r Executing GetSingle Request with JWT Token...");
-                restWatch = new Stopwatch();
-                restWatch.Start();
-                response = await client.GetSingleAsync(request, headers);
-                restWatch.Stop();
-                testResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                //Console.Write($"\r {index}/{total}|redfly|  ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
+                await GetSingleWithRedfly(client, testResults, headers, request);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+
+        private static async Task GetSingleWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetSingleRequest request)
+        {
+            //Console.Write($"\r Executing GetSingle Request with JWT Token...");
+            var restWatch = new Stopwatch();
+            restWatch.Start();
+            var response = await client.GetSingleAsync(request, headers);
+            restWatch.Stop();
+            testResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+            //Console.Write($"\r {index}/{total}|redfly|  ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
+        }
+
+        private static async Task GetSingleWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetSingleRequest request)
+        {
+            //Console.Write($"\r Executing GetSingle Request with JWT Token...");
+            var restWatch = new Stopwatch();
+            restWatch.Start();
+            var response = await client.GetSingleAsync(request, headers);
+            restWatch.Stop();
+            testResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+            //Console.Write($"\r {index}/{total}|SQL| ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
         }
 
         private static async Task TestUpdate(ProductModelsService.ProductModelsServiceClient client, string token, ApiProductModel? apiProductModel)
@@ -285,13 +294,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     ExecutionMode = (int)ReadExecutionMode.Balanced
                 };
 
-                //Console.Write($"\r Executing GetMany Request with JWT Token...");
-                var restWatch = new Stopwatch();
-                restWatch.Start();
-                var response = await client.GetManyAsync(request, headers);
-                restWatch.Stop();
-                testResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                //Console.Write($"\r {index}/{total}|SQL| Total Products: {response.Results.Count}, Message: {response.Message}");
+                await GetManyWithSql(client, testResults, headers, request);
 
                 request = new GetManyRequest
                 {
@@ -301,18 +304,34 @@ namespace RedflyPerformanceTest.GrpcClient
                     ExecutionMode = (int)ReadExecutionMode.Balanced
                 };
 
-                //Console.Write($"\r Executing GetMany Request with JWT Token...");
-                restWatch = new Stopwatch();
-                restWatch.Start();
-                response = await client.GetManyAsync(request, headers);
-                restWatch.Stop();
-                testResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
-                //Console.Write($"\r {index}/{total}|redfly| Total Products: {response.Results.Count}, Message: {response.Message}");
+                await GetManyWithRedfly(client, testResults, headers, request);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
             }
+        }
+
+        private static async Task GetManyWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetManyRequest request)
+        {
+            //Console.Write($"\r Executing GetMany Request with JWT Token...");
+            var restWatch = new Stopwatch();
+            restWatch.Start();
+            var response = await client.GetManyAsync(request, headers);
+            restWatch.Stop();
+            testResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+            //Console.Write($"\r {index}/{total}|redfly| Total Products: {response.Results.Count}, Message: {response.Message}");
+        }
+
+        private static async Task GetManyWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetManyRequest request)
+        {
+            //Console.Write($"\r Executing GetMany Request with JWT Token...");
+            var restWatch = new Stopwatch();
+            restWatch.Start();
+            var response = await client.GetManyAsync(request, headers);
+            restWatch.Stop();
+            testResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+            //Console.Write($"\r {index}/{total}|SQL| Total Products: {response.Results.Count}, Message: {response.Message}");
         }
     }
 }
