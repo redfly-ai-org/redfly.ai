@@ -55,7 +55,8 @@ namespace RedflyPerformanceTest.GrpcClient
                     Password = passwordBuilder.ToString()
                 };
 
-                Console.WriteLine($"Logging in to (please be patient)...");
+                Console.WriteLine($"Logging in to {grpcUrl}...");
+                Console.WriteLine("(please be patient)");
                 var loginResponse = await authServiceClient.LoginAsync(loginRequest);
 
                 var token = loginResponse.Token;
@@ -63,7 +64,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 await TestSecureGrpcCall(authServiceClient, token);
 
-                Console.WriteLine("Test Completed");
+                Console.WriteLine("Authentication is complete!");
 
                 return token;
             }
