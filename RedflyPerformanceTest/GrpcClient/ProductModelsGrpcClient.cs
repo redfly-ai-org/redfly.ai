@@ -41,25 +41,78 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 var productModelsClient = new ProductModelsService.ProductModelsServiceClient(channel);
 
-                Console.WriteLine($"Connecting to gRPC server at {grpcUrl}...");
+                Console.WriteLine($"Starting the Test from {grpcUrl}...");
 
                 await TestGetRowCount(productModelsClient, token);
-                var apiProductModel = await TestInsert(productModelsClient, token);
-                await TestUpdate(productModelsClient, token, apiProductModel);
-
-                if (apiProductModel != null)
-                {
-                    // Server will only let you delete rows that did not exist in the database originally 
-                    // (i.e., someone else like you created them).
-                    await TestDelete(productModelsClient, token, apiProductModel!.ProductModelId);
-                }
-
+                
                 Console.WriteLine("");
 
-                for (int i = 0; i < totalRuns; i++)
+                int pageNo = 1;
+                int pageSize = 10;
+                int runCount = 0;
+                GetManyResponse? response = null;
+                var validResponses = new List<GetManyResponse?>();
+
+                do
                 {
-                    await TestGetSingle(productModelsClient, token, testResults, i, totalRuns);
-                    await TestGetMany(productModelsClient, token, testResults, i, totalRuns);
+
+                    response = await TestGetMany(productModelsClient, token, testResults, runCount, totalRuns, pageNo, pageSize);
+                    runCount++;
+
+                    if (response != null &&
+                       response.Results != null &&
+                       response.Results.Count > 0)
+                    {
+                        validResponses.Add(response);
+                    }
+                }
+                while (runCount <= totalRuns &&
+                       response != null &&
+                       response.Results != null &&
+                       response.Results.Count > 0);
+
+                var remainingRunCount = (totalRuns - runCount);
+
+                if (remainingRunCount > 0)
+                { 
+                    foreach (var validResponse in validResponses)
+                    {
+                        foreach (var result in validResponse!.Results)
+                        {
+                            await TestGetSingle(productModelsClient, token, testResults, runCount, totalRuns, result.ProductModelId);
+
+                            runCount++;
+
+                            if (runCount >= totalRuns)
+                            {
+                                //Satisfied!
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                remainingRunCount = (totalRuns - runCount);
+
+                if (remainingRunCount > 0)
+                {
+                    while (runCount < remainingRunCount)
+                    {
+                        var inserted = await TestInsertRow(productModelsClient, token);
+
+                        if (inserted != null)
+                        {
+                            await TestUpdateRow(productModelsClient, token, inserted);
+
+                            await TestGetSingle(productModelsClient, token, testResults, runCount, totalRuns, inserted.ProductModelId);
+
+                            // Server will only let you delete rows that did not exist in the database originally 
+                            // (i.e., someone else like you created them).
+                            await TestDelete(productModelsClient, token, inserted!.ProductModelId);
+
+                            runCount++;
+                        }
+                    }
                 }
 
                 Console.WriteLine("\r\n\r\nTest Completed");
@@ -91,7 +144,7 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task<ApiProductModel?> TestInsert(ProductModelsService.ProductModelsServiceClient client, string token)
+        private static async Task<ApiProductModel?> TestInsertRow(ProductModelsService.ProductModelsServiceClient client, string token)
         {
             try
             {
@@ -111,12 +164,12 @@ namespace RedflyPerformanceTest.GrpcClient
                     }
                 };
 
-                Console.WriteLine("    Executing Insert Request with JWT Token...");
+                //Console.WriteLine("    Executing Insert Request with JWT Token...");
                 var restWatch = new Stopwatch();
                 restWatch.Start();
                 var response = await client.InsertAsync(request, headers);
                 restWatch.Stop();
-                Console.WriteLine($"    Inserted ProductModelId: {response.Result.ProductModelId}, Message: {response.Message}");
+                //Console.WriteLine($"    Inserted ProductModelId: {response.Result.ProductModelId}, Message: {response.Message}");
 
                 //Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds}ms, Result: {response?.Result.ProductModelId}");
 
@@ -125,7 +178,7 @@ namespace RedflyPerformanceTest.GrpcClient
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
-                throw;
+                return null;
             }
         }
 
@@ -151,7 +204,8 @@ namespace RedflyPerformanceTest.GrpcClient
             string token, 
             PerfTestResults testResults,                              
             int index, 
-            int total)
+            int total, 
+            int productModelId)
         {
             try
             {
@@ -164,14 +218,14 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 if (getSingleCallSqlFirst)
                 {
-                    await GetSingleWithSql(client, testResults, headers);
-                    await GetSingleWithRedfly(client, testResults, headers);
+                    await GetSingleWithSql(client, testResults, headers, productModelId);
+                    await GetSingleWithRedfly(client, testResults, headers, productModelId);
                     getSingleCallSqlFirst = false;
                 }
                 else
                 {
-                    await GetSingleWithRedfly(client, testResults, headers);
-                    await GetSingleWithSql(client, testResults, headers);
+                    await GetSingleWithRedfly(client, testResults, headers, productModelId);
+                    await GetSingleWithSql(client, testResults, headers, productModelId);
                     getSingleCallSqlFirst = true;
                 }
             }
@@ -181,11 +235,11 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task GetSingleWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
+        private static async Task GetSingleWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, int productModelId)
         {
             var request = new GetSingleRequest
             {
-                ProductModelId = 1, // Replace with a valid ProductModelId
+                ProductModelId = productModelId, // Replace with a valid ProductModelId
                 UseCache = true,
                 ExecutionMode = (int)ReadExecutionMode.Balanced
             };
@@ -199,11 +253,11 @@ namespace RedflyPerformanceTest.GrpcClient
             //Console.Write($"\r {index}/{total}|redfly|  ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
         }
 
-        private static async Task GetSingleWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
+        private static async Task GetSingleWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, int productModelId)
         {
             var request = new GetSingleRequest
             {
-                ProductModelId = 1, // Replace with a valid ProductModelId
+                ProductModelId = productModelId, // Replace with a valid ProductModelId
                 UseCache = false,
                 ExecutionMode = (int)ReadExecutionMode.Balanced
             };
@@ -217,7 +271,7 @@ namespace RedflyPerformanceTest.GrpcClient
             //Console.Write($"\r {index}/{total}|SQL| ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
         }
 
-        private static async Task TestUpdate(ProductModelsService.ProductModelsServiceClient client, string token, ApiProductModel? apiProductModel)
+        private static async Task TestUpdateRow(ProductModelsService.ProductModelsServiceClient client, string token, ApiProductModel row)
         {
             try
             {
@@ -230,20 +284,18 @@ namespace RedflyPerformanceTest.GrpcClient
                 {
                     Updated = new ApiProductModel
                     {
-                        ProductModelId = 1,
+                        ProductModelId = row.ProductModelId,
                         Name = $"Name:{Dns.GetHostName()} {Guid.NewGuid()}".Substring(0, 50),
-                        CatalogDescription = "",
-                        Rowguid = Guid.NewGuid().ToString(),
                         ModifiedDate = DateTime.UtcNow.ToString("o")
                     }
                 };
 
-                Console.WriteLine("    Executing Update Request with JWT Token...");
+                //Console.WriteLine("    Executing Update Request with JWT Token...");
                 var restWatch = new Stopwatch();
                 restWatch.Start();
                 var response = await client.UpdateAsync(request, headers);
                 restWatch.Stop();
-                Console.WriteLine($"    Updated Rows: {response.Result}, Message: {response.Message}");
+                //Console.WriteLine($"    Updated Rows: {response.Result}, Message: {response.Message}");
 
                 //Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds}ms, Result: {response.Result}");
             }
@@ -267,12 +319,12 @@ namespace RedflyPerformanceTest.GrpcClient
                     ProductModelId = productModelId
                 };
 
-                Console.WriteLine("    Executing Delete Request with JWT Token...");
+                //Console.WriteLine("    Executing Delete Request with JWT Token...");
                 var restWatch = new Stopwatch();
                 restWatch.Start();
                 var response = await client.DeleteAsync(request, headers);
                 restWatch.Stop();
-                Console.WriteLine($"    Delete Success: {response.Success}, Message: {response.Message}");
+                //Console.WriteLine($"    Delete Success: {response.Success}, Message: {response.Message}");
 
                 //Console.WriteLine($"Grpc RunTime: {restWatch.Elapsed.TotalMilliseconds} ms, Result: {response.Message}");
             }
@@ -284,12 +336,14 @@ namespace RedflyPerformanceTest.GrpcClient
 
         private static bool getManyCallSqlFirst = true;
 
-        private static async Task TestGetMany(
+        private static async Task<GetManyResponse?> TestGetMany(
             ProductModelsService.ProductModelsServiceClient client, 
             string token, 
             PerfTestResults testResults,                              
             int index, 
-            int total)
+            int total,
+            int pageNo, 
+            int pageSize)
         {
             try
             {
@@ -300,31 +354,36 @@ namespace RedflyPerformanceTest.GrpcClient
                     { "Authorization", $"Bearer {token}" }
                 };
 
+                GetManyResponse? response = null;
+
                 if (getManyCallSqlFirst)
                 {
-                    await GetManyWithSql(client, testResults, headers);
-                    await GetManyWithRedfly(client, testResults, headers);
+                    await GetManyWithSql(client, testResults, headers, pageNo, pageSize);
+                    response = await GetManyWithRedfly(client, testResults, headers, pageNo, pageSize);
                     getManyCallSqlFirst = false;
                 }
                 else
                 {
-                    await GetManyWithRedfly(client, testResults, headers);
-                    await GetManyWithSql(client, testResults, headers);
+                    await GetManyWithRedfly(client, testResults, headers, pageNo, pageSize);
+                    response = await GetManyWithSql(client, testResults, headers, pageNo, pageSize);
                     getManyCallSqlFirst = true;
                 }
+
+                return response;
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                return null;
             }
         }
 
-        private static async Task GetManyWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
+        private static async Task<GetManyResponse?> GetManyWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, int pageNo, int pageSize)
         {
             var request = new GetManyRequest
             {
-                PageNo = 1,
-                PageSize = 10,
+                PageNo = pageNo,
+                PageSize = pageSize,
                 UseCache = true,
                 ExecutionMode = (int)ReadExecutionMode.Balanced
             };
@@ -336,14 +395,16 @@ namespace RedflyPerformanceTest.GrpcClient
             restWatch.Stop();
             testResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
             //Console.Write($"\r {index}/{total}|redfly| Total Products: {response.Results.Count}, Message: {response.Message}");
+
+            return response;
         }
 
-        private static async Task GetManyWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
+        private static async Task<GetManyResponse?> GetManyWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, int pageNo, int pageSize)
         {
             var request = new GetManyRequest
             {
-                PageNo = 1,
-                PageSize = 10,
+                PageNo = pageNo,
+                PageSize = pageSize,
                 UseCache = false,
                 ExecutionMode = (int)ReadExecutionMode.Balanced
             };
@@ -355,6 +416,8 @@ namespace RedflyPerformanceTest.GrpcClient
             restWatch.Stop();
             testResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
             //Console.Write($"\r {index}/{total}|SQL| Total Products: {response.Results.Count}, Message: {response.Message}");
+
+            return response;
         }
     }
 }
