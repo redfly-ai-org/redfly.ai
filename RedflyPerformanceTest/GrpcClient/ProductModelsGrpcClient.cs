@@ -76,6 +76,7 @@ namespace RedflyPerformanceTest.GrpcClient
                        response.Results != null &&
                        response.Results.Count > 0);
 
+                var tasks = new List<Task>();
                 var remainingRunCount = (totalRuns - runCount);
 
                 if (remainingRunCount > 0)
@@ -86,7 +87,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     {
                         foreach (var result in validResponse!.Results)
                         {
-                            await TestGetSingle(productModelsClient, token, testResults, runCount, totalRuns, result.ProductModelId);
+                            tasks.Add(TestGetSingle(productModelsClient, token, testResults, runCount, totalRuns, result.ProductModelId));
 
                             runCount++;
 
@@ -97,8 +98,11 @@ namespace RedflyPerformanceTest.GrpcClient
                             }
                         }
                     }
+
+                    await Task.WhenAll(tasks);
                 }
 
+                tasks.Clear();
                 remainingRunCount = (totalRuns - runCount);
 
                 if (remainingRunCount > 0)
@@ -106,7 +110,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the Insert > Update > GetSingle > Delete test");
 
                     var insertedRowCount = 0;
-
+                    
                     while (runCount < totalRuns)
                     {
                         var inserted = await TestInsertRow(productModelsClient, token);
