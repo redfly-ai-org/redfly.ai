@@ -69,6 +69,7 @@ namespace RedflyPerformanceTest.GrpcClient
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"If you got an error, please try again later.");
                 Console.WriteLine(ex.ToString());
                 throw;
             }
