@@ -5,7 +5,7 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 
 Provide source code that:
 
-1. Let you easily verify that our system performs better than conventional techniques for data access at scale (Done, also some WIP).
+1. Let you easily verify that our system performs better than conventional techniques for data access at scale.
 2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (TBD).
 3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD).
 
@@ -14,6 +14,13 @@ This code is not intended to be used as a best-practice implementation. It is fo
 Even though these are intended as fully functional demos, items 2 and 3 are quite ambitious and complex to implement. We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
 
 These applications do not require complex configuration or modifications to work. They will be simple console applications written in C# and using the latest version of .NET Core. 
+
+**Caveats**
+
+Relational Databases perform well for a small number of rows without a lot of use. The longer and harder you run the test (feel free to pound it), and the more data is in the DB table, the better redfly.ai will perform relative to SQL.
+
+A better performance test can be found here: 
+https://transparent.azurewebsites.net/fusioncore-demo 
 
 **Compatibility**
 
