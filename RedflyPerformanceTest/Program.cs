@@ -38,7 +38,7 @@ namespace RedflyPerformanceTest
                 }
 
                 //Increase to run count to see better performance with redfly over SQL.
-                int totalRuns = 4000;
+                int totalRuns = 4500;
 
                 var testResults = new PerfTestResults();
                 await ProductModelsGrpcClient.RunAsync(grpcUrl, grpcAuthToken, testResults, totalRuns);
@@ -53,12 +53,21 @@ namespace RedflyPerformanceTest
 
                     Console.WriteLine("");
 
-                    Console.WriteLine($"At the minimum, redfly.ai is {testResults.SqlOverGrpcTimings.Min() / testResults.RedflyOverGrpcTimings.Min():F2}x faster");
+                    if (testResults.SqlOverGrpcTimings.Min() > testResults.RedflyOverGrpcTimings.Min())
+                    {
+                        Console.WriteLine($"At the minimum, redfly.ai is {testResults.SqlOverGrpcTimings.Min() / testResults.RedflyOverGrpcTimings.Min():F2}x faster");
+                    }
 
-                    Console.WriteLine($"On average, redfly.ai is {testResults.SqlOverGrpcTimings.Average()/ testResults.RedflyOverGrpcTimings.Average():F2}x faster");
+                    if (testResults.SqlOverGrpcTimings.Average() > testResults.RedflyOverGrpcTimings.Average())
+                    {
+                        Console.WriteLine($"On average, redfly.ai is {testResults.SqlOverGrpcTimings.Average() / testResults.RedflyOverGrpcTimings.Average():F2}x faster");
+                    }
 
-                    Console.WriteLine($"In the worst case, redfly.ai is {testResults.SqlOverGrpcTimings.Max() / testResults.RedflyOverGrpcTimings.Max():F2}x faster");
-
+                    if (testResults.SqlOverGrpcTimings.Max() > testResults.RedflyOverGrpcTimings.Max())
+                    {
+                        Console.WriteLine($"In the worst case, redfly.ai is {testResults.SqlOverGrpcTimings.Max() / testResults.RedflyOverGrpcTimings.Max():F2}x faster");
+                    }
+                    
                     Console.WriteLine("--------------------------------------------------------------");
                 }
                 else
