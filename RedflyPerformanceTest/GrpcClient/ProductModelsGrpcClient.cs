@@ -53,11 +53,10 @@ namespace RedflyPerformanceTest.GrpcClient
                 GetManyResponse? response = null;
                 var validResponses = new List<GetManyResponse?>();
 
-                Console.WriteLine("Running the GetMany test");
+                Console.WriteLine($"{totalRuns} runs remaining. Running the GetMany test");
 
                 do
                 {
-
                     response = await TestGetMany(productModelsClient, token, testResults, runCount, totalRuns, pageNo, pageSize);
 
                     pageNo++;
@@ -301,6 +300,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     {
                         ProductModelId = row.ProductModelId,
                         Name = $"Name:{Dns.GetHostName()} {Guid.NewGuid()}".Substring(0, 50),
+                        Rowguid = Guid.NewGuid().ToString(),
                         ModifiedDate = DateTime.UtcNow.ToString("o")
                     }
                 };
