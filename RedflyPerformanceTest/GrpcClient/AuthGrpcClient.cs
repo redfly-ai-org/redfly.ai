@@ -38,7 +38,12 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 var authServiceClient = new AuthService.AuthServiceClient(channel);
 
-                Console.WriteLine("Enter your user name. You register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
+                Console.WriteLine("\r\nInstructions: ");
+                Console.WriteLine("You can register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
+                Console.WriteLine("Be sure to check your Junk folder for the verification email after you register.");
+                Console.WriteLine("Registration is necessary to be able to access our secure cloud services.\r\n");
+
+                Console.WriteLine("Enter your user name:");
                 var userName = Console.ReadLine();
 
                 Console.WriteLine("Enter your password.");
@@ -50,7 +55,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     Password = passwordBuilder.ToString()
                 };
 
-                Console.WriteLine($"Logging in to {grpcUrl}...");
+                Console.WriteLine($"Logging in to (please be patient)...");
                 var loginResponse = await authServiceClient.LoginAsync(loginRequest);
 
                 var token = loginResponse.Token;

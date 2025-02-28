@@ -19,19 +19,29 @@ namespace RedflyPerformanceTest
 
                 var grpcAuthToken = await AuthGrpcClient.RunAsync(grpcUrl);
 
+                if (grpcAuthToken == null ||
+                    grpcAuthToken.Length == 0)
+                {
+                    Console.WriteLine("Failed to authenticate with the gRPC server.");
+                    return;
+                }
+
                 //Increase to run count to see better performance with redfly over SQL.
-                int totalRuns = 500;
+                int totalRuns = 50;
 
                 var testResults = new PerfTestResults();
                 await ProductModelsGrpcClient.RunAsync(grpcUrl, grpcAuthToken, testResults, totalRuns);
 
-                if (testResults.HasAnyResults())
+                if (testResults.Populated())
                 {
                     Console.WriteLine("==============================================================");
                     Console.WriteLine($"RUNS: {totalRuns}");
                     
                     Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimings.Min()} < {testResults.SqlOverGrpcTimings.Average()} < {testResults.SqlOverGrpcTimings.Max()}", ConsoleColor.Magenta);
                     Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min()} < {testResults.RedflyOverGrpcTimings.Average()} < {testResults.RedflyOverGrpcTimings.Max()}", ConsoleColor.Cyan);
+
+                    Console.WriteLine($"redfly.ai is {testResults.SqlOverGrpcTimings.Average()/ testResults.RedflyOverGrpcTimings.Average()}x faster");
+
                     Console.WriteLine("--------------------------------------------------------------");
                 }
                 else

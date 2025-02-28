@@ -14,7 +14,7 @@ namespace RedflyPerformanceTest.Entities
         internal List<double> RedflyOverGrpcTimings { get; set; } = new  List<double>();
         internal List<double> SqlOverGrpcTimings { get; set; } = new List<double>();
 
-        internal bool HasAnyResults()
+        internal bool Populated()
         {
             return (RestApiTimings.Count > 0 || 
                     DALTimings.Count > 0 || 
