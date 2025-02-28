@@ -11,7 +11,7 @@ Provide source code that:
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
-Even though these are intended as fully functional demos, items 2 and 3 are quite ambitious and complex to implement. We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
+Even though these are intended as fully functional demos, items 2 and 3 are ambitious and complex to implement. We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
 
 These applications do not require complex configuration or modifications to work. They will be simple console applications written in C# and using the latest version of .NET Core. 
 
@@ -19,12 +19,13 @@ These applications do not require complex configuration or modifications to work
 
 Relational Databases perform well for a small number of rows without a lot of use. The longer and harder you run the test (feel free to pound it), and the more data is in the DB table, the better redfly.ai will perform relative to SQL.
 
-A better performance test can be found here: 
-https://transparent.azurewebsites.net/fusioncore-demo 
+A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
+
+We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Today, when the DB is slow, the entire app is slow, from login to reports. That's what we are good at solving.
 
 **Compatibility**
 
-We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases in the future (like Postgres). Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
+We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like Postgres) in the future. Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
 
 _We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
 
