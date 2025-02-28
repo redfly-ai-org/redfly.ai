@@ -349,7 +349,7 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 ProductModelId = productModelId, // Replace with a valid ProductModelId
                 UseCache = true,
-                ExecutionMode = (int)ReadExecutionMode.Balanced
+                ExecutionMode = (int)ReadExecutionMode.UnsafeButFast
             };
 
             //Console.Write($"\r Executing GetSingle Request with JWT Token...");
@@ -496,7 +496,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 PageNo = pageNo,
                 PageSize = pageSize,
                 UseCache = true,
-                ExecutionMode = (int)ReadExecutionMode.Balanced
+                ExecutionMode = (int)ReadExecutionMode.UnsafeButFast
             };
 
             //Console.Write($"\r Executing GetMany Request with JWT Token...");

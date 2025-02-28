@@ -15,7 +15,8 @@ namespace ClientDatabaseAPI.Common.Library
     {
 
         /// <summary>
-        /// The default option which balances safety with performance. Suitable for display scenarios where the result can be slightly stale.
+        /// The default option which balances safety with performance. 
+        /// Suitable for display scenarios where the result can be slightly stale.
         /// </summary>
         /// <remarks>
         /// The result maybe stale in some scenarios.
