@@ -56,7 +56,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 var getManyTasks = new List<Task<GetManyResponse?>>();
 
-                Console.WriteLine($"{totalRuns} runs remaining. Running {noOfPagedCalls} GetMany tests in parallel.");
+                Console.WriteLine($"{totalRuns} runs remaining. Running {noOfPagedCalls} GetMany tests asynchronously.");
 
                 for (int pageNo=1;pageNo<noOfPagedCalls;pageNo++)
                 {
@@ -90,7 +90,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 if (remainingRunCount > 0)
                 {
-                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running ~{validResponses.Count*10} GetSingle tests in parallel");
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running ~{validResponses.Count*10} GetSingle tests asynchronously.");
 
                     foreach (var validResponse in validResponses)
                     {
@@ -116,10 +116,9 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 if (remainingRunCount > 0)
                 {
-                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the Insert > Update > GetSingle > Delete test");
+                    DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the Insert > Update > GetSingle > Delete tests asynchronously");
 
-                    var insertedRowCount = 0;
-                    
+                    var insertedRowCount = 0;                    
                     while (runCount < totalRuns)
                     {
                         var inserted = await TestInsertRow(productModelsClient, token);
