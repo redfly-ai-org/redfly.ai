@@ -5,6 +5,7 @@ At this time, this repo aims to provide open-source source code that:
 
 1. Let you easily verify that our system performs better than conventional techniques for data access at scale (This is v1 - this is ready to go & will be published soon).
 2. Provide a way for anybody to test our Redis synchronization service from anywhere (TBD).
+3. Provide a way for anybody to generate their data access backend services on our cloud (TBD).
 
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/><br/> 
 https://transparent.azurewebsites.net/Identity/Account/Register
