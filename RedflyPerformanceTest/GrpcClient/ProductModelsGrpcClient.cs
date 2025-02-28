@@ -290,7 +290,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.Write("\r[");
                 Console.Write(new string('#', progress));
                 Console.Write(new string(' ', progressWidth - progress));
-                Console.Write($"] {index}/{total} ({percentage:P0})");
+                Console.Write($"] {index}/{total} ({percentage:P0})                                   ");
             }
         }
 
@@ -313,8 +313,6 @@ namespace RedflyPerformanceTest.GrpcClient
         {
             try
             {
-                DisplayProgress(index, total);
-
                 var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {token}" }
@@ -336,6 +334,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 }
 
                 await Task.WhenAll(tasks);
+                DisplayProgress(index, total);
             }
             catch (Exception ex)
             {
@@ -456,8 +455,6 @@ namespace RedflyPerformanceTest.GrpcClient
         {
             try
             {
-                DisplayProgress(index, total);
-
                 var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {token}" }
@@ -479,6 +476,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 }
 
                 var responses = await Task.WhenAll(getManyTasks);
+                DisplayProgress(index, total);
 
                 return responses.Where(x => x != null).FirstOrDefault();
             }
