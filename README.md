@@ -3,9 +3,15 @@ redfly.ai lets you synchronize your database with Redis transparently and genera
 
 At this time, this repo aims to provide open-source source code that:
 
-1. Let you easily verify that our system performs better than conventional techniques for data access at scale (This will be v1 - this is ready to go now).
+1. Let you easily verify that our system performs better than conventional techniques for data access at scale (This is v1 - this is ready to go & will be published soon).
 2. Provide a way for anybody to test our Redis synchronization service (TBD).
 
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here: https://transparent.azurewebsites.net/Identity/Account/Register
 
-Note to check your junk folder for emails from redfly.ai - this is a new domain, so emails will go to the junk folder.
+Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
+
+All our cloud services run on our platform, so when you register with us or log in, you are using our platform. 
+
+Companies interested in using our platform directly can find more details here: https://azuremarketplace.microsoft.com/en-us/marketplace/apps/redfly.redfly-offer-1?tab=overview
+
+If you have access to the Azure Portal, you can find us here: https://portal.azure.com/#view/Microsoft_Azure_Marketplace/GalleryItemDetailsBladeNopdl/id/redfly.redfly-offer-1/selectionMode~/false/resourceGroupId//resourceGroupLocation//dontDiscardJourney~/false/selectedMenuId/home/launchingContext~/%7B%22galleryItemId%22%3A%22redfly.redfly-offer-1dpssp%22%2C%22source%22%3A%5B%22GalleryFeaturedMenuItemPart%22%2C%22VirtualizedTileDetails%22%5D%2C%22menuItemId%22%3A%22home%22%2C%22subMenuItemId%22%3A%22Search%20results%22%2C%22telemetryId%22%3A%22d25c8cae-a836-4037-a2dd-9cd2f8e9e001%22%7D/searchTelemetryId/2783b73c-f204-4ae8-a1f7-b5bb83db4e73
