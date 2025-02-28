@@ -144,6 +144,8 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
+        private static bool getSingleCallSqlFirst = true;
+
         private static async Task TestGetSingle(
             ProductModelsService.ProductModelsServiceClient client, 
             string token, 
@@ -160,22 +162,18 @@ namespace RedflyPerformanceTest.GrpcClient
                     { "Authorization", $"Bearer {token}" }
                 };
 
-                var request = new GetSingleRequest
+                if (getSingleCallSqlFirst)
                 {
-                    ProductModelId = 1, // Replace with a valid ProductModelId
-                    UseCache = false,
-                    ExecutionMode = (int)ReadExecutionMode.Balanced
-                };
-
-                await GetSingleWithSql(client, testResults, headers, request);
-
-                request = new GetSingleRequest
+                    await GetSingleWithSql(client, testResults, headers);
+                    await GetSingleWithRedfly(client, testResults, headers);
+                    getSingleCallSqlFirst = false;
+                }
+                else
                 {
-                    ProductModelId = 1, // Replace with a valid ProductModelId
-                    UseCache = true,
-                    ExecutionMode = (int)ReadExecutionMode.Balanced
-                };
-                await GetSingleWithRedfly(client, testResults, headers, request);
+                    await GetSingleWithRedfly(client, testResults, headers);
+                    await GetSingleWithSql(client, testResults, headers);
+                    getSingleCallSqlFirst = true;
+                }
             }
             catch (Exception ex)
             {
@@ -183,8 +181,15 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task GetSingleWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetSingleRequest request)
+        private static async Task GetSingleWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
         {
+            var request = new GetSingleRequest
+            {
+                ProductModelId = 1, // Replace with a valid ProductModelId
+                UseCache = true,
+                ExecutionMode = (int)ReadExecutionMode.Balanced
+            };
+
             //Console.Write($"\r Executing GetSingle Request with JWT Token...");
             var restWatch = new Stopwatch();
             restWatch.Start();
@@ -194,8 +199,15 @@ namespace RedflyPerformanceTest.GrpcClient
             //Console.Write($"\r {index}/{total}|redfly|  ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
         }
 
-        private static async Task GetSingleWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetSingleRequest request)
+        private static async Task GetSingleWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
         {
+            var request = new GetSingleRequest
+            {
+                ProductModelId = 1, // Replace with a valid ProductModelId
+                UseCache = false,
+                ExecutionMode = (int)ReadExecutionMode.Balanced
+            };
+
             //Console.Write($"\r Executing GetSingle Request with JWT Token...");
             var restWatch = new Stopwatch();
             restWatch.Start();
@@ -270,6 +282,8 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
+        private static bool getManyCallSqlFirst = true;
+
         private static async Task TestGetMany(
             ProductModelsService.ProductModelsServiceClient client, 
             string token, 
@@ -286,25 +300,18 @@ namespace RedflyPerformanceTest.GrpcClient
                     { "Authorization", $"Bearer {token}" }
                 };
 
-                var request = new GetManyRequest
+                if (getManyCallSqlFirst)
                 {
-                    PageNo = 1,
-                    PageSize = 10,
-                    UseCache = false,
-                    ExecutionMode = (int)ReadExecutionMode.Balanced
-                };
-
-                await GetManyWithSql(client, testResults, headers, request);
-
-                request = new GetManyRequest
+                    await GetManyWithSql(client, testResults, headers);
+                    await GetManyWithRedfly(client, testResults, headers);
+                    getManyCallSqlFirst = false;
+                }
+                else
                 {
-                    PageNo = 1,
-                    PageSize = 10,
-                    UseCache = true,
-                    ExecutionMode = (int)ReadExecutionMode.Balanced
-                };
-
-                await GetManyWithRedfly(client, testResults, headers, request);
+                    await GetManyWithRedfly(client, testResults, headers);
+                    await GetManyWithSql(client, testResults, headers);
+                    getManyCallSqlFirst = true;
+                }
             }
             catch (Exception ex)
             {
@@ -312,8 +319,16 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task GetManyWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetManyRequest request)
+        private static async Task GetManyWithRedfly(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
         {
+            var request = new GetManyRequest
+            {
+                PageNo = 1,
+                PageSize = 10,
+                UseCache = true,
+                ExecutionMode = (int)ReadExecutionMode.Balanced
+            };
+
             //Console.Write($"\r Executing GetMany Request with JWT Token...");
             var restWatch = new Stopwatch();
             restWatch.Start();
@@ -323,8 +338,16 @@ namespace RedflyPerformanceTest.GrpcClient
             //Console.Write($"\r {index}/{total}|redfly| Total Products: {response.Results.Count}, Message: {response.Message}");
         }
 
-        private static async Task GetManyWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers, GetManyRequest request)
+        private static async Task GetManyWithSql(ProductModelsService.ProductModelsServiceClient client, PerfTestResults testResults, Metadata headers)
         {
+            var request = new GetManyRequest
+            {
+                PageNo = 1,
+                PageSize = 10,
+                UseCache = false,
+                ExecutionMode = (int)ReadExecutionMode.Balanced
+            };
+
             //Console.Write($"\r Executing GetMany Request with JWT Token...");
             var restWatch = new Stopwatch();
             restWatch.Start();
