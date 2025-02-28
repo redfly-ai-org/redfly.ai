@@ -1,0 +1,118 @@
+﻿using Grpc.Net.Client;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Authentication;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace RedflyPerformanceTest.GrpcClient
+{
+    internal static class AuthGrpcClient
+    {
+
+        public static async Task<string?> RunAsync(string grpcUrl)
+        {
+            try
+            {
+                Console.WriteLine("Starting the gRPC client test");
+
+                var httpHandler = new HttpClientHandler
+                {
+                    SslProtocols = SslProtocols.Tls12
+                };
+
+                var loggerFactory = LoggerFactory.Create(builder =>
+                {
+                    builder.AddConsole();
+                    builder.SetMinimumLevel(LogLevel.Warning);
+                });
+
+                using var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
+                {
+                    HttpHandler = httpHandler,
+                    LoggerFactory = loggerFactory,
+                    HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
+                });
+
+                var authServiceClient = new AuthService.AuthServiceClient(channel);
+
+                Console.WriteLine("Enter your user name. You register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
+                var userName = Console.ReadLine();
+
+                Console.WriteLine("Enter your password.");
+                var passwordBuilder = GetPasswordFromConsole();
+
+                var loginRequest = new LoginRequest
+                {
+                    Username = userName,
+                    Password = passwordBuilder.ToString()
+                };
+
+                Console.WriteLine($"Logging in to {grpcUrl}...");
+                var loginResponse = await authServiceClient.LoginAsync(loginRequest);
+
+                var token = loginResponse.Token;
+                Console.WriteLine($"Token is Valid: {!string.IsNullOrEmpty(token)} ({token.Length} characters)");
+
+                await TestSecureGrpcCall(authServiceClient, token);
+
+                Console.WriteLine("Test Completed");
+
+                return token;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+                throw;
+            }
+        }
+
+        private static StringBuilder GetPasswordFromConsole()
+        {
+            var password = new StringBuilder();
+            ConsoleKeyInfo key;
+
+            do
+            {
+                key = Console.ReadKey(intercept: true);
+                if (key.Key != ConsoleKey.Backspace && key.Key != ConsoleKey.Enter)
+                {
+                    password.Append(key.KeyChar);
+                    Console.Write("*");
+                }
+                else if (key.Key == ConsoleKey.Backspace && password.Length > 0)
+                {
+                    password.Remove(password.Length - 1, 1);
+                    Console.Write("\b \b");
+                }
+            } while (key.Key != ConsoleKey.Enter);
+
+            Console.WriteLine();
+            return password;
+        }
+
+        private static async Task TestSecureGrpcCall(AuthService.AuthServiceClient client, string token)
+        {
+            try
+            {
+                var headers = new Grpc.Core.Metadata
+                {
+                    { "Authorization", $"Bearer {token}" }
+                };
+
+                // Now you can make requests to secure endpoints
+                var request = new TestDataRequest();
+
+                Console.WriteLine("Executing Secure Request with JWT Token...");
+                var response = await client.TestDataAsync(request, headers);
+                Console.WriteLine($"Response: {response.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+            }
+        }
+    }
+}

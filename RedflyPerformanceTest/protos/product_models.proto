@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+option csharp_namespace = "RedflyPerformanceTest";
+
+service ProductModelsService {
+  rpc GetRowCount (GetRowCountRequest) returns (GetRowCountResponse);
+  rpc Delete (DeleteRequest) returns (DeleteResponse);
+  rpc GetMany (GetManyRequest) returns (GetManyResponse);
+  rpc Insert (InsertRequest) returns (InsertResponse);
+  rpc GetSingle (GetSingleRequest) returns (GetSingleResponse);
+  rpc Update (UpdateRequest) returns (UpdateResponse);
+}
+
+message GetRowCountRequest {
+  int32 executionMode = 1;
+}
+
+message GetRowCountResponse {
+  int64 result = 1;
+  string message = 2;
+}
+
+message DeleteRequest {
+  int32 productModelId = 1;
+}
+
+message DeleteResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message GetManyRequest {
+  int32 pageNo = 1;
+  int32 pageSize = 2;
+  bool useCache = 3;
+  int32 executionMode = 4;
+}
+
+message GetManyResponse {
+  repeated ApiProductModel results = 1;
+  string message = 2;
+}
+
+message InsertRequest {
+  ApiProductModel inserted = 1;
+}
+
+message InsertResponse {
+  ApiProductModel result = 1;
+  string message = 2;
+}
+
+message GetSingleRequest {
+  int32 productModelId = 1;
+  bool useCache = 2;
+  int32 executionMode = 3;
+}
+
+message GetSingleResponse {
+  ApiProductModel result = 1;
+  string message = 2;
+}
+
+message UpdateRequest {
+  ApiProductModel updated = 1;
+}
+
+message UpdateResponse {
+  int32 result = 1;
+  string message = 2;
+}
+
+message ApiProductModel {
+  int32 productModelId = 1;
+  string name = 2;
+  string catalogDescription = 3;
+  string rowguid = 4;
+  string modifiedDate = 5;
+}

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.13.35825.156
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyPerformanceTest", "RedflyPerformanceTest\RedflyPerformanceTest.csproj", "{C9B53831-D62B-450E-9EE6-6ECEB468EBE6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientDatabaseAPI.Common.Library", "ClientDatabaseAPI.Common.Library\ClientDatabaseAPI.Common.Library.csproj", "{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C9B53831-D62B-450E-9EE6-6ECEB468EBE6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9B53831-D62B-450E-9EE6-6ECEB468EBE6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9B53831-D62B-450E-9EE6-6ECEB468EBE6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9B53831-D62B-450E-9EE6-6ECEB468EBE6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {789FB0D1-BD8D-49B6-9038-8B57BF40981E}
+	EndGlobalSection
+EndGlobal
