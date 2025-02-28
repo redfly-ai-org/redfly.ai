@@ -1,7 +1,7 @@
 # redfly.ai
 redfly.ai lets you synchronize your database with Redis <i>transparently</i> and <i>generate</i> a data access layer that <i>integrates</i> data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out our system.
 
-At this time, this repo aims to provide source code that:
+At this time, the _goal_ of this repo is to provide source code that:
 
 1. Let you easily verify that our system performs better than conventional techniques for data access at scale (This is v1 - this is ready to go & will be published soon).
 2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (TBD).
