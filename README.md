@@ -15,20 +15,6 @@ Even though these are intended as fully functional demos, items 2 and 3 are ambi
 
 These applications do not require complex configuration or modifications to work. They will be simple console applications written in C# and using the latest version of .NET Core. 
 
-**Caveats**
-
-Relational Databases perform well for a small number of rows without a lot of use. The longer and harder you run the test (feel free to pound it), and the more data is in the DB table, the better redfly.ai will perform relative to SQL.
-
-A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
-
-We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Today, when the DB is slow, the entire app is slow, from login to reports. That's what we are good at solving.
-
-**Compatibility**
-
-We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like Postgres) in the future. Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
-
-_We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
-
 **Pre-requisites**
 
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/>
@@ -36,7 +22,21 @@ https://transparent.azurewebsites.net/Identity/Account/Register
 
 Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
 
-The proof is in the pudding: All our cloud services run on our technology.  
+The proof is in our pudding. All our cloud services run on our technology.  
+
+**Compatibility**
+
+We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like Postgres) in the future. Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
+
+_We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
+
+**Caveats**
+
+Relational Databases perform well for a small number of rows without a lot of use. The longer and harder you run the test (feel free to pound it), and the more data is in the DB table, the better redfly.ai will perform relative to SQL.
+
+A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
+
+We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Today, when the DB is slow, the entire app, from login to reports, is slow. That's what we are good at solving.
 
 **Documentation**
 
