@@ -26,7 +26,7 @@ https://transparent.azurewebsites.net/Identity/Account/Register
 
 Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
 
-All our cloud services run on our technology.  
+The proof is in the pudding: All our cloud services run on our technology.  
 
 **Documentation**
 
