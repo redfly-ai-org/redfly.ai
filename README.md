@@ -36,7 +36,9 @@ Relational Databases perform well for a small number of rows without a lot of us
 
 A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
 
-We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Today, when the DB is slow, the entire app, from login to reports, is slow. That's what we are good at solving.
+**Solution**
+
+We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Most secure applications make many database calls to render anything within an application. Think about it: why should everything in your app run slowly because a few users are running some expensive queries? We have taken this for granted too long. Why should security implementation slow down an app? That is what we are good at solving.
 
 **Documentation**
 
