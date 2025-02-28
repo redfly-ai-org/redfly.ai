@@ -49,7 +49,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 Console.WriteLine("");
 
-                int pageSize = 10;
+                int pageSize = 250;
                 int runCount = 0;
 
                 var noOfPagedCalls = (int)Math.Ceiling((double)actualDbRowCount / pageSize);
