@@ -52,24 +52,44 @@ namespace RedflyPerformanceTest
                     Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min():F2} (MIN) < {testResults.RedflyOverGrpcTimings.Average():F2} (AVG) < {testResults.RedflyOverGrpcTimings.Max():F2} (MAX), Errors: {testResults.RedflyOverGrpcErrors.Count}");
 
                     Console.WriteLine("");
-                    Console.WriteLine($"Other Errors: {testResults.OtherErrors.Count}\r\n");
-                    Console.WriteLine("");
+
+                    if (testResults.OtherErrors.Count > 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Other Errors: {testResults.OtherErrors.Count}\r\n");
+                        Console.ResetColor();
+                        Console.WriteLine("");
+                    }
 
                     if (testResults.SqlOverGrpcTimings.Min() > testResults.RedflyOverGrpcTimings.Min())
                     {
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine($"At the minimum, redfly.ai is {testResults.SqlOverGrpcTimings.Min() / testResults.RedflyOverGrpcTimings.Min():F2}x faster");
+                        Console.ResetColor();
                     }
 
                     if (testResults.SqlOverGrpcTimings.Average() > testResults.RedflyOverGrpcTimings.Average())
                     {
+                        Console.ForegroundColor = ConsoleColor.Blue;
                         Console.WriteLine($"On average, redfly.ai is {testResults.SqlOverGrpcTimings.Average() / testResults.RedflyOverGrpcTimings.Average():F2}x faster");
+                        Console.ResetColor();
                     }
 
                     if (testResults.SqlOverGrpcTimings.Max() > testResults.RedflyOverGrpcTimings.Max())
                     {
+                        Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine($"In the worst case, redfly.ai is {testResults.SqlOverGrpcTimings.Max() / testResults.RedflyOverGrpcTimings.Max():F2}x faster");
+                        Console.ResetColor();
                     }
-                    
+
+                    if (testResults.SqlOverGrpcErrors.Count > 0 &&
+                        testResults.RedflyOverGrpcErrors.Count == 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"Note the {testResults.SqlOverGrpcErrors.Count} errors which only happened for SQL over Grpc calls.");
+                        Console.ResetColor();
+                    }
+
                     Console.WriteLine("--------------------------------------------------------------");
                 }
                 else
