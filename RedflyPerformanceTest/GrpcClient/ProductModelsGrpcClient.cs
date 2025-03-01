@@ -418,7 +418,7 @@ namespace RedflyPerformanceTest.GrpcClient
             finally
             {
                 restWatch.Stop();
-                TestResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+                TestResults.RedflyOverGrpcTimingsInMs.Add(restWatch.Elapsed.TotalMilliseconds);
                 //Console.Write($"\r {index}/{total}|redfly|  ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
             }
         }
@@ -439,16 +439,32 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 restWatch.Start();
                 var response = await client.GetSingleAsync(request, headers);
+                restWatch.Stop();
+                TestResults.SqlOverGrpcTimingsInMs.Add(restWatch.Elapsed.TotalMilliseconds);
             }
             catch (Exception ex)
             {
                 TestResults.SqlOverGrpcErrors.Add(ex);
+                HandleSqlOverGrpcTimingsOnError(restWatch);
             }
             finally
-            {
-                restWatch.Stop();
-                TestResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+            {   
                 //Console.Write($"\r {index}/{total}|SQL| ProductModel: {response.Result?.Name ?? ""}, Message: {response.Message}");
+            }
+        }
+
+        private static void HandleSqlOverGrpcTimingsOnError(Stopwatch restWatch)
+        {
+            restWatch.Stop();
+            if ((TestResults.SqlOverGrpcTimingsInMs.Max() * 2) > restWatch.Elapsed.TotalMilliseconds)
+            {
+                //On failure give it a penalty.
+                //When the call is a failure, the time is actually infinite (I never got the result)
+                TestResults.SqlOverGrpcTimingsInMs.Add(TestResults.SqlOverGrpcTimingsInMs.Max() * 10);
+            }
+            else
+            {
+                TestResults.SqlOverGrpcTimingsInMs.Add(restWatch.Elapsed.TotalMilliseconds);
             }
         }
 
@@ -585,7 +601,7 @@ namespace RedflyPerformanceTest.GrpcClient
             finally
             {
                 restWatch.Stop();
-                TestResults.RedflyOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+                TestResults.RedflyOverGrpcTimingsInMs.Add(restWatch.Elapsed.TotalMilliseconds);
                 //Console.Write($"\r {index}/{total}|redfly| Total Products: {response.Results.Count}, Message: {response.Message}");
             }
 
@@ -610,15 +626,16 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 restWatch.Start();
                 response = await client.GetManyAsync(request, headers);
+                restWatch.Stop();
+                TestResults.SqlOverGrpcTimingsInMs.Add(restWatch.Elapsed.TotalMilliseconds);
             }
             catch (Exception ex)
             {
                 TestResults.SqlOverGrpcErrors.Add(ex);
+                HandleSqlOverGrpcTimingsOnError(restWatch);
             }
             finally
-            {
-                restWatch.Stop();
-                TestResults.SqlOverGrpcTimings.Add(restWatch.Elapsed.TotalMilliseconds);
+            {                
                 //Console.Write($"\r {index}/{total}|SQL| Total Products: {response.Results.Count}, Message: {response.Message}");
             }
 

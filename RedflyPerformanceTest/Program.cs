@@ -49,9 +49,9 @@ namespace RedflyPerformanceTest
                     Console.WriteLine($"RUNS: {totalRuns}\r\n");
 
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimings.Min():F2} (MIN) < {testResults.SqlOverGrpcTimings.Average():F2} (AVG) < {testResults.SqlOverGrpcTimings.Max():F2} (MAX), Errors: {testResults.SqlOverGrpcErrors.Count}");
+                    Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimingsInMs.Min():F2} (MIN) < {testResults.SqlOverGrpcTimingsInMs.Average():F2} (AVG) < {testResults.SqlOverGrpcTimingsInMs.Max():F2} (MAX), Errors: {testResults.SqlOverGrpcErrors.Count}");
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min():F2} (MIN) < {testResults.RedflyOverGrpcTimings.Average():F2} (AVG) < {testResults.RedflyOverGrpcTimings.Max():F2} (MAX), Errors: {testResults.RedflyOverGrpcErrors.Count}");
+                    Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimingsInMs.Min():F2} (MIN) < {testResults.RedflyOverGrpcTimingsInMs.Average():F2} (AVG) < {testResults.RedflyOverGrpcTimingsInMs.Max():F2} (MAX), Errors: {testResults.RedflyOverGrpcErrors.Count}");
                     Console.ResetColor();
 
                     Console.WriteLine("");
@@ -64,24 +64,24 @@ namespace RedflyPerformanceTest
                         Console.WriteLine("");
                     }
 
-                    if (testResults.SqlOverGrpcTimings.Min() > testResults.RedflyOverGrpcTimings.Min())
+                    if (testResults.SqlOverGrpcTimingsInMs.Min() > testResults.RedflyOverGrpcTimingsInMs.Min())
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine($"At the minimum, redfly.ai is {testResults.SqlOverGrpcTimings.Min() / testResults.RedflyOverGrpcTimings.Min():F2}x faster");
+                        Console.WriteLine($"At the minimum, redfly.ai is {testResults.SqlOverGrpcTimingsInMs.Min() / testResults.RedflyOverGrpcTimingsInMs.Min():F2}x faster");
                         Console.ResetColor();
                     }
 
-                    if (testResults.SqlOverGrpcTimings.Average() > testResults.RedflyOverGrpcTimings.Average())
+                    if (testResults.SqlOverGrpcTimingsInMs.Average() > testResults.RedflyOverGrpcTimingsInMs.Average())
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine($"On average, redfly.ai is {testResults.SqlOverGrpcTimings.Average() / testResults.RedflyOverGrpcTimings.Average():F2}x faster");
+                        Console.WriteLine($"On average, redfly.ai is {testResults.SqlOverGrpcTimingsInMs.Average() / testResults.RedflyOverGrpcTimingsInMs.Average():F2}x faster");
                         Console.ResetColor();
                     }
 
-                    if (testResults.SqlOverGrpcTimings.Max() > testResults.RedflyOverGrpcTimings.Max())
+                    if (testResults.SqlOverGrpcTimingsInMs.Max() > testResults.RedflyOverGrpcTimingsInMs.Max())
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine($"In the worst case, redfly.ai is {testResults.SqlOverGrpcTimings.Max() / testResults.RedflyOverGrpcTimings.Max():F2}x faster");
+                        Console.WriteLine($"In the worst case, redfly.ai is {testResults.SqlOverGrpcTimingsInMs.Max() / testResults.RedflyOverGrpcTimingsInMs.Max():F2}x faster");
                         Console.ResetColor();
                     }
 

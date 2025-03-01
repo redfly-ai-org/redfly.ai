@@ -10,9 +10,9 @@ namespace RedflyPerformanceTest.Entities
     internal class PerfTestResults
     {
 
-        internal ConcurrentBag<double> RedflyOverGrpcTimings { get; set; } = new ConcurrentBag<double>();
+        internal ConcurrentBag<double> RedflyOverGrpcTimingsInMs { get; set; } = new ConcurrentBag<double>();
 
-        internal ConcurrentBag<double> SqlOverGrpcTimings { get; set; } = new ConcurrentBag<double>();
+        internal ConcurrentBag<double> SqlOverGrpcTimingsInMs { get; set; } = new ConcurrentBag<double>();
 
         internal ConcurrentBag<Exception> RedflyOverGrpcErrors { get; set; } = new ConcurrentBag<Exception>();
 
@@ -27,8 +27,8 @@ namespace RedflyPerformanceTest.Entities
 
         internal bool Populated()
         {
-            return (RedflyOverGrpcTimings.Count > 0 || 
-                    SqlOverGrpcTimings.Count > 0);
+            return (RedflyOverGrpcTimingsInMs.Count > 0 || 
+                    SqlOverGrpcTimingsInMs.Count > 0);
         }
 
     }
