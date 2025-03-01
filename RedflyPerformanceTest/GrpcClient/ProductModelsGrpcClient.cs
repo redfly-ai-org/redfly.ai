@@ -349,8 +349,15 @@ namespace RedflyPerformanceTest.GrpcClient
                     getSingleCallSqlFirst = true;
                 }
 
-                DisplayProgress(index, total);
-                await Task.WhenAll(tasks);
+                int completedTasks = 0;
+
+                while (tasks.Count > 0)
+                {
+                    var completedTask = await Task.WhenAny(tasks);
+                    tasks.Remove(completedTask);
+                    completedTasks++;
+                    DisplayProgress(index + completedTasks, total);
+                }
             }
             catch (Exception ex)
             {
@@ -512,9 +519,18 @@ namespace RedflyPerformanceTest.GrpcClient
                     getManyCallSqlFirst = true;
                 }
 
-                DisplayProgress(index, total);
-                var responses = await Task.WhenAll(getManyTasks);
-                
+                var responses = new List<GetManyResponse?>();
+                int completedTasks = 0;
+
+                while (getManyTasks.Count > 0)
+                {
+                    var completedTask = await Task.WhenAny(getManyTasks);
+                    getManyTasks.Remove(completedTask);
+                    responses.Add(await completedTask);
+                    completedTasks++;
+                    DisplayProgress(index + completedTasks, total);
+                }
+
                 return responses.Where(x => x != null).FirstOrDefault();
             }
             catch (Exception ex)
