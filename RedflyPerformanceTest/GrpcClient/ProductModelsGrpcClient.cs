@@ -62,6 +62,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 }
 
                 var getManyTasks = new List<Task<GetManyResponse?>>();
+                int currentRunCount = runCount;
 
                 Console.WriteLine($"{totalRuns} runs remaining. Running {noOfPagedCalls} GetMany tests asynchronously.");
 
@@ -69,16 +70,31 @@ namespace RedflyPerformanceTest.GrpcClient
                 {
                     getManyTasks.Add(TestGetMany(productModelsClient, token, runCount, totalRuns, pageNo, pageSize));
 
-                    runCount++;
+                    currentRunCount++;
                     
-                    if (runCount >= totalRuns)
+                    if (currentRunCount >= totalRuns)
                     {
                         //Satisfied!
                         break;
                     }
                 }
 
-                var responses = await Task.WhenAll(getManyTasks);
+                //var responses = await Task.WhenAll(getManyTasks);
+
+                var responses = new List<GetManyResponse?>();
+                int completedTasks = 0;
+
+                while (getManyTasks.Count > 0)
+                {
+                    var completedTask = await Task.WhenAny(getManyTasks);
+                    getManyTasks.Remove(completedTask);
+                    responses.Add(await completedTask);
+                    completedTasks++;
+                    DisplayProgress(runCount + completedTasks, totalRuns);
+                }
+
+                runCount += completedTasks;
+
                 var validResponses = new List<GetManyResponse?>();
 
                 foreach (var response in responses)
@@ -98,6 +114,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 if (remainingRunCount > 0)
                 {
                     DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running ~{validResponses.Count* pageSize} GetSingle tests asynchronously.");
+                    currentRunCount = runCount;
 
                     foreach (var validResponse in validResponses)
                     {
@@ -105,9 +122,9 @@ namespace RedflyPerformanceTest.GrpcClient
                         {
                             tasks.Add(TestGetSingle(productModelsClient, token, runCount, totalRuns, result.ProductModelId));
 
-                            runCount++;
+                            currentRunCount++;
 
-                            if (runCount >= totalRuns)
+                            if (currentRunCount >= totalRuns)
                             {
                                 //Satisfied!
                                 break;
@@ -115,7 +132,17 @@ namespace RedflyPerformanceTest.GrpcClient
                         }
                     }
 
-                    await Task.WhenAll(tasks);
+                    completedTasks = 0;
+
+                    while (tasks.Count > 0)
+                    {
+                        var completedTask = await Task.WhenAny(tasks);
+                        tasks.Remove(completedTask);
+                        completedTasks++;
+                        DisplayProgress(runCount + completedTasks, totalRuns);
+                    }
+
+                    runCount += completedTasks;
                 }
 
                 tasks.Clear();
@@ -125,7 +152,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 {
                     DisplayMessageDuringProgress($"{remainingRunCount} runs remaining. Running the Insert > Update > GetSingle > Delete tests asynchronously");
 
-                    var currentRunCount = runCount;
+                    currentRunCount = runCount;
                     var insertTasks = new List<Task<ApiProductModel?>>();
 
                     var cts = new CancellationTokenSource();
@@ -160,16 +187,28 @@ namespace RedflyPerformanceTest.GrpcClient
 
                     var getSingleTasks = new List<Task>();
 
+                    currentRunCount = runCount;
                     DisplayMessageDuringProgress($"Reading rows asynchronously...");
 
                     foreach (var insertedRow in insertedRows)
                     {
                         getSingleTasks.Add(TestGetSingle(productModelsClient, token, runCount, totalRuns, insertedRow!.ProductModelId));
 
-                        runCount++;
+                        currentRunCount++;
                     }
 
                     await Task.WhenAll(getSingleTasks);
+                    completedTasks = 0;
+
+                    while (tasks.Count > 0)
+                    {
+                        var completedTask = await Task.WhenAny(getSingleTasks);
+                        getSingleTasks.Remove(completedTask);
+                        completedTasks++;
+                        DisplayProgress(runCount + completedTasks, totalRuns);
+                    }
+
+                    runCount += completedTasks;
 
                     cts = new CancellationTokenSource();
                     animationTask = ShowProgressAnimation(cts.Token, "Deleting rows asynchronously");
@@ -347,7 +386,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     getSingleCallSqlFirst = true;
                 }
 
-                DisplayProgress(index, total);
+                //DisplayProgress(index, total);
             }
             catch (Exception ex)
             {
@@ -509,7 +548,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     getManyCallSqlFirst = true;
                 }
 
-                DisplayProgress(index, total);
+                //DisplayProgress(index, total);
 
                 return responses.Where(x => x != null).FirstOrDefault();
             }
