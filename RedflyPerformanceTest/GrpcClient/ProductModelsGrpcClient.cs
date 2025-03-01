@@ -306,7 +306,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.Write("\r[");
                 Console.Write(new string('#', progress));
                 Console.Write(new string(' ', Math.Max(0, progressWidth - progress))); // Ensure non-negative value
-                Console.Write($"] {index}/{total} ({percentage:P0})");
+                Console.Write($"] {index}/{total} ({percentage:P0}), Error Count: {TestResults.ErrorCount()}");
                 Console.Out.Flush(); // Ensure the output is flushed immediately
             }
         }

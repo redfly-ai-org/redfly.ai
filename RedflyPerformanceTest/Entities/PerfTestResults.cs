@@ -20,6 +20,11 @@ namespace RedflyPerformanceTest.Entities
 
         internal ConcurrentBag<Exception> OtherErrors { get; set; } = new ConcurrentBag<Exception>();
 
+        internal int ErrorCount()
+        {
+            return RedflyOverGrpcErrors.Count + SqlOverGrpcErrors.Count + OtherErrors.Count;
+        }
+
         internal bool Populated()
         {
             return (RedflyOverGrpcTimings.Count > 0 || 
