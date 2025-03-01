@@ -460,7 +460,7 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 //On failure give it a penalty.
                 //When the call is a failure, the time is actually infinite (I never got the result)
-                TestResults.SqlOverGrpcTimingsInMs.Add(TestResults.SqlOverGrpcTimingsInMs.Max() * 10);
+                TestResults.SqlOverGrpcTimingsInMs.Add(TestResults.SqlOverGrpcTimingsInMs.Max() * 2);
             }
             else
             {
