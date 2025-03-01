@@ -51,14 +51,14 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 Console.WriteLine("");
 
-                int pageSize = 50;
+                int pageSize = 25;
                 int runCount = 0;
 
                 var noOfPagedCalls = (int)Math.Ceiling((double)actualDbRowCount / pageSize);
 
                 if (noOfPagedCalls >= totalRuns)
                 {
-                    noOfPagedCalls = noOfPagedCalls/2;
+                    noOfPagedCalls = totalRuns / 2;
                 }
 
                 var getManyTasks = new List<Task<GetManyResponse?>>();
@@ -334,30 +334,20 @@ namespace RedflyPerformanceTest.GrpcClient
                     { "Authorization", $"Bearer {token}" }
                 };
 
-                var tasks = new List<Task>();
-
                 if (getSingleCallSqlFirst)
                 {
-                    tasks.Add(GetSingleWithSqlAsync(client, headers, productModelId));
-                    tasks.Add(GetSingleWithRedflyAsync(client, headers, productModelId));
+                    await GetSingleWithSqlAsync(client, headers, productModelId);
+                    await GetSingleWithRedflyAsync(client, headers, productModelId);
                     getSingleCallSqlFirst = false;
                 }
                 else
                 {
-                    tasks.Add(GetSingleWithRedflyAsync(client, headers, productModelId));
-                    tasks.Add(GetSingleWithSqlAsync(client, headers, productModelId));
+                    await GetSingleWithRedflyAsync(client, headers, productModelId);
+                    await GetSingleWithSqlAsync(client, headers, productModelId);
                     getSingleCallSqlFirst = true;
                 }
 
-                int completedTasks = 0;
-
-                while (tasks.Count > 0)
-                {
-                    var completedTask = await Task.WhenAny(tasks);
-                    tasks.Remove(completedTask);
-                    completedTasks++;
-                    DisplayProgress(index + completedTasks, total);
-                }
+                DisplayProgress(index, total);
             }
             catch (Exception ex)
             {
@@ -504,32 +494,22 @@ namespace RedflyPerformanceTest.GrpcClient
                     { "Authorization", $"Bearer {token}" }
                 };
 
-                var getManyTasks = new List<Task<GetManyResponse?>>();
+                var responses = new List<GetManyResponse?>();
 
                 if (getManyCallSqlFirst)
                 {
-                    getManyTasks.Add(GetManyWithSqlAsync(client, headers, pageNo, pageSize));
-                    getManyTasks.Add(GetManyWithRedflyAsync(client, headers, pageNo, pageSize));
+                    responses.Add(await GetManyWithSqlAsync(client, headers, pageNo, pageSize));
+                    responses.Add(await GetManyWithRedflyAsync(client, headers, pageNo, pageSize));
                     getManyCallSqlFirst = false;
                 }
                 else
                 {
-                    getManyTasks.Add(GetManyWithRedflyAsync(client, headers, pageNo, pageSize));
-                    getManyTasks.Add(GetManyWithSqlAsync(client, headers, pageNo, pageSize));
+                    responses.Add(await GetManyWithRedflyAsync(client, headers, pageNo, pageSize));
+                    responses.Add(await GetManyWithSqlAsync(client, headers, pageNo, pageSize));
                     getManyCallSqlFirst = true;
                 }
 
-                var responses = new List<GetManyResponse?>();
-                int completedTasks = 0;
-
-                while (getManyTasks.Count > 0)
-                {
-                    var completedTask = await Task.WhenAny(getManyTasks);
-                    getManyTasks.Remove(completedTask);
-                    responses.Add(await completedTask);
-                    completedTasks++;
-                    DisplayProgress(index + completedTasks, total);
-                }
+                DisplayProgress(index, total);
 
                 return responses.Where(x => x != null).FirstOrDefault();
             }
