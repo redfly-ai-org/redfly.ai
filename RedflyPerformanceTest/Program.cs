@@ -90,7 +90,7 @@ namespace RedflyPerformanceTest
                     {
                         Console.WriteLine("");
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"Note the {testResults.SqlOverGrpcErrors.Count} errors which only happened for SQL over Grpc calls.");
+                        Console.WriteLine($"Note the {testResults.SqlOverGrpcErrors.Count} errors which ONLY happened for SQL over Grpc calls.");
                         Console.ResetColor();
                     }
 
