@@ -136,7 +136,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 // Now you can make requests to secure endpoints
                 var request = new TestDataRequest();
-                Console.WriteLine($"Executing Secure Request with JWT Token (attempt {retryCount})...");
+                Console.WriteLine($"Executing Secure Request with JWT Token (attempt {retryCount + 1})...");
 
                 var cts = new CancellationTokenSource();
                 var progressTask = ShowProgressAnimation(cts.Token);
@@ -156,13 +156,13 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 if (retryCount < 3)
                 {
-                    Console.WriteLine($"Retrying {retryCount}...");
+                    Console.WriteLine($"Retrying {retryCount + 1}...");
                     await Task.Delay(1000);
                     await TestSecureGrpcCall(client, token, retryCount + 1);
                 }
                 else
                 {
-                    Console.WriteLine($"Failed to make secure request after {retryCount} attempts.");
+                    Console.WriteLine($"Failed to make secure request after {retryCount + 1} attempts.");
                     Console.WriteLine(ex.ToString());
                 }
             }

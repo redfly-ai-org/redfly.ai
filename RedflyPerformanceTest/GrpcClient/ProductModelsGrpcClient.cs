@@ -335,8 +335,8 @@ namespace RedflyPerformanceTest.GrpcClient
                     getSingleCallSqlFirst = true;
                 }
 
-                await Task.WhenAll(tasks);
                 DisplayProgress(index, total);
+                await Task.WhenAll(tasks);
             }
             catch (Exception ex)
             {
@@ -498,9 +498,9 @@ namespace RedflyPerformanceTest.GrpcClient
                     getManyCallSqlFirst = true;
                 }
 
-                var responses = await Task.WhenAll(getManyTasks);
                 DisplayProgress(index, total);
-
+                var responses = await Task.WhenAll(getManyTasks);
+                
                 return responses.Where(x => x != null).FirstOrDefault();
             }
             catch (Exception ex)
