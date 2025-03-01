@@ -56,6 +56,11 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 var noOfPagedCalls = (int)Math.Ceiling((double)actualDbRowCount / pageSize);
 
+                if (noOfPagedCalls >= totalRuns)
+                {
+                    noOfPagedCalls = noOfPagedCalls/2;
+                }
+
                 var getManyTasks = new List<Task<GetManyResponse?>>();
 
                 Console.WriteLine($"{totalRuns} runs remaining. Running {noOfPagedCalls} GetMany tests asynchronously.");
@@ -300,7 +305,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 Console.Write("\r[");
                 Console.Write(new string('#', progress));
-                Console.Write(new string(' ', progressWidth - progress));
+                Console.Write(new string(' ', Math.Max(0, progressWidth - progress))); // Ensure non-negative value
                 Console.Write($"] {index}/{total} ({percentage:P0})");
                 Console.Out.Flush(); // Ensure the output is flushed immediately
             }
