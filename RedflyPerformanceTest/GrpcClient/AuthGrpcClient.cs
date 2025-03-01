@@ -122,7 +122,7 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task TestSecureGrpcCall(AuthService.AuthServiceClient client, string token)
+        private static async Task TestSecureGrpcCall(AuthService.AuthServiceClient client, string token, int retryCount = 0)
         {
             try
             {
@@ -131,16 +131,40 @@ namespace RedflyPerformanceTest.GrpcClient
                     { "Authorization", $"Bearer {token}" }
                 };
 
+                //Othwerwise, it sometimes errors out at load.
+                await Task.Delay(1000);
+
                 // Now you can make requests to secure endpoints
                 var request = new TestDataRequest();
+                Console.WriteLine($"Executing Secure Request with JWT Token (attempt {retryCount})...");
 
-                Console.WriteLine("Executing Secure Request with JWT Token...");
-                var response = await client.TestDataAsync(request, headers);
-                Console.WriteLine($"Response: {response.Message}");
+                var cts = new CancellationTokenSource();
+                var progressTask = ShowProgressAnimation(cts.Token);
+
+                try
+                {
+                    var response = await client.TestDataAsync(request, headers);
+                    Console.WriteLine($"Response: {response.Message}");
+                }
+                finally
+                {
+                    cts.Cancel();
+                    await progressTask;
+                }
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                if (retryCount < 3)
+                {
+                    Console.WriteLine($"Retrying {retryCount}...");
+                    await Task.Delay(1000);
+                    await TestSecureGrpcCall(client, token, retryCount + 1);
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to make secure request after {retryCount} attempts.");
+                    Console.WriteLine(ex.ToString());
+                }
             }
         }
     }
