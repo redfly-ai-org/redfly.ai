@@ -40,17 +40,19 @@ namespace RedflyPerformanceTest
                 //Increase to run count to see better performance with redfly over SQL.
                 int totalRuns = 10000;
 
-                var testResults = new PerfTestResults();
-                await ProductModelsGrpcClient.RunAsync(grpcUrl, grpcAuthToken, testResults, totalRuns);
+                var testResults = ProductModelsGrpcClient.TestResults;
+                await ProductModelsGrpcClient.RunAsync(grpcUrl, grpcAuthToken, totalRuns);
 
                 if (testResults.Populated())
                 {
                     Console.WriteLine("==============================================================");
                     Console.WriteLine($"RUNS: {totalRuns}\r\n");
                     
-                    Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimings.Min():F2} (MIN) < {testResults.SqlOverGrpcTimings.Average():F2} (AVG) < {testResults.SqlOverGrpcTimings.Max():F2} (MAX)", ConsoleColor.Magenta);
-                    Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min():F2} (MIN) < {testResults.RedflyOverGrpcTimings.Average():F2} (AVG) < {testResults.RedflyOverGrpcTimings.Max():F2} (MAX)", ConsoleColor.Cyan);
+                    Console.WriteLine($"   SQL over Grpc (ms): {testResults.SqlOverGrpcTimings.Min():F2} (MIN) < {testResults.SqlOverGrpcTimings.Average():F2} (AVG) < {testResults.SqlOverGrpcTimings.Max():F2} (MAX), Errors: {testResults.SqlOverGrpcErrors.Count}");
+                    Console.WriteLine($"redfly over Grpc (ms): {testResults.RedflyOverGrpcTimings.Min():F2} (MIN) < {testResults.RedflyOverGrpcTimings.Average():F2} (AVG) < {testResults.RedflyOverGrpcTimings.Max():F2} (MAX), Errors: {testResults.RedflyOverGrpcErrors.Count}");
 
+                    Console.WriteLine("");
+                    Console.WriteLine($"Other Errors: {testResults.OtherErrors.Count}\r\n");
                     Console.WriteLine("");
 
                     if (testResults.SqlOverGrpcTimings.Min() > testResults.RedflyOverGrpcTimings.Min())
