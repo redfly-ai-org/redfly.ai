@@ -456,15 +456,18 @@ namespace RedflyPerformanceTest.GrpcClient
         private static void HandleSqlOverGrpcTimingsOnError(Stopwatch restWatch)
         {
             restWatch.Stop();
-            if ((TestResults.SqlOverGrpcTimingsInMs.Max() * 2) > restWatch.Elapsed.TotalMilliseconds)
+            if (TestResults.SqlOverGrpcTimingsInMs.Count > 0 && 
+                TestResults.SqlOverGrpcTimingsInMs.Max() > restWatch.Elapsed.TotalMilliseconds)
             {
                 //On failure give it a penalty.
                 //When the call is a failure, the time is actually infinite (I never got the result)
-                TestResults.SqlOverGrpcTimingsInMs.Add(TestResults.SqlOverGrpcTimingsInMs.Max() * 2);
+                //This cannot be a multiple because it would keep increasing the time duration
+                //as the failures mount up.
+                TestResults.SqlOverGrpcTimingsInMs.Add(TestResults.SqlOverGrpcTimingsInMs.Max());
             }
             else
             {
-                TestResults.SqlOverGrpcTimingsInMs.Add(restWatch.Elapsed.TotalMilliseconds);
+                TestResults.SqlOverGrpcTimingsInMs.Add(restWatch.Elapsed.TotalMilliseconds * 2);
             }
         }
 
