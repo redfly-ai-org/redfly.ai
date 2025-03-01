@@ -59,16 +59,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.WriteLine("Please be patient - these are small servers.");
                 Console.WriteLine("Contact us at developer@redfly.ai if you need to.\r\n");
 
-                var cts = new CancellationTokenSource();
-                var progressTask = ShowProgressAnimation(cts.Token);
-
-                var loginResponse = await authServiceClient.LoginAsync(loginRequest);
-
-                cts.Cancel();
-                await progressTask;
-
-                var token = loginResponse.Token;
-                Console.WriteLine($"Token is Valid: {!string.IsNullOrEmpty(token)} ({token.Length} characters)");
+                string token = await LoginAsync(authServiceClient, loginRequest);
 
                 await TestSecureGrpcCall(authServiceClient, token);
 
@@ -81,6 +72,39 @@ namespace RedflyPerformanceTest.GrpcClient
                 Console.WriteLine($"If you got an error, please try again later.");
                 Console.WriteLine(ex.ToString());
                 throw;
+            }
+        }
+
+        private static async Task<string> LoginAsync(AuthService.AuthServiceClient authServiceClient, LoginRequest loginRequest, int retryCount = 0)
+        {
+            try
+            {
+                var cts = new CancellationTokenSource();
+                var progressTask = ShowProgressAnimation(cts.Token);
+
+                var loginResponse = await authServiceClient.LoginAsync(loginRequest);
+
+                cts.Cancel();
+                await progressTask;
+
+                var token = loginResponse.Token;
+                Console.WriteLine($"Token is Valid: {!string.IsNullOrEmpty(token)} ({token.Length} characters)");
+                return token;
+            }
+            catch (Exception ex)
+            {
+                if (retryCount < 3)
+                {
+                    Console.WriteLine($"Retrying login {retryCount + 1}...");
+                    await Task.Delay(1000);
+                    return await LoginAsync(authServiceClient, loginRequest, retryCount + 1);
+                }
+                else
+                {
+                    Console.WriteLine($"Failed to login after {retryCount + 1} attempts.");
+                    Console.WriteLine(ex.ToString());
+                    throw;
+                }
             }
         }
 
@@ -156,7 +180,7 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 if (retryCount < 3)
                 {
-                    Console.WriteLine($"Retrying {retryCount + 1}...");
+                    Console.WriteLine($"Retrying Secure Call {retryCount + 1}...");
                     await Task.Delay(1000);
                     await TestSecureGrpcCall(client, token, retryCount + 1);
                 }

@@ -219,7 +219,7 @@ namespace RedflyPerformanceTest.GrpcClient
             Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
         }
 
-        private static async Task<GetRowCountResponse?> TestGetRowCount(ProductModelsService.ProductModelsServiceClient client, string token)
+        private static async Task<GetRowCountResponse?> TestGetRowCount(ProductModelsService.ProductModelsServiceClient client, string token, int retryCount = 0)
         {
             try
             {
@@ -239,7 +239,16 @@ namespace RedflyPerformanceTest.GrpcClient
             catch (Exception ex)
             {
                 TestResults.OtherErrors.Add(ex);
-                return null;
+
+                if (retryCount < 3)
+                {
+                    Console.WriteLine($"    Retry {retryCount + 1}...");
+                    return await TestGetRowCount(client, token, retryCount + 1);
+                }
+                else
+                {
+                    return null;
+                }
             }
         }
 
