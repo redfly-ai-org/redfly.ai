@@ -38,7 +38,7 @@ namespace RedflyPerformanceTest
                 }
 
                 //Increase to run count to see better performance with redfly over SQL.
-                int totalRuns = 10000;
+                int totalRuns = 40000;
 
                 var testResults = ProductModelsGrpcClient.TestResults;
                 await ProductModelsGrpcClient.RunAsync(grpcUrl, grpcAuthToken, totalRuns);
