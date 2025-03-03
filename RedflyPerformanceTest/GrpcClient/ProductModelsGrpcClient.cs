@@ -93,7 +93,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     DisplayProgress(runCount + completedTasks, totalRuns);
                 }
 
-                runCount += completedTasks;
+                runCount += currentRunCount;
 
                 var validResponses = new List<GetManyResponse?>();
 
@@ -142,7 +142,7 @@ namespace RedflyPerformanceTest.GrpcClient
                         DisplayProgress(runCount + completedTasks, totalRuns);
                     }
 
-                    runCount += completedTasks;
+                    runCount += currentRunCount;
                 }
 
                 tasks.Clear();
@@ -208,7 +208,7 @@ namespace RedflyPerformanceTest.GrpcClient
                         DisplayProgress(runCount + completedTasks, totalRuns);
                     }
 
-                    runCount += completedTasks;
+                    runCount += insertedRows.Count();
 
                     cts = new CancellationTokenSource();
                     animationTask = ShowProgressAnimation(cts.Token, "Deleting rows asynchronously");
