@@ -5,9 +5,9 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 
 Provide source code that:
 
-1. Let you easily verify that our system performs better than conventional techniques for data access at scale.
-2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (WIP).
-3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD).
+1. Let you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
+2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (WIP 🏃🏽‍♀️‍➡️).
+3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
