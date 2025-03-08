@@ -37,7 +37,7 @@ internal class Program
                 return;
             }
 
-            await StartChangeManagementService(grpcUrl);
+            await StartChangeManagementService(grpcUrl, grpcAuthToken);
         }
         catch (Exception ex)
         {
@@ -49,14 +49,19 @@ internal class Program
         Console.ReadKey();
     }
 
-    private static async Task StartChangeManagementService(string grpcUrl)
+    private static async Task StartChangeManagementService(string grpcUrl, string grpcAuthToken)
     {
         var clientId = Guid.NewGuid().ToString(); // Unique client identifier
         var channel = GrpcChannel.ForAddress(grpcUrl);
         var client = new GrpcChangeManagement.GrpcChangeManagementClient(channel);
 
+        var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
+                };
+
         // Start Change Management
-        var startResponse = await client.StartChangeManagementAsync(new StartChangeManagementRequest { ClientId = clientId });
+        var startResponse = await client.StartChangeManagementAsync(new StartChangeManagementRequest { ClientId = clientId }, headers);
 
         if (startResponse.Success)
         {
@@ -69,7 +74,7 @@ internal class Program
         }
 
         // Bi-directional streaming for communication with the server
-        using var call = client.CommunicateWithClient();
+        using var call = client.CommunicateWithClient(headers);
 
         var responseTask = Task.Run(async () =>
         {
