@@ -20,7 +20,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
         internal static PerfTestResults TestResults { get; private set; } = new PerfTestResults();
 
-        public static async Task RunAsync(string grpcUrl, string token, int totalRuns)
+        public static async Task RunAsync(string grpcUrl, string grpcAuthToken, int totalRuns)
         {
             try
             {
@@ -46,7 +46,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 Console.WriteLine($"Starting the Test from {grpcUrl}...");
 
-                var rowCountResponse = await TestGetRowCount(productModelsClient, token);
+                var rowCountResponse = await TestGetRowCount(productModelsClient, grpcAuthToken);
                 var actualDbRowCount = rowCountResponse?.Result ?? 0;
 
                 Console.WriteLine("");
@@ -68,7 +68,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                 for (int pageNo=1;pageNo<noOfPagedCalls;pageNo++)
                 {
-                    getManyTasks.Add(TestGetMany(productModelsClient, token, runCount, totalRuns, pageNo, pageSize));
+                    getManyTasks.Add(TestGetMany(productModelsClient, grpcAuthToken, runCount, totalRuns, pageNo, pageSize));
 
                     currentRunCount++;
                     
@@ -120,7 +120,7 @@ namespace RedflyPerformanceTest.GrpcClient
                     {
                         foreach (var result in validResponse!.Results)
                         {
-                            tasks.Add(TestGetSingle(productModelsClient, token, runCount, totalRuns, result.ProductModelId));
+                            tasks.Add(TestGetSingle(productModelsClient, grpcAuthToken, runCount, totalRuns, result.ProductModelId));
 
                             currentRunCount++;
 
@@ -160,7 +160,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                     while (currentRunCount < totalRuns)
                     {
-                        insertTasks.Add(TestInsertRow(productModelsClient, token));
+                        insertTasks.Add(TestInsertRow(productModelsClient, grpcAuthToken));
                         currentRunCount++;
                     }
 
@@ -177,7 +177,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                     foreach (var insertedRow in insertedRows)
                     {
-                        updateTasks.Add(TestUpdateRow(productModelsClient, token, insertedRow!));
+                        updateTasks.Add(TestUpdateRow(productModelsClient, grpcAuthToken, insertedRow!));
                     }
 
                     await Task.WhenAll(updateTasks);
@@ -192,7 +192,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
                     foreach (var insertedRow in insertedRows)
                     {
-                        getSingleTasks.Add(TestGetSingle(productModelsClient, token, runCount, totalRuns, insertedRow!.ProductModelId));
+                        getSingleTasks.Add(TestGetSingle(productModelsClient, grpcAuthToken, runCount, totalRuns, insertedRow!.ProductModelId));
 
                         currentRunCount++;
                     }
@@ -223,7 +223,7 @@ namespace RedflyPerformanceTest.GrpcClient
                         {
                             // Server will only let you delete rows that did not exist in the database originally 
                             // (i.e., someone else like you created them).
-                            deleteTasks.Add(TestDelete(productModelsClient, token, insertedRow!.ProductModelId));
+                            deleteTasks.Add(TestDelete(productModelsClient, grpcAuthToken, insertedRow!.ProductModelId));
                             deletedRowCount++;
                         }
                     }
@@ -247,12 +247,12 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task ShowProgressAnimation(CancellationToken token, string message)
+        private static async Task ShowProgressAnimation(CancellationToken cancellationToken, string message)
         {
             var animation = new[] { '/', '-', '\\', '|' };
             int counter = 0;
 
-            while (!token.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 Console.Write($"\r{message} {animation[counter % animation.Length]}");
                 counter++;
@@ -263,13 +263,13 @@ namespace RedflyPerformanceTest.GrpcClient
             Console.Write("\r" + new string(' ', Console.WindowWidth) + "\r");
         }
 
-        private static async Task<GetRowCountResponse?> TestGetRowCount(ProductModelsService.ProductModelsServiceClient client, string token, int retryCount = 0)
+        private static async Task<GetRowCountResponse?> TestGetRowCount(ProductModelsService.ProductModelsServiceClient client, string grpcAuthToken, int retryCount = 0)
         {
             try
             {
                 var headers = new Metadata
                 {
-                    { "Authorization", $"Bearer {token}" }
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
 
                 var request = new GetRowCountRequest { ExecutionMode = (int)ReadExecutionMode.Balanced };
@@ -287,7 +287,7 @@ namespace RedflyPerformanceTest.GrpcClient
                 if (retryCount < 3)
                 {
                     Console.WriteLine($"    Retry {retryCount + 1}...");
-                    return await TestGetRowCount(client, token, retryCount + 1);
+                    return await TestGetRowCount(client, grpcAuthToken, retryCount + 1);
                 }
                 else
                 {
@@ -296,13 +296,13 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task<ApiProductModel?> TestInsertRow(ProductModelsService.ProductModelsServiceClient client, string token)
+        private static async Task<ApiProductModel?> TestInsertRow(ProductModelsService.ProductModelsServiceClient client, string grpcAuthToken)
         {
             try
             {
                 var headers = new Metadata
                 {
-                    { "Authorization", $"Bearer {token}" }
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
 
                 var request = new InsertRequest
@@ -361,7 +361,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
         private static async Task TestGetSingle(
             ProductModelsService.ProductModelsServiceClient client, 
-            string token,                         
+            string grpcAuthToken,                         
             int index, 
             int total, 
             int productModelId)
@@ -370,7 +370,7 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 var headers = new Metadata
                 {
-                    { "Authorization", $"Bearer {token}" }
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
 
                 if (getSingleCallSqlFirst)
@@ -471,13 +471,13 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task TestUpdateRow(ProductModelsService.ProductModelsServiceClient client, string token, ApiProductModel row)
+        private static async Task TestUpdateRow(ProductModelsService.ProductModelsServiceClient client, string grpcAuthToken, ApiProductModel row)
         {
             try
             {
                 var headers = new Metadata
                 {
-                    { "Authorization", $"Bearer {token}" }
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
 
                 var request = new UpdateRequest
@@ -506,13 +506,13 @@ namespace RedflyPerformanceTest.GrpcClient
             }
         }
 
-        private static async Task TestDelete(ProductModelsService.ProductModelsServiceClient client, string token, System.Int32 productModelId)
+        private static async Task TestDelete(ProductModelsService.ProductModelsServiceClient client, string grpcAuthToken, System.Int32 productModelId)
         {
             try
             {
                 var headers = new Metadata
                 {
-                    { "Authorization", $"Bearer {token}" }
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
 
                 var request = new DeleteRequest
@@ -539,7 +539,7 @@ namespace RedflyPerformanceTest.GrpcClient
 
         private static async Task<GetManyResponse?> TestGetMany(
             ProductModelsService.ProductModelsServiceClient client, 
-            string token,                             
+            string grpcAuthToken,                             
             int index, 
             int total,
             int pageNo, 
@@ -549,7 +549,7 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 var headers = new Metadata
                 {
-                    { "Authorization", $"Bearer {token}" }
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
 
                 var responses = new List<GetManyResponse?>();
