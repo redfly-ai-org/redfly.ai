@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientDatabaseAPI.Common.Li
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyGrpcAuthServiceClient", "RedflyGrpcAuthServiceClient\RedflyGrpcAuthServiceClient.csproj", "{3DE0989C-2272-4E23-975F-96AE128DD858}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyDatabaseSyncProxy", "RedflyDatabaseSyncProxy\RedflyDatabaseSyncProxy.csproj", "{649BCD48-E6DF-4CEF-A986-2A2B55FC07E2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{3DE0989C-2272-4E23-975F-96AE128DD858}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DE0989C-2272-4E23-975F-96AE128DD858}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DE0989C-2272-4E23-975F-96AE128DD858}.Release|Any CPU.Build.0 = Release|Any CPU
+		{649BCD48-E6DF-4CEF-A986-2A2B55FC07E2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{649BCD48-E6DF-4CEF-A986-2A2B55FC07E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{649BCD48-E6DF-4CEF-A986-2A2B55FC07E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{649BCD48-E6DF-4CEF-A986-2A2B55FC07E2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
