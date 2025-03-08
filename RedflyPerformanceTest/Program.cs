@@ -27,7 +27,7 @@ namespace RedflyPerformanceTest
 
                 var grpcUrl = "https://advworks-grpc-linux.azurewebsites.net";
 
-                var grpcAuthToken = await AuthGrpcClient.RunAsync(grpcUrl);
+                var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
 
                 if (grpcAuthToken == null ||
                     grpcAuthToken.Length == 0)

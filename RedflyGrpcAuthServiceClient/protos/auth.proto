@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "RedflyPerformanceTest";
+option csharp_namespace = "RedflyGrpcAuthServiceClient";
 
 service AuthService {
     rpc Login (LoginRequest) returns (LoginResponse);

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyPerformanceTest", "Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientDatabaseAPI.Common.Library", "ClientDatabaseAPI.Common.Library\ClientDatabaseAPI.Common.Library.csproj", "{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyGrpcAuthServiceClient", "RedflyGrpcAuthServiceClient\RedflyGrpcAuthServiceClient.csproj", "{3DE0989C-2272-4E23-975F-96AE128DD858}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DE0989C-2272-4E23-975F-96AE128DD858}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DE0989C-2272-4E23-975F-96AE128DD858}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DE0989C-2272-4E23-975F-96AE128DD858}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DE0989C-2272-4E23-975F-96AE128DD858}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

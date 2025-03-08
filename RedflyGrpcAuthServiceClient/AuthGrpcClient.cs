@@ -7,9 +7,9 @@ using System.Security.Authentication;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyPerformanceTest.GrpcClient
+namespace RedflyGrpcAuthServiceClient
 {
-    internal static class AuthGrpcClient
+    public static class AuthGrpcClient
     {
 
         public static async Task<string?> RunAsync(string grpcUrl)
