@@ -22,4 +22,8 @@
 	  <ProjectReference Include="..\RedflyGrpcAuthServiceClient\RedflyGrpcAuthServiceClient.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<Protobuf Include="protos\changemanagement.proto" GrpcServices="Client" />
+	</ItemGroup>
+
 </Project>

@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+option csharp_namespace = "RedflyDatabaseSyncProxy";
+
+package changemanagement;
+
+// The GrpcChangeManagement service definition.
+service GrpcChangeManagement {
+  // Starts the change management process for a client.
+  rpc StartChangeManagement(StartChangeManagementRequest) returns (StartChangeManagementResponse);
+  // Bi-directional stream for server to client callbacks.
+  rpc CommunicateWithClient(stream ClientMessage) returns (stream ServerMessage);
+}
+
+// The request message containing the client's information.
+message StartChangeManagementRequest {
+  string client_id = 1;
+}
+
+// The response message containing the result of the start request.
+message StartChangeManagementResponse {
+  bool success = 1;
+}
+
+// The message from the client to the server.
+message ClientMessage {
+  string client_id = 1;
+  string message = 2;
+}
+
+// The message from the server to the client.
+message ServerMessage {
+  string message = 1;
+}

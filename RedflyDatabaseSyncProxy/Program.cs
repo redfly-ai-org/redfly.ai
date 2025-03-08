@@ -1,4 +1,7 @@
-﻿namespace RedflyDatabaseSyncProxy;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+
+namespace RedflyDatabaseSyncProxy;
 
 internal class Program
 {
@@ -34,7 +37,7 @@ internal class Program
                 return;
             }
 
-            //TBD
+            await StartChangeManagementService(grpcUrl);
         }
         catch (Exception ex)
         {
@@ -45,4 +48,47 @@ internal class Program
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
     }
+
+    private static async Task StartChangeManagementService(string grpcUrl)
+    {
+        var clientId = Guid.NewGuid().ToString(); // Unique client identifier
+        var channel = GrpcChannel.ForAddress(grpcUrl);
+        var client = new GrpcChangeManagement.GrpcChangeManagementClient(channel);
+
+        // Start Change Management
+        var startResponse = await client.StartChangeManagementAsync(new StartChangeManagementRequest { ClientId = clientId });
+
+        if (startResponse.Success)
+        {
+            Console.WriteLine("Change management service started successfully.");
+        }
+        else
+        {
+            Console.WriteLine("Failed to start change management service.");
+            return;
+        }
+
+        // Bi-directional streaming for communication with the server
+        using var call = client.CommunicateWithClient();
+
+        var responseTask = Task.Run(async () =>
+        {
+            await foreach (var message in call.ResponseStream.ReadAllAsync())
+            {
+                Console.WriteLine($"Server: {message.Message}");
+            }
+        });
+
+        // Send initial message to establish the stream
+        await call.RequestStream.WriteAsync(new ClientMessage { ClientId = clientId, Message = "Client connected" });
+
+        // Keep the client running to listen for server messages
+        Console.WriteLine("Press any key to exit...");
+        Console.ReadKey();
+
+        // Complete the request stream
+        await call.RequestStream.CompleteAsync();
+        await responseTask;
+    }
+
 }
