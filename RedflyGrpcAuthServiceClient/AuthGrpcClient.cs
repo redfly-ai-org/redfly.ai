@@ -41,10 +41,13 @@ namespace RedflyGrpcAuthServiceClient
 
                 string? userName;
                 StringBuilder passwordBuilder;
+                bool credentialsLoadedFromDisk = false;
 
                 if (SecureCredentials.Exist())
                 {
                     (userName, passwordBuilder) = SecureCredentials.Get();
+                    credentialsLoadedFromDisk = true;
+                    Console.WriteLine("Using saved login credentials...");
                 }
                 else
                 {
@@ -63,7 +66,7 @@ namespace RedflyGrpcAuthServiceClient
                     Console.WriteLine("Enter your password:");
                     passwordBuilder = GetPasswordFromConsole();
 
-                    SecureCredentials.Save(userName, passwordBuilder);
+                    credentialsLoadedFromDisk = false;
                 }
 
                 var loginRequest = new LoginRequest
@@ -80,9 +83,21 @@ namespace RedflyGrpcAuthServiceClient
 
                 string token = await LoginAsync(authServiceClient, loginRequest);
 
-                await TestSecureGrpcCall(authServiceClient, token);
+                if (await TestSecureGrpcCall(authServiceClient, token))
+                {
+                    Console.WriteLine("Authentication is successful!");
 
-                Console.WriteLine("Authentication is complete!\r\n");
+                    //Only save if auth is a success and credentials were not loaded from disk.
+                    if (!credentialsLoadedFromDisk)
+                    {
+                        SecureCredentials.Save(userName, passwordBuilder);
+                        Console.WriteLine("Your credentials have been saved successfully.\r\n");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Authentication failed!");
+                }
 
                 return token;
             }
@@ -169,7 +184,7 @@ namespace RedflyGrpcAuthServiceClient
             }
         }
 
-        private static async Task TestSecureGrpcCall(AuthService.AuthServiceClient client, string token, int retryCount = 0)
+        private static async Task<bool> TestSecureGrpcCall(AuthService.AuthServiceClient client, string token, int retryCount = 0)
         {
             try
             {
@@ -192,6 +207,8 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     var response = await client.TestDataAsync(request, headers);
                     Console.WriteLine($"Response: {response.Message}");
+
+                    return true;
                 }
                 finally
                 {
@@ -205,12 +222,15 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     Console.WriteLine($"Retrying Secure Call {retryCount + 1}...");
                     await Task.Delay(1000);
-                    await TestSecureGrpcCall(client, token, retryCount + 1);
+
+                    return await TestSecureGrpcCall(client, token, retryCount + 1);
                 }
                 else
                 {
                     Console.WriteLine($"Failed to make secure request after {retryCount + 1} attempts.");
                     Console.WriteLine(ex.ToString());
+
+                    return false;
                 }
             }
         }
