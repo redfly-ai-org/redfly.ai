@@ -20,6 +20,7 @@ message StartChangeManagementRequest {
 // The response message containing the result of the start request.
 message StartChangeManagementResponse {
   bool success = 1;
+  string message = 2;
 }
 
 // The message from the client to the server.
