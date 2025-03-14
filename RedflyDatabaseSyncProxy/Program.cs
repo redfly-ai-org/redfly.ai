@@ -1,5 +1,6 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
+using Microsoft.Data.SqlClient;
 using RedflyCoreFramework;
 
 namespace RedflyDatabaseSyncProxy;
@@ -38,7 +39,15 @@ internal class Program
                 return;
             }
 
-            await StartChangeManagementService(grpcUrl, grpcAuthToken);
+            if (SqlServerDatabasePrep.ForChangeManagement())
+            {
+                await StartChangeManagementService(grpcUrl, grpcAuthToken);
+            }
+            else
+            {
+                Console.WriteLine("Change Management cannot be started without prepping the database.");
+                Console.WriteLine("Please prep the database and try again.");
+            }
         }
         catch (Exception ex)
         {
@@ -48,11 +57,6 @@ internal class Program
 
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
-    }
-
-    private static bool PrepDatabase()
-    {
-        return false;
     }
 
     private static async Task StartChangeManagementService(string grpcUrl, string grpcAuthToken)

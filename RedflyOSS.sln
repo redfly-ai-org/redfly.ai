@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyDatabaseSyncProxy", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyCoreFramework", "RedflyCoreFramework\RedflyCoreFramework.csproj", "{1CF58650-F231-427C-ADFC-FC1044AAB254}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyLocalStorage", "RedflyLocalStorage\RedflyLocalStorage.csproj", "{F5B39656-D84A-4749-936B-588B27B70C3B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{1CF58650-F231-427C-ADFC-FC1044AAB254}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CF58650-F231-427C-ADFC-FC1044AAB254}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CF58650-F231-427C-ADFC-FC1044AAB254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5B39656-D84A-4749-936B-588B27B70C3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5B39656-D84A-4749-936B-588B27B70C3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5B39656-D84A-4749-936B-588B27B70C3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5B39656-D84A-4749-936B-588B27B70C3B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
