@@ -1,5 +1,6 @@
 ﻿using Grpc.Net.Client;
 using Microsoft.Extensions.Logging;
+using RedflyCoreFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,16 +39,32 @@ namespace RedflyGrpcAuthServiceClient
 
                 var authServiceClient = new AuthService.AuthServiceClient(channel);
 
-                Console.WriteLine("\r\nInstructions: ");
-                Console.WriteLine("You can register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
-                Console.WriteLine("Be sure to check your Junk folder for the verification email after you register.");
-                Console.WriteLine("Registration is necessary to be able to access our secure cloud services.\r\n");
+                string? userName;
+                StringBuilder passwordBuilder;
 
-                Console.WriteLine("Enter your user name:");
-                var userName = Console.ReadLine();
+                if (SecureCredentials.Exist())
+                {
+                    (userName, passwordBuilder) = SecureCredentials.Get();
+                }
+                else
+                {
+                    Console.WriteLine("\r\nInstructions: ");
+                    Console.WriteLine("You can register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
+                    Console.WriteLine("Be sure to check your Junk folder for the verification email after you register.");
+                    Console.WriteLine("Registration is necessary to be able to access our secure cloud services.\r\n");
 
-                Console.WriteLine("Enter your password:");
-                var passwordBuilder = GetPasswordFromConsole();
+                    do 
+                    {
+                        Console.WriteLine("Enter your user name:");
+                        userName = Console.ReadLine();
+                    } 
+                    while (string.IsNullOrWhiteSpace(userName));
+
+                    Console.WriteLine("Enter your password:");
+                    passwordBuilder = GetPasswordFromConsole();
+
+                    SecureCredentials.Save(userName, passwordBuilder);
+                }
 
                 var loginRequest = new LoginRequest
                 {
@@ -55,7 +72,9 @@ namespace RedflyGrpcAuthServiceClient
                     Password = passwordBuilder.ToString()
                 };
 
+                Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"\r\nLogging in to {grpcUrl}");
+                Console.ResetColor();
                 Console.WriteLine("Please be patient - these are small servers.");
                 Console.WriteLine("Contact us at developer@redfly.ai if you need to.\r\n");
 
@@ -77,11 +96,11 @@ namespace RedflyGrpcAuthServiceClient
 
         private static async Task<string> LoginAsync(AuthService.AuthServiceClient authServiceClient, LoginRequest loginRequest, int retryCount = 0)
         {
+            var cts = new CancellationTokenSource();
+            var progressTask = ShowProgressAnimation(cts.Token);
+
             try
             {
-                var cts = new CancellationTokenSource();
-                var progressTask = ShowProgressAnimation(cts.Token);
-
                 var loginResponse = await authServiceClient.LoginAsync(loginRequest);
 
                 cts.Cancel();
@@ -103,6 +122,10 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     Console.WriteLine($"Failed to login after {retryCount + 1} attempts.");
                     Console.WriteLine(ex.ToString());
+
+                    cts.Cancel();
+                    await progressTask;
+
                     throw;
                 }
             }

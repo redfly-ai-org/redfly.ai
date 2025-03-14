@@ -18,6 +18,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RedflyCoreFramework\RedflyCoreFramework.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Protobuf Include="protos\auth.proto" GrpcServices="Client" />
   </ItemGroup>
 

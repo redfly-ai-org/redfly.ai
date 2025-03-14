@@ -19,6 +19,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\RedflyCoreFramework\RedflyCoreFramework.csproj" />
 	  <ProjectReference Include="..\RedflyGrpcAuthServiceClient\RedflyGrpcAuthServiceClient.csproj" />
 	</ItemGroup>
 

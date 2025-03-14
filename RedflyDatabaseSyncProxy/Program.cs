@@ -1,5 +1,6 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
+using RedflyCoreFramework;
 
 namespace RedflyDatabaseSyncProxy;
 
@@ -21,7 +22,7 @@ internal class Program
             Console.WriteLine("Contact us at developer@redfly.ai to directly work with us so you can do the same thing with your database (cloud/ on-premises).");
             Console.WriteLine("No matter how large or complex your DB is, redfly.ai can do it! \r\n");
 
-            Console.WriteLine("Press any key to start the performance test...");
+            Console.WriteLine("Press any key to start the process of synchronizing your database with Redis transparently...");
             Console.ReadKey();
 
             //TODO: This will change.
@@ -47,6 +48,11 @@ internal class Program
 
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
+    }
+
+    private static bool PrepDatabase()
+    {
+        return false;
     }
 
     private static async Task StartChangeManagementService(string grpcUrl, string grpcAuthToken)
