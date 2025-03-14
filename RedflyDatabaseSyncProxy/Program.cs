@@ -63,7 +63,8 @@ internal class Program
 
         var headers = new Metadata
                 {
-                    { "Authorization", $"Bearer {grpcAuthToken}" }
+                    { "Authorization", $"Bearer {grpcAuthToken}" },
+                    { "client-id", clientId.ToString() }
                 };
 
         // Start Change Management
