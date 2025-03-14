@@ -7,7 +7,8 @@ Provide source code that:
 
 1. Let you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
 2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand (WIP 🏃🏽‍♀️‍➡️).
-3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
+   2.1 Get the database ready for synchronization, by adding the functionality to prep it (Done ✔️)
+4. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
