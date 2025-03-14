@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RedflyCoreFramework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,6 +19,38 @@ namespace RedflyLocalStorage.Entities
         public required string EncryptedPassword { get; set; }
 
         public bool DatabasePrepped { get; set; } = false;
+
+        public string ConnectionString
+        {
+            get
+            {
+                return $"Server={RedflyEncryption.Decrypt(EncryptedServerName)};Database={RedflyEncryption.Decrypt(EncryptedDatabaseName)};User Id={RedflyEncryption.Decrypt(EncryptedUserName)};Password={RedflyEncryption.Decrypt(EncryptedPassword)};";
+            }
+        }
+
+        public string DecryptedServerName
+        {
+            get
+            {
+                return RedflyEncryption.Decrypt(EncryptedServerName);
+            }
+        }
+
+        public string DecryptedDatabaseName
+        {
+            get
+            {
+                return RedflyEncryption.Decrypt(EncryptedDatabaseName);
+            }
+        }
+
+        public string DecryptedUserName
+        {
+            get
+            {
+                return RedflyEncryption.Decrypt(EncryptedUserName);
+            }
+        }
 
     }
 }

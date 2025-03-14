@@ -117,7 +117,10 @@ namespace RedflyDatabaseSyncProxy
                     };
 
                     collection.Add(document);
+
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Added Database details to encrypted local storage.");
+                    Console.ResetColor();
 
                     return document;
                 }
@@ -152,7 +155,10 @@ namespace RedflyDatabaseSyncProxy
                     if (changed)
                     {
                         collection.Update(found);
+
+                        Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("Updated Database details in encrypted local storage.");
+                        Console.ResetColor();
                     }
 
                     return found;
