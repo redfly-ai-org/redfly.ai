@@ -64,18 +64,18 @@ internal class Program
 
     private static async Task StartChangeManagementService(string grpcUrl, string grpcAuthToken)
     {
-        var clientId = Guid.NewGuid().ToString(); // Unique client identifier
+        var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
         var channel = GrpcChannel.ForAddress(grpcUrl);
         var client = new GrpcChangeManagement.GrpcChangeManagementClient(channel);
 
         var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {grpcAuthToken}" },
-                    { "client-id", clientId.ToString() }
+                    { "client-session-id", clientSessionId.ToString() }
                 };
 
         // Start Change Management
-        var startResponse = await client.StartChangeManagementAsync(new StartChangeManagementRequest { ClientId = clientId }, headers);
+        var startResponse = await client.StartChangeManagementAsync(new StartChangeManagementRequest { ClientSessionId = clientSessionId }, headers);
 
         if (startResponse.Success)
         {
@@ -99,7 +99,7 @@ internal class Program
         });
 
         // Send initial message to establish the stream
-        await call.RequestStream.WriteAsync(new ClientMessage { ClientId = clientId, Message = "Client connected" });
+        await call.RequestStream.WriteAsync(new ClientMessage { ClientSessionId = clientSessionId, Message = "Client connected" });
 
         // Keep the client running to listen for server messages
         Console.WriteLine("Press any key to exit...");

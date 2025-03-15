@@ -14,7 +14,7 @@ service GrpcChangeManagement {
 
 // The request message containing the client's information.
 message StartChangeManagementRequest {
-  string client_id = 1;
+  string client_session_id = 1;
 }
 
 // The response message containing the result of the start request.
@@ -25,7 +25,7 @@ message StartChangeManagementResponse {
 
 // The message from the client to the server.
 message ClientMessage {
-  string client_id = 1;
+  string client_session_id = 1;
   string message = 2;
 }
 
