@@ -69,8 +69,8 @@ namespace RedflyDatabaseSyncProxy
             }
             else
             {
-                Console.WriteLine("The following databases are available in local storage:");
-                Console.WriteLine("Please select the database you would like to prep for redfly:");
+                Console.WriteLine("The following databases are available in local storage.");
+                Console.WriteLine("Please select the database to sync from:");
 
                 string? selected = null;
                 int selectedIndex = 0;

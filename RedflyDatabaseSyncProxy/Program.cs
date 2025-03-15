@@ -42,7 +42,21 @@ internal class Program
 
             if (SqlServerDatabasePrep.ForChangeManagement())
             {
-                await StartChangeManagementService(grpcUrl, grpcAuthToken);
+                Console.WriteLine("Have you setup your User Account and Organization from our website? (y/n)");
+                Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
+                var response = Console.ReadLine();
+
+                if (response != null && 
+                    response.Equals("y", StringComparison.OrdinalIgnoreCase))
+                {
+                    await StartChangeManagementService(grpcUrl, grpcAuthToken);
+                }
+                else
+                {
+                    Console.WriteLine("Change Management cannot be started without setting up your User Account and Organization here:");
+                    Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
+                    Console.WriteLine("Please setup your User Account and Organization and try again.");
+                }
             }
             else
             {
