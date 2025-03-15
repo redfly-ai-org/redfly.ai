@@ -80,7 +80,7 @@ namespace RedflyDatabaseSyncProxy
                     var index = 1;
                     foreach (var item in all)
                     {
-                        Console.WriteLine($"{index}. {RedflyEncryption.Decrypt(item.EncryptedServerName)} - {RedflyEncryption.Decrypt(item.EncryptedDatabaseName)} - {RedflyEncryption.Decrypt(item.EncryptedUserName)}");
+                        Console.WriteLine($"({index}) {RedflyEncryption.Decrypt(item.EncryptedServerName)} -> {RedflyEncryption.Decrypt(item.EncryptedDatabaseName)}, @{RedflyEncryption.Decrypt(item.EncryptedUserName)}");
                         index++;
                     }
 
