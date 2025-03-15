@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LiteDB;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +10,27 @@ namespace RedflyLocalStorage
     public class RedflyLocalDatabase
     {
 
-        public static readonly string FilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), Name);
+        private static readonly string _filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), _name);
 
-        public const string Name = "redfly-local.db";
+        private const string _name = "redfly-local.db";
+
+        private static Lazy<LiteDatabase> _db = new Lazy<LiteDatabase>(() => new LiteDatabase(_filePath));
+
+        internal static Lazy<LiteDatabase> Instance
+        {
+            get
+            {
+                return _db;
+            }
+        }
+
+        public static void Dispose()
+        {
+            if (_db.IsValueCreated)
+            {
+                _db.Value.Dispose();
+            }
+        }
 
     }
 }

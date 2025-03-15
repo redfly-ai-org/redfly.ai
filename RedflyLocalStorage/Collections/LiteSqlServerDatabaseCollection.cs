@@ -12,10 +12,10 @@ namespace RedflyLocalStorage.Collections
     public class LiteSqlServerDatabaseCollection : RedflyLocalCollection<LiteSqlServerDatabaseDocument>
     {
 
-        public LiteSqlServerDatabaseCollection(LiteDatabase db) : base(db, "sqlserverdatabases")
+        public LiteSqlServerDatabaseCollection() : base("sqlserverdatabases")
         {
             //Sometimes users see differently based on access (future TODO).
-            _collection.EnsureIndex(
+            _lazyCollection.Value.EnsureIndex(
                 name: "srvrnmdbnmusnm",
                 x => new 
                 { 
@@ -26,33 +26,27 @@ namespace RedflyLocalStorage.Collections
                 unique: true);
         }
 
-        public IEnumerable<LiteSqlServerDatabaseDocument> Find(string serverName)
+        public IEnumerable<LiteSqlServerDatabaseDocument> Find(string encryptedServerName)
         {
-            return _collection
-                        .Find(x => x.EncryptedServerName == RedflyEncryption
-                                                            .EncryptToString(serverName));
+            return _lazyCollection.Value
+                        .Find(x => x.EncryptedServerName == encryptedServerName);
         }
 
-        public IEnumerable<LiteSqlServerDatabaseDocument> Find(string serverName, string databaseName)
+        public IEnumerable<LiteSqlServerDatabaseDocument> Find(string encryptedServerName, string encryptedDatabaseName)
         {
-            return _collection
+            return _lazyCollection.Value
                         .Find(x =>    
-                                x.EncryptedServerName == RedflyEncryption
-                                                            .EncryptToString(serverName) &&
-                                x.EncryptedDatabaseName == RedflyEncryption
-                                                            .EncryptToString(databaseName));
+                                x.EncryptedServerName == encryptedServerName &&
+                                x.EncryptedDatabaseName == encryptedDatabaseName);
         }
 
-        public LiteSqlServerDatabaseDocument Find(string serverName, string databaseName, string userName)
+        public LiteSqlServerDatabaseDocument Find(string encryptedServerName, string encryptedDatabaseName, string encryptedUserName)
         {
-            return _collection
+            return _lazyCollection.Value
                         .FindOne(x =>
-                                    x.EncryptedServerName == RedflyEncryption
-                                                                .EncryptToString(serverName) &&
-                                    x.EncryptedDatabaseName == RedflyEncryption
-                                                                .EncryptToString(databaseName) &&
-                                    x.EncryptedUserName == RedflyEncryption
-                                                                .EncryptToString(userName));
+                                    x.EncryptedServerName == encryptedServerName &&
+                                    x.EncryptedDatabaseName == encryptedDatabaseName &&
+                                    x.EncryptedUserName == encryptedUserName);
         }
 
     }

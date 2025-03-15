@@ -2,6 +2,7 @@
 using Grpc.Net.Client;
 using Microsoft.Data.SqlClient;
 using RedflyCoreFramework;
+using RedflyLocalStorage;
 
 namespace RedflyDatabaseSyncProxy;
 
@@ -57,6 +58,8 @@ internal class Program
 
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
+
+        RedflyLocalDatabase.Dispose();
     }
 
     private static async Task StartChangeManagementService(string grpcUrl, string grpcAuthToken)

@@ -11,35 +11,34 @@ namespace RedflyLocalStorage
     abstract public class RedflyLocalCollection<T> where T : class
     {
 
-        protected LiteDatabase _db;
         protected string _collectionName;
-        protected ILiteCollection<T> _collection;
+        protected Lazy<ILiteCollection<T>> _lazyCollection;
 
-        protected RedflyLocalCollection(LiteDatabase db, string collectionName)
+        protected RedflyLocalCollection(string collectionName)
         {
-            _db = db;
             _collectionName = collectionName;
-            _collection = db.GetCollection<T>(collectionName);
+            _lazyCollection = new Lazy<ILiteCollection<T>>(
+                                    () => RedflyLocalDatabase.Instance.Value.GetCollection<T>(collectionName));
         }
 
         public virtual IEnumerable<T> All()
         {
-            return _collection.FindAll();
+            return _lazyCollection.Value.FindAll();
         }
 
         public virtual BsonValue Add(T entity)
         {
-            return _collection.Insert(entity);
+            return _lazyCollection.Value.Insert(entity);
         }
 
         public virtual bool Update(T entity)
         {
-            return _collection.Update(entity);
+            return _lazyCollection.Value.Update(entity);
         }
 
         public virtual bool Delete(BsonValue id)
         {
-            return _collection.Delete(id);
+            return _lazyCollection.Value.Delete(id);
         }
 
     }

@@ -1,4 +1,5 @@
-﻿using RedflyCoreFramework;
+﻿using LiteDB;
+using RedflyCoreFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +10,9 @@ namespace RedflyLocalStorage.Entities
 {
     public class LiteSqlServerDatabaseDocument
     {
+
+        [BsonId]
+        public ObjectId Id { get; set; }
 
         public required string EncryptedServerName { get; set; }
 

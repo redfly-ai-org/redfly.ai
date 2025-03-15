@@ -27,11 +27,12 @@ namespace RedflyDatabaseSyncProxy
                 }
             }
 
-            Console.WriteLine("Have you prepped this database for redfly? (y/n)");
-            var response = Console.ReadLine();
-
-            if (string.Equals(response, "y", StringComparison.OrdinalIgnoreCase))
+            if (SqlServerDatabasePicker.SelectedDatabase != null &&
+                SqlServerDatabasePicker.SelectedDatabase.DatabasePrepped)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine("This database has already been prepped for redfly.");
+                Console.ResetColor();
                 return true;
             }
 
@@ -62,6 +63,20 @@ namespace RedflyDatabaseSyncProxy
                 return false;
             }
 
+           if (SqlServerDatabasePicker.SelectedDatabase != null)
+           {
+                var collection = new LiteSqlServerDatabaseCollection();
+
+                var row = collection.Find(SqlServerDatabasePicker.SelectedDatabase.EncryptedServerName, 
+                                          SqlServerDatabasePicker.SelectedDatabase.EncryptedDatabaseName, 
+                                          SqlServerDatabasePicker.SelectedDatabase.EncryptedUserName);
+
+                row.DatabasePrepped = true;
+                collection.Update(row);
+
+                SqlServerDatabasePicker.SelectedDatabase = row;
+            }
+            
             return true;
         }
 
