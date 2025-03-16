@@ -45,30 +45,23 @@ namespace RedflyGrpcAuthServiceClient
 
                 if (SecureCredentials.Exist())
                 {
-                    (userName, passwordBuilder) = SecureCredentials.Get();
-                    credentialsLoadedFromDisk = true;
-                    Console.WriteLine("Using saved login credentials...");
+                    Console.WriteLine("Do you want to login using the saved credentials? (y/n)");
+                    var response = Console.ReadLine();
+
+                    if (response?.ToLower() == "y")
+                    {
+                        (userName, passwordBuilder) = SecureCredentials.Get();
+                        credentialsLoadedFromDisk = true;
+                        Console.WriteLine("Using saved login credentials...");
+                    }
+                    else
+                    {
+                        PromptUserForLogin(out userName, out passwordBuilder, out credentialsLoadedFromDisk);
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("\r\nInstructions: ");
-                    Console.WriteLine("You can register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
-                    Console.WriteLine("Be sure to check your Junk folder for the verification email after you register.");
-                    Console.WriteLine("Make sure you setup your User Account and Organization after you login.");
-                    Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
-                    Console.WriteLine("Registration & Organization setup is necessary to fully access our secure cloud services.\r\n");
-
-                    do 
-                    {
-                        Console.WriteLine("Enter your user name:");
-                        userName = Console.ReadLine();
-                    } 
-                    while (string.IsNullOrWhiteSpace(userName));
-
-                    Console.WriteLine("Enter your password:");
-                    passwordBuilder = RedflyConsole.GetPasswordFromUser();
-
-                    credentialsLoadedFromDisk = false;
+                    PromptUserForLogin(out userName, out passwordBuilder, out credentialsLoadedFromDisk);
                 }
 
                 var loginRequest = new LoginRequest
@@ -111,6 +104,28 @@ namespace RedflyGrpcAuthServiceClient
             }
         }
 
+        private static void PromptUserForLogin(out string? userName, out StringBuilder passwordBuilder, out bool credentialsLoadedFromDisk)
+        {
+            Console.WriteLine("\r\nInstructions: ");
+            Console.WriteLine("You can register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
+            Console.WriteLine("Be sure to check your Junk folder for the verification email after you register.");
+            Console.WriteLine("Make sure you setup your User Account and Organization after you login.");
+            Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
+            Console.WriteLine("Registration & Organization setup is necessary to fully access our secure cloud services.\r\n");
+
+            do
+            {
+                Console.WriteLine("Enter your user name:");
+                userName = Console.ReadLine();
+            }
+            while (string.IsNullOrWhiteSpace(userName));
+
+            Console.WriteLine("Enter your password:");
+            passwordBuilder = RedflyConsole.GetPasswordFromUser();
+
+            credentialsLoadedFromDisk = false;
+        }
+
         private static async Task<string> LoginAsync(AuthService.AuthServiceClient authServiceClient, LoginRequest loginRequest, int retryCount = 0)
         {
             var cts = new CancellationTokenSource();
@@ -129,6 +144,9 @@ namespace RedflyGrpcAuthServiceClient
             }
             catch (Exception ex)
             {
+                cts.Cancel();
+                await progressTask;
+
                 if (retryCount < 3)
                 {
                     Console.WriteLine($"Retrying login {retryCount + 1}...");
@@ -139,10 +157,6 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     Console.WriteLine($"Failed to login after {retryCount + 1} attempts.");
                     Console.WriteLine(ex.ToString());
-
-                    cts.Cancel();
-                    await progressTask;
-
                     throw;
                 }
             }
