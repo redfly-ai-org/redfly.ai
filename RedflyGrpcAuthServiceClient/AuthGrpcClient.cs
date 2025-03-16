@@ -71,7 +71,7 @@ namespace RedflyGrpcAuthServiceClient
                 };
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"\r\nLogging in to {grpcUrl}");
+                Console.WriteLine($"\r\nLogging in to {grpcUrl} as {userName}");
                 Console.ResetColor();
                 Console.WriteLine("Please be patient - these are small servers.");
                 Console.WriteLine("Contact us at developer@redfly.ai if you need to.\r\n");

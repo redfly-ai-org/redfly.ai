@@ -2,6 +2,7 @@
 using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
 using RedflyLocalStorage;
 using System.Threading.Channels;
@@ -60,7 +61,11 @@ internal class Program
                                                     }, headers);
 
                 if (!getUserSetupDataResponse.Success ||
-                    getUserSetupDataResponse.Result == null)
+                    getUserSetupDataResponse.Result == null ||
+                    getUserSetupDataResponse.Result.IsFreshNewUser ||
+                    string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserFirstName) ||
+                    string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserLastName) ||
+                    string.IsNullOrEmpty(getUserSetupDataResponse.Result.ClientName))
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(getUserSetupDataResponse.Message);
