@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option csharp_namespace = "RedflyDatabaseSyncProxy";
+
+package usersetup;
+
+// The request message containing the user ID.
+message UserIdRequest {
+  string userId = 1;
+}
+
+// The response message containing the AddClientAndUserProfileViewModel.
+message AddClientAndUserProfileViewModel {
+  string clientName	= 1;
+  string userFirstName = 2;
+  string userLastName = 3;
+  string hostAndPortNos = 4;
+  string replicaSet = 5;
+  bool isClientAccountOwner = 6;
+  bool isFreshNewUser = 7;
+  bool pendingAccountOwnerApproval = 8;
+  string approvalRequestTokenId = 9;
+  string requestApprovalState = 10;
+}
+
+// The response message containing the ServiceResponse.
+message ServiceResponse {
+  AddClientAndUserProfileViewModel result = 1;
+  string message = 2;
+}
+
+// The request message for AddOrUpdateClientAndUserProfile.
+message AddOrUpdateClientAndUserProfileRequest {
+  AddClientAndUserProfileViewModel model = 1;
+}
+
+// The response message containing the ServiceValueResponse.
+message ServiceValueResponse {
+  string result = 1;
+  string message = 2;
+}
+
+// The UserSetupApi service definition.
+service UserSetupApi {
+  // Get user setup data
+  rpc GetUserSetupData (UserIdRequest) returns (ServiceResponse);
+
+  // Add or update client and user profile
+  rpc AddOrUpdateClientAndUserProfile (AddOrUpdateClientAndUserProfileRequest) returns (ServiceValueResponse);
+}

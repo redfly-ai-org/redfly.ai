@@ -1,8 +1,10 @@
-﻿using Grpc.Core;
+﻿using Google.Protobuf;
+using Grpc.Core;
 using Grpc.Net.Client;
 using Microsoft.Data.SqlClient;
 using RedflyCoreFramework;
 using RedflyLocalStorage;
+using System.Threading.Channels;
 
 namespace RedflyDatabaseSyncProxy;
 
@@ -42,6 +44,26 @@ internal class Program
 
             if (SqlServerDatabasePrep.ForChangeManagement())
             {
+                var channel = GrpcChannel.ForAddress(grpcUrl);
+                var userSetupApiClient = new UserSetupApi.UserSetupApiClient(channel);
+
+                var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
+                };
+
+                // Start Change Management
+                var userSetupDataResponse = await userSetupApiClient
+                                                    .GetUserSetupDataAsync(new UserIdRequest 
+                                                    { 
+                                                        UserId = Guid.NewGuid().ToString()
+                                                    }, headers);
+
+                if (userSetupDataResponse.Result == null)
+                {
+                    //The user account and organization have to be setup first.
+                }
+
                 Console.WriteLine("Have you setup your User Account and Organization from our website? (y/n)");
                 Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
                 var response = Console.ReadLine();
@@ -80,7 +102,7 @@ internal class Program
     {
         var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
         var channel = GrpcChannel.ForAddress(grpcUrl);
-        var client = new GrpcChangeManagement.GrpcChangeManagementClient(channel);
+        var cmsClient = new GrpcChangeManagement.GrpcChangeManagementClient(channel);
 
         var headers = new Metadata
                 {
@@ -89,7 +111,7 @@ internal class Program
                 };
 
         // Start Change Management
-        var startResponse = await client.StartChangeManagementAsync(new StartChangeManagementRequest { ClientSessionId = clientSessionId }, headers);
+        var startResponse = await cmsClient.StartChangeManagementAsync(new StartChangeManagementRequest { ClientSessionId = clientSessionId }, headers);
 
         if (startResponse.Success)
         {
@@ -102,7 +124,7 @@ internal class Program
         }
 
         // Bi-directional streaming for communication with the server
-        using var call = client.CommunicateWithClient(headers);
+        using var call = cmsClient.CommunicateWithClient(headers);
 
         var responseTask = Task.Run(async () =>
         {
