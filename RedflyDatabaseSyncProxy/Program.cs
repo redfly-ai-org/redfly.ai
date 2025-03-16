@@ -53,43 +53,84 @@ internal class Program
                 };
 
                 // Start Change Management
-                var userSetupDataResponse = await userSetupApiClient
+                var getUserSetupDataResponse = await userSetupApiClient
                                                     .GetUserSetupDataAsync(new UserIdRequest 
                                                     { 
                                                         UserId = Guid.NewGuid().ToString()
                                                     }, headers);
 
-                if (userSetupDataResponse.Result == null)
+                if (!getUserSetupDataResponse.Success ||
+                    getUserSetupDataResponse.Result == null)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(getUserSetupDataResponse.Message);
+                    Console.ResetColor();
+
+                    var viewModel = new AddClientAndUserProfileViewModel();
+
                     //The user account and organization have to be setup first.
-                }
+                    Console.WriteLine("Please setup your User Account and Organization to proceed further.");
 
-                Console.WriteLine("Have you setup your User Account and Organization from our website? (y/n)");
-                Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
-                var response = Console.ReadLine();
+                    do
+                    {
+                        Console.WriteLine("Please enter your First Name:");
+                        viewModel.UserFirstName = Console.ReadLine();
+                    }
+                    while (string.IsNullOrWhiteSpace(viewModel.UserFirstName));
 
-                if (response != null && 
-                    response.Equals("y", StringComparison.OrdinalIgnoreCase))
-                {
-                    await StartChangeManagementService(grpcUrl, grpcAuthToken);
+                    do
+                    {
+                        Console.WriteLine("Please enter your Last Name:");
+                        viewModel.UserLastName = Console.ReadLine();
+                    }
+                    while (string.IsNullOrWhiteSpace(viewModel.UserLastName));
+
+                    do
+                    {
+                        Console.WriteLine("Please enter your Organization Name:");
+                        viewModel.ClientName = Console.ReadLine();
+                    }
+                    while (string.IsNullOrWhiteSpace(viewModel.ClientName));
+
+                    var addOrUpdateClientAndUserProfileResponse = await userSetupApiClient.AddOrUpdateClientAndUserProfileAsync(new AddOrUpdateClientAndUserProfileRequest
+                    {
+                        Model = viewModel
+                    }, headers);
+
+                    if (addOrUpdateClientAndUserProfileResponse.Success)
+                    {
+                        Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
+                        Console.WriteLine("User Account and Organization setup completed successfully.");
+
+                        await StartChangeManagementService(grpcUrl, grpcAuthToken);
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
+                        Console.WriteLine("User Account and Organization setup could NOT be completed successfully. Please try again later");
+                        Console.ResetColor();
+                    }
                 }
                 else
                 {
-                    Console.WriteLine("Change Management cannot be started without setting up your User Account and Organization here:");
-                    Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
-                    Console.WriteLine("Please setup your User Account and Organization and try again.");
+                    await StartChangeManagementService(grpcUrl, grpcAuthToken);
                 }
             }
             else
             {
+                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Change Management cannot be started without prepping the database.");
                 Console.WriteLine("Please prep the database and try again.");
+                Console.ResetColor();
             }
         }
         catch (Exception ex)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(ex.ToString());
             Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
+            Console.ResetColor();
         }
 
         Console.WriteLine("Press any key to exit...");

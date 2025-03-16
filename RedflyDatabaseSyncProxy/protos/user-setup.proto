@@ -27,6 +27,7 @@ message AddClientAndUserProfileViewModel {
 message ServiceResponse {
   AddClientAndUserProfileViewModel result = 1;
   string message = 2;
+  bool success = 3;
 }
 
 // The request message for AddOrUpdateClientAndUserProfile.
@@ -38,6 +39,7 @@ message AddOrUpdateClientAndUserProfileRequest {
 message ServiceValueResponse {
   string result = 1;
   string message = 2;
+  bool success = 3;
 }
 
 // The UserSetupApi service definition.
