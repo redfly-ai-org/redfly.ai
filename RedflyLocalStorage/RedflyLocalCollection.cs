@@ -21,6 +21,11 @@ namespace RedflyLocalStorage
                                     () => RedflyLocalDatabase.Instance.Value.GetCollection<T>(collectionName));
         }
 
+        public virtual T FindById(BsonValue id)
+        {
+            return _lazyCollection.Value.FindById(id);
+        }
+
         public virtual IEnumerable<T> All()
         {
             return _lazyCollection.Value.FindAll();
