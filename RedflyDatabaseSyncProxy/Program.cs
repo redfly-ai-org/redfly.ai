@@ -45,6 +45,18 @@ internal class Program
 
             if (SqlServerDatabasePrep.ForChangeManagement())
             {
+                if (!RedisServerPicker.SelectFromLocalStorage())
+                {
+                    if (!RedisServerPicker.GetFromUser())
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Change Management cannot be started without selecting a target Redis Server.");
+                        Console.WriteLine("Please select a Redis Server and try again.");
+                        Console.ResetColor();
+                        return;
+                    }
+                }
+
                 var channel = GrpcChannel.ForAddress(grpcUrl);
                 var userSetupApiClient = new UserSetupApi.UserSetupApiClient(channel);
 
@@ -55,8 +67,8 @@ internal class Program
 
                 // Start Change Management
                 var getUserSetupDataResponse = await userSetupApiClient
-                                                    .GetUserSetupDataAsync(new UserIdRequest 
-                                                    { 
+                                                    .GetUserSetupDataAsync(new UserIdRequest
+                                                    {
                                                         UserId = Guid.NewGuid().ToString()
                                                     }, headers);
 
@@ -137,11 +149,13 @@ internal class Program
             Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
             Console.ResetColor();
         }
+        finally
+        {
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
 
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
-
-        RedflyLocalDatabase.Dispose();
+            RedflyLocalDatabase.Dispose();
+        }
     }
 
     private static async Task StartChangeManagementService(string grpcUrl, string grpcAuthToken)

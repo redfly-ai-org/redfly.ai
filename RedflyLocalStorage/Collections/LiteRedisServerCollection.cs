@@ -22,10 +22,10 @@ namespace RedflyLocalStorage.Collections
                 unique: true);
         }
 
-        public IEnumerable<LiteRedisServerDocument> Find(string encryptedServerName)
+        public LiteRedisServerDocument Find(string encryptedServerName)
         {
             return _lazyCollection.Value
-                        .Find(x => x.EncryptedServerName == encryptedServerName);
+                        .FindOne(x => x.EncryptedServerName == encryptedServerName);
         }
 
     }
