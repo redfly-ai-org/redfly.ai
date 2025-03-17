@@ -8,11 +8,8 @@ using System.Threading.Tasks;
 
 namespace RedflyLocalStorage.Entities
 {
-    public class LiteSqlServerDatabaseDocument
+    public class LiteSqlServerDatabaseDocument : BaseLiteDocument
     {
-
-        [BsonId]
-        public ObjectId Id { get; set; }
 
         public required string EncryptedServerName { get; set; }
 
