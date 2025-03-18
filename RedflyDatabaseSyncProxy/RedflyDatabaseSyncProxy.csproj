@@ -29,6 +29,7 @@
 	<ItemGroup>
 		<Protobuf Include="protos\changemanagement.proto" GrpcServices="Client" />
 		<Protobuf Include="protos\user-setup.proto" GrpcServices="Client" />
+		<Protobuf Include="protos\sync-api-service.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 </Project>

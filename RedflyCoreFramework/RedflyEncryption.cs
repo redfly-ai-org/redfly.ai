@@ -12,7 +12,7 @@ namespace RedflyCoreFramework
 
         public static string EncryptToString(string plainText)
         {
-            return EncryptToString(plainText, RedflyEncryptionKeys.AesKey);
+            return EncryptToString(plainText, RedflyEncryptionKeys.NativeAesKey);
         }
 
         public static string EncryptToString(string plainText, byte[] key)
@@ -23,7 +23,7 @@ namespace RedflyCoreFramework
 
         public static byte[] EncryptToBytes(string plainText)
         {
-            return EncryptToBytes(plainText, RedflyEncryptionKeys.AesKey);
+            return EncryptToBytes(plainText, RedflyEncryptionKeys.NativeAesKey);
         }
 
         public static byte[] EncryptToBytes(string plainText, byte[] key)
@@ -50,7 +50,7 @@ namespace RedflyCoreFramework
 
         public static string Decrypt(byte[] cipherText)
         {
-            return Decrypt(cipherText, RedflyEncryptionKeys.AesKey);
+            return Decrypt(cipherText, RedflyEncryptionKeys.NativeAesKey);
         }
 
         public static string Decrypt(byte[] cipherText, byte[] key)

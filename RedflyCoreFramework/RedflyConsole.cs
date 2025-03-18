@@ -33,5 +33,19 @@ namespace RedflyCoreFramework
             return password;
         }
 
+        public static async Task ShowWaitAnimation(CancellationToken token)
+        {
+            var animation = new[] { '/', '-', '\\', '|' };
+            int counter = 0;
+
+            while (!token.IsCancellationRequested)
+            {
+                Console.Write(animation[counter % animation.Length]);
+                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
+                counter++;
+                await Task.Delay(100);
+            }
+        }
+
     }
 }

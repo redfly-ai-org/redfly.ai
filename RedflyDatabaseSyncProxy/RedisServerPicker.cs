@@ -14,8 +14,6 @@ namespace RedflyDatabaseSyncProxy
     internal class RedisServerPicker
     {
 
-        internal static LiteRedisServerDocument? SelectedRedisServer { get; set; }
-
         internal static bool GetFromUser()
         {
             string serverName = "";
@@ -47,9 +45,9 @@ namespace RedflyDatabaseSyncProxy
             // Verify that we can connect to the database
             while (!RedflyRedisServer.VerifyConnectivity(serverName, password, port));
 
-            SelectedRedisServer = SaveDatabaseDetailsToLocalStorage(serverName, password, port);
+            AppSession.RedisServer = SaveDatabaseDetailsToLocalStorage(serverName, password, port);
 
-            return (SelectedRedisServer != null);
+            return (AppSession.RedisServer != null);
         }
 
         internal static bool SelectFromLocalStorage()
@@ -94,7 +92,7 @@ namespace RedflyDatabaseSyncProxy
                        selectedIndex <= 0 ||
                        selectedIndex > all.Count());
 
-                SelectedRedisServer = all.ElementAt(selectedIndex - 1);
+                AppSession.RedisServer = all.ElementAt(selectedIndex - 1);
                 return true;
             }
         }

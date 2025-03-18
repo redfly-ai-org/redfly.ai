@@ -14,8 +14,6 @@ namespace RedflyDatabaseSyncProxy
     internal class SqlServerDatabasePicker
     {
 
-        internal static LiteSqlServerDatabaseDocument? SelectedDatabase { get; set; }
-
         internal static bool GetFromUser()
         {
             string serverName = "";
@@ -52,9 +50,9 @@ namespace RedflyDatabaseSyncProxy
             // Verify that we can connect to the database
             while (!RedflySqlServer.VerifyConnectivity(serverName, databaseName, userName, password));
 
-            SelectedDatabase = SaveDatabaseDetailsToLocalStorage(serverName, databaseName, userName, password);
+            AppSession.Database = SaveDatabaseDetailsToLocalStorage(serverName, databaseName, userName, password);
 
-            return (SelectedDatabase != null);
+            return (AppSession.Database != null);
         }
 
         internal static bool SelectFromLocalStorage()
@@ -99,7 +97,7 @@ namespace RedflyDatabaseSyncProxy
                        selectedIndex <= 0 ||
                        selectedIndex > all.Count());
 
-                SelectedDatabase = all.ElementAt(selectedIndex - 1);
+                AppSession.Database = all.ElementAt(selectedIndex - 1);
                 return true;
             }
         }

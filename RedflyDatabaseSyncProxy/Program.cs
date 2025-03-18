@@ -1,4 +1,5 @@
 ﻿using Google.Protobuf;
+using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Grpc.Net.Client;
 using LiteDB;
@@ -8,13 +9,14 @@ using RedflyCoreFramework;
 using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage.Entities;
+using System.Data.SqlTypes;
 using System.Threading.Channels;
 
 namespace RedflyDatabaseSyncProxy;
 
 internal class Program
 {
-    internal static async Task Main(string[] args)
+    internal static async Task Main(string[] _)
     {
         try
         {
@@ -46,97 +48,220 @@ internal class Program
                 return;
             }
 
-            if (SqlServerDatabasePrep.ForChangeManagement())
-            {
-                var redisServerCollection = new LiteRedisServerCollection();
-                var syncRelationshipCollection = new LiteSyncRelationshipCollection();
-
-                var syncRelationship = syncRelationshipCollection
-                                            .FindByDatabase(SqlServerDatabasePicker.SelectedDatabase.Id.ToString()).FirstOrDefault();
-
-                if (syncRelationship != null)
-                {
-                    RedisServerPicker.SelectedRedisServer = redisServerCollection
-                                                                .FindById(new BsonValue(new ObjectId(syncRelationship.RedisServerId)));
-
-                    Console.WriteLine($"This database has an existing sync relationship with {RedisServerPicker.SelectedRedisServer.DecryptedServerName}:{RedisServerPicker.SelectedRedisServer.Port}");
-                }
-                else
-                {
-                    if (!RedisServerPicker.SelectFromLocalStorage())
-                    {
-                        if (!RedisServerPicker.GetFromUser())
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("Change Management cannot be started without selecting a target Redis Server.");
-                            Console.WriteLine("Please select a Redis Server and try again.");
-                            Console.ResetColor();
-                            return;
-                        }
-                    }
-
-                    syncRelationship = new LiteSyncRelationshipDocument
-                    {
-                        SqlServerDatabaseId = SqlServerDatabasePicker.SelectedDatabase.Id.ToString(),
-                        RedisServerId = RedisServerPicker.SelectedRedisServer!.Id.ToString()
-                    };
-
-                    syncRelationshipCollection.Add(syncRelationship);
-
-                    Console.WriteLine($"The local sync relationship with this Redis Server has been saved successfully");
-                }
-
-                var channel = GrpcChannel.ForAddress(grpcUrl);
-                var headers = new Metadata
-                {
-                    { "Authorization", $"Bearer {grpcAuthToken}" }
-                };
-
-                var userSetupApiClient = new UserSetupApi.UserSetupApiClient(channel);
-
-                var getUserSetupDataResponse = await GetUserSetupData(userSetupApiClient, headers);
-
-                if (UserAccountOrOrgSetupRequired(getUserSetupDataResponse))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(getUserSetupDataResponse.Message);
-                    Console.ResetColor();
-
-                    var addOrUpdateClientAndUserProfileResponse = await PromptUserToSetupUserAccountAndOrg(userSetupApiClient, headers);
-
-                    if (addOrUpdateClientAndUserProfileResponse.Success)
-                    {
-                        Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
-                        Console.WriteLine("User Account and Organization setup completed successfully.");
-
-                        // TODO: Setup sync relationship on the server IF not exists already
-
-                        // Start Change Management
-                        await StartChangeManagementService(grpcUrl, grpcAuthToken);
-                    }
-                    else
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
-                        Console.WriteLine("User Account and Organization setup could NOT be completed successfully. Please try again later");
-                        Console.ResetColor();
-                    }
-                }
-                else
-                {
-                    // TODO: Setup sync relationship on the server IF not exists already
-
-                    // Start Change Management
-                    await StartChangeManagementService(grpcUrl, grpcAuthToken);
-                }
-            }
-            else
+            if (!SqlServerDatabasePrep.ForChangeManagement())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Change Management cannot be started without prepping the database.");
                 Console.WriteLine("Please prep the database and try again.");
                 Console.ResetColor();
+
+                return;
             }
+
+            var redisServerCollection = new LiteRedisServerCollection();
+            var syncRelationshipCollection = new LiteSyncRelationshipCollection();
+
+            var syncRelationship = syncRelationshipCollection
+                                        .FindByDatabase(AppSession.Database!.Id.ToString()).FirstOrDefault();
+
+            if (syncRelationship == null)
+            {
+                if (!RedisServerPicker.SelectFromLocalStorage())
+                {
+                    if (!RedisServerPicker.GetFromUser())
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Change Management cannot be started without selecting a target Redis Server.");
+                        Console.WriteLine("Please select a Redis Server and try again.");
+                        Console.ResetColor();
+                        return;
+                    }
+                }
+
+                syncRelationship = CreateSyncRelationship(syncRelationshipCollection);
+            }
+
+            AppSession.RedisServer = redisServerCollection
+                                                            .FindById(new BsonValue(new ObjectId(syncRelationship.RedisServerId)));
+
+            Console.WriteLine($"This database has a sync relationship with {AppSession.RedisServer.DecryptedServerName}:{AppSession.RedisServer.Port}");
+
+            var channel = GrpcChannel.ForAddress(grpcUrl);
+            var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
+                };
+
+            var userSetupApiClient = new UserSetupApi.UserSetupApiClient(channel);
+            ServiceResponse? getUserSetupDataResponse = null;
+
+            var cts = new CancellationTokenSource();
+            var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+            try
+            {
+                getUserSetupDataResponse = await GetUserSetupData(userSetupApiClient, headers);
+            }
+            finally
+            {
+                cts.Cancel();
+                await progressTask;
+            }
+
+            if (UserAccountOrOrgSetupRequired(getUserSetupDataResponse))
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(getUserSetupDataResponse.Message);
+                Console.ResetColor();
+
+                ServiceValueResponse? addOrUpdateClientAndUserProfileResponse = null;
+
+                cts = new CancellationTokenSource();
+                progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+                try
+                {
+                    addOrUpdateClientAndUserProfileResponse = await PromptUserToSetupUserAccountAndOrg(userSetupApiClient, headers);
+                }
+                finally
+                {
+                    cts.Cancel();
+                    await progressTask;
+                }
+
+                if (!addOrUpdateClientAndUserProfileResponse.Success)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
+                    Console.WriteLine("User Account and Organization setup could NOT be completed successfully. Please try again later");
+                    Console.ResetColor();
+                    return;
+                }
+
+                if (addOrUpdateClientAndUserProfileResponse.Success)
+                {
+                    Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
+                    Console.WriteLine("User Account and Organization setup completed successfully.");
+
+                    //Reload data, so it can be used.
+                    getUserSetupDataResponse = await GetUserSetupData(userSetupApiClient, headers);
+                }
+            }
+
+            var syncApiClient = new SyncApiService.SyncApiServiceClient(channel);
+            GetSyncProfilesResponse? getSyncProfilesResponse = null;
+
+            cts = new CancellationTokenSource();
+            progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+            try
+            {
+                getSyncProfilesResponse = await syncApiClient.GetSyncProfilesAsync(new GetSyncProfilesRequest() { PageNo = 1, PageSize = 10 }, headers);
+            }
+            finally
+            {
+                cts.Cancel();
+                await progressTask;
+            }
+
+            SyncProfileViewModel? syncProfile = null;
+
+            if (SyncProfilesExist(getSyncProfilesResponse))
+            {
+                syncProfile = (from p in getSyncProfilesResponse.Profiles
+                               where p.Database.HostName == AppSession.Database!.DecryptedServerName &&
+                                     p.Database.Name == AppSession.Database!.DecryptedDatabaseName &&
+                                     p.RedisServer.HostName == AppSession.RedisServer!.DecryptedServerName
+                               select p).FirstOrDefault();
+            }
+
+            if (syncProfile == null)
+            {
+                Console.WriteLine("No matching Sync Profiles found. We will create one now.");
+
+                var request = new AddOrUpdateSyncProfileRequest
+                {
+                    Profile = new AddOrUpdateSyncProfileViewModel()
+                    {
+                        IsNewSyncProfile = true,
+                        EncryptionKey = RedflyEncryptionKeys.AesKey,
+                        Database = new AddOrUpdateSyncedDatabaseViewModel()
+                        {
+                            EncryptedHostName = AppSession.Database!.EncryptedServerName,
+                            EncryptedName = AppSession.Database!.EncryptedDatabaseName
+                        },
+                        RedisServer = new AddOrUpdateSyncedRedisServerViewModel()
+                        {
+                            EncryptedHostName = AppSession.RedisServer!.EncryptedServerName,
+                            MaxAllowedConcurrentOperations = 256                            
+                        },
+                        SetupConfig = new AddOrUpdateSyncSetupConfigViewModel()
+                        {
+                            CtAndSnapshotIsolationEnabled = true,
+                            CtAndSnapshotIsolationEnabledValidated = true,
+                            CtEnabledOnTables = true,
+                            RedisPort = AppSession.RedisServer!.Port,
+                            TimestampColumnAdded = true,
+                            TimestampColumnAddedValidated = true,
+                            EncryptedClientDatabasePassword = AppSession.Database!.EncryptedPassword,
+                            EncryptedClientDatabaseUserName = AppSession.Database!.EncryptedUserName,
+                            EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
+                        }
+                    }
+                };
+
+                AddOrUpdateSyncProfileResponse? addOrUpdateSyncProfileResponse = null;
+
+                cts = new CancellationTokenSource();
+                progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+                try
+                {
+                    addOrUpdateSyncProfileResponse = await syncApiClient.AddOrUpdateSyncProfileAsync(request, headers);
+                }
+                finally
+                {
+                    cts.Cancel();
+                    await progressTask;
+                }
+
+                if (!addOrUpdateSyncProfileResponse.Success)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(addOrUpdateSyncProfileResponse.Message);
+                    Console.WriteLine("The Sync Profile could NOT be created. Please try again later");
+                    Console.ResetColor();
+                    return;
+                }
+
+                Console.WriteLine(addOrUpdateSyncProfileResponse.Message);
+                Console.WriteLine("The Sync Profile was created successfully.");
+
+                cts = new CancellationTokenSource();
+                progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+                try
+                {
+                    getSyncProfilesResponse = await syncApiClient.GetSyncProfilesAsync(new GetSyncProfilesRequest() { PageNo = 1, PageSize = 10 }, headers);
+                }
+                finally
+                {
+                    cts.Cancel();
+                    await progressTask;
+                }
+
+                syncProfile = (from p in getSyncProfilesResponse.Profiles
+                               where p.Database.HostName == AppSession.Database!.DecryptedServerName &&
+                                     p.Database.Name == AppSession.Database!.DecryptedDatabaseName &&
+                                     p.RedisServer.HostName == AppSession.RedisServer!.DecryptedServerName
+                               select p).FirstOrDefault();
+            }
+
+            AppSession.SyncProfile = syncProfile;
+            Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
+
+            // Start Change Management
+            await StartChangeManagementService(grpcUrl, grpcAuthToken);
         }
         catch (Exception ex)
         {
@@ -152,6 +277,26 @@ internal class Program
 
             RedflyLocalDatabase.Dispose();
         }
+    }
+
+    private static LiteSyncRelationshipDocument CreateSyncRelationship(LiteSyncRelationshipCollection syncRelationshipCollection)
+    {
+        LiteSyncRelationshipDocument syncRelationship = new()
+        {
+            SqlServerDatabaseId = AppSession.Database!.Id.ToString(),
+            RedisServerId = AppSession.RedisServer!.Id.ToString()
+        };
+        syncRelationshipCollection.Add(syncRelationship);
+
+        Console.WriteLine($"The local sync relationship with this Redis Server has been saved successfully");
+        return syncRelationship;
+    }
+
+    private static bool SyncProfilesExist(GetSyncProfilesResponse getSyncProfilesResponse)
+    {
+        return getSyncProfilesResponse.Success &&
+               getSyncProfilesResponse.Profiles != null &&
+               getSyncProfilesResponse.Profiles.Count > 0;
     }
 
     private static async Task<ServiceResponse> GetUserSetupData(UserSetupApi.UserSetupApiClient userSetupApiClient, Metadata headers)

@@ -129,7 +129,7 @@ namespace RedflyGrpcAuthServiceClient
         private static async Task<string> LoginAsync(AuthService.AuthServiceClient authServiceClient, LoginRequest loginRequest, int retryCount = 0)
         {
             var cts = new CancellationTokenSource();
-            var progressTask = ShowProgressAnimation(cts.Token);
+            var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
 
             try
             {
@@ -162,20 +162,6 @@ namespace RedflyGrpcAuthServiceClient
             }
         }
 
-        private static async Task ShowProgressAnimation(CancellationToken token)
-        {
-            var animation = new[] { '/', '-', '\\', '|' };
-            int counter = 0;
-
-            while (!token.IsCancellationRequested)
-            {
-                Console.Write(animation[counter % animation.Length]);
-                Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-                counter++;
-                await Task.Delay(100);
-            }
-        }
-
         private static async Task<bool> TestSecureGrpcCall(AuthService.AuthServiceClient client, string token, int retryCount = 0)
         {
             try
@@ -193,7 +179,7 @@ namespace RedflyGrpcAuthServiceClient
                 Console.WriteLine($"Executing Secure Request with JWT Token (attempt {retryCount + 1})...");
 
                 var cts = new CancellationTokenSource();
-                var progressTask = ShowProgressAnimation(cts.Token);
+                var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
 
                 try
                 {

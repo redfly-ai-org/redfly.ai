@@ -1,0 +1,141 @@
+syntax = "proto3";
+
+option csharp_namespace = "RedflyDatabaseSyncProxy";
+
+package syncapi;
+
+import "google/protobuf/wrappers.proto";
+import "google/protobuf/timestamp.proto";
+
+service SyncApiService {
+    rpc GetSyncProfiles (GetSyncProfilesRequest) returns (GetSyncProfilesResponse);
+    rpc GetSyncProfile (GetSyncProfileRequest) returns (GetSyncProfileResponse);
+    rpc AddOrUpdateSyncProfile (AddOrUpdateSyncProfileRequest) returns (AddOrUpdateSyncProfileResponse);
+    rpc DeleteSyncProfile (DeleteSyncProfileRequest) returns (DeleteSyncProfileResponse);
+}
+
+message GetSyncProfilesRequest {
+    int32 pageNo = 1;
+    int32 pageSize = 2;
+}
+
+message GetSyncProfilesResponse {
+    bool success = 1;
+    string message = 2;
+    repeated SyncProfileViewModel profiles = 3;
+}
+
+message GetSyncProfileRequest {
+    string clientId = 1;
+    string clientDatabaseId = 2;
+    int32 clientTimeZoneOffsetInMinutes = 3;
+}
+
+message GetSyncProfileResponse {
+    bool success = 1;
+    string message = 2;
+    SyncProfileViewModel profile = 3;
+}
+
+message AddOrUpdateSyncProfileRequest {
+    AddOrUpdateSyncProfileViewModel profile = 1;
+}
+
+message AddOrUpdateSyncProfileResponse {
+    bool success = 1;
+    string message = 2;
+    google.protobuf.StringValue profileId = 3;
+}
+
+message DeleteSyncProfileRequest {
+    string clientId = 1;
+    string clientDatabaseId = 2;
+}
+
+message DeleteSyncProfileResponse {
+    bool success = 1;
+    string message = 2;
+    google.protobuf.BoolValue result = 3;
+}
+
+message AddOrUpdateSyncProfileViewModel {
+    AddOrUpdateSyncedDatabaseViewModel database = 1;
+    AddOrUpdateSyncedRedisServerViewModel redisServer = 2;
+    AddOrUpdateSyncSetupConfigViewModel setupConfig = 3;
+    bool isNewSyncProfile = 4;
+    string encryptionKey = 5;
+}
+
+message AddOrUpdateSyncedDatabaseViewModel {
+    string id = 1;
+    string encryptedName = 2;
+    string encryptedHostName = 3;
+}
+
+message AddOrUpdateSyncedRedisServerViewModel {
+    int32 maxAllowedConcurrentOperations = 1;
+    string encryptedHostName = 2;
+}
+
+message AddOrUpdateSyncSetupConfigViewModel {
+    string tokenId = 1;
+    string encryptedClientDatabaseUserName = 2;
+    string encryptedClientDatabasePassword = 3;
+    bool ctAndSnapshotIsolationEnabled = 4;
+    bool timestampColumnAdded = 5;
+    bool ctEnabledOnTables = 6;
+    int32 redisPort = 7;
+    string encryptedRedisPassword = 8;
+    bool ctAndSnapshotIsolationEnabledValidated = 9;
+    bool timestampColumnAddedValidated = 10;
+}
+
+message SyncProfileViewModel {
+    string clientName = 1;
+    SyncedDatabaseViewModel database = 2;
+    SyncedRedisServerViewModel redisServer = 3;
+    SyncSetupConfigViewModel setupConfig = 4;
+    bool isNewSyncProfile = 5;
+    bool loggedInUserHasReadAccess = 6;
+    bool loggedInUserHasReadWriteAccess = 7;
+    bool loggedInUserHasDeleteAccess = 8;
+    bool loggedInUserHasSetupAccess = 9;
+}
+
+message SyncedDatabaseViewModel {
+    string id = 1;
+    string clientId = 2;
+    string name = 3;
+    string ownerId = 4;
+    string hostName = 5;
+    string cmsWorkerAffinity = 6;
+    bool isActive = 7;
+    bool licenseIsActive = 8;
+    bool lifetimeLicense = 9;
+    google.protobuf.Timestamp licenseExpiryDate = 10;
+    google.protobuf.Timestamp lastUpdateTimeUtc = 11;
+}
+
+message SyncedRedisServerViewModel {
+    int32 maxAllowedConcurrentOperations = 1;
+    string hostName = 2;
+    google.protobuf.Timestamp lastModifiedTimeUtc = 3;
+    bool isPrimary = 4;
+}
+
+message SyncSetupConfigViewModel {
+    string tokenId = 1;
+    string clientDatabaseUserName = 2;
+    string clientDatabasePassword = 3;
+    string cmsWorkerFullHostNameOrIp = 4;
+    bool ctAndSnapshotIsolationEnabled = 5;
+    bool timestampColumnAdded = 6;
+    bool ctEnabledOnTables = 7;
+    bool databaseFirewallOpenedToCms = 8;
+    int32 redisPort = 9;
+    string redisPassword = 10;
+    bool dbAccessibleFromRedfly = 11;
+    bool ctAndSnapshotIsolationEnabledValidated = 12;
+    bool timestampColumnAddedValidated = 13;
+}
+   

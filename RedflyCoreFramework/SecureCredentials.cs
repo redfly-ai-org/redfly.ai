@@ -21,14 +21,14 @@ public class SecureCredentials
     public static void Save(string userName, StringBuilder password)
     {
         var credentials = $"{userName}:{password}";
-        var encryptedCredentials = RedflyEncryption.EncryptToBytes(credentials, RedflyEncryptionKeys.AesKey);
+        var encryptedCredentials = RedflyEncryption.EncryptToBytes(credentials, RedflyEncryptionKeys.NativeAesKey);
         File.WriteAllBytes(CredentialsFilePath, encryptedCredentials);
     }
 
     public static (string userName, StringBuilder password) Get()
     {
         var encryptedCredentials = File.ReadAllBytes(CredentialsFilePath);
-        var decryptedCredentials = RedflyEncryption.Decrypt(encryptedCredentials, RedflyEncryptionKeys.AesKey);
+        var decryptedCredentials = RedflyEncryption.Decrypt(encryptedCredentials, RedflyEncryptionKeys.NativeAesKey);
         var parts = decryptedCredentials.Split(':');
         return (parts[0], new StringBuilder(parts[1]));
     }

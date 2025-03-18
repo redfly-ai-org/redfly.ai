@@ -5,7 +5,8 @@ using System.Security.Cryptography;
 public static class RedflyEncryptionKeys
 {
 
-    public static readonly byte[] AesKey = Convert.FromBase64String("/cjaaIYcB2E4GsPd+wXSWB6HBorzZY86eVuLBrYw0SY="); // Use a secure key
+    public const string AesKey = "/cjaaIYcB2E4GsPd+wXSWB6HBorzZY86eVuLBrYw0SY=";
+    public static readonly byte[] NativeAesKey = Convert.FromBase64String(AesKey); // Use a secure key
 
     public static byte[] GenerateForAes(int keySize = 256)
     {
