@@ -5,7 +5,6 @@ option csharp_namespace = "RedflyDatabaseSyncProxy";
 package syncapi;
 
 import "google/protobuf/wrappers.proto";
-import "google/protobuf/timestamp.proto";
 
 service SyncApiService {
     rpc GetSyncProfiles (GetSyncProfilesRequest) returns (GetSyncProfilesResponse);
