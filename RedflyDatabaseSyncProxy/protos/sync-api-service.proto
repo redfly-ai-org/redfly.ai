@@ -112,14 +112,11 @@ message SyncedDatabaseViewModel {
     bool isActive = 7;
     bool licenseIsActive = 8;
     bool lifetimeLicense = 9;
-    google.protobuf.Timestamp licenseExpiryDate = 10;
-    google.protobuf.Timestamp lastUpdateTimeUtc = 11;
 }
 
 message SyncedRedisServerViewModel {
     int32 maxAllowedConcurrentOperations = 1;
     string hostName = 2;
-    google.protobuf.Timestamp lastModifiedTimeUtc = 3;
     bool isPrimary = 4;
 }
 
