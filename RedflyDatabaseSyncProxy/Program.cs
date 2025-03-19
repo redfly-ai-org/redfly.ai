@@ -294,9 +294,9 @@ internal class Program
 
     private static bool SyncProfilesExist(GetSyncProfilesResponse getSyncProfilesResponse)
     {
-        return getSyncProfilesResponse.Success &&
-               getSyncProfilesResponse.Profiles != null &&
-               getSyncProfilesResponse.Profiles.Count > 0;
+        return (getSyncProfilesResponse.Success &&
+                getSyncProfilesResponse.Profiles != null &&
+                getSyncProfilesResponse.Profiles.Count > 0);
     }
 
     private static async Task<ServiceResponse> GetUserSetupData(UserSetupApi.UserSetupApiClient userSetupApiClient, Metadata headers)
@@ -311,12 +311,12 @@ internal class Program
 
     private static bool UserAccountOrOrgSetupRequired(ServiceResponse getUserSetupDataResponse)
     {
-        return !getUserSetupDataResponse.Success ||
-                            getUserSetupDataResponse.Result == null ||
-                            getUserSetupDataResponse.Result.IsFreshNewUser ||
-                            string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserFirstName) ||
-                            string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserLastName) ||
-                            string.IsNullOrEmpty(getUserSetupDataResponse.Result.ClientName);
+        return (!getUserSetupDataResponse.Success ||
+                getUserSetupDataResponse.Result == null ||
+                getUserSetupDataResponse.Result.IsFreshNewUser ||
+                string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserFirstName) ||
+                string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserLastName) ||
+                string.IsNullOrEmpty(getUserSetupDataResponse.Result.ClientName));
     }
 
     private static async Task<ServiceValueResponse> PromptUserToSetupUserAccountAndOrg(UserSetupApi.UserSetupApiClient userSetupApiClient, Metadata headers)
@@ -367,7 +367,20 @@ internal class Program
                 };
 
         // Start Change Management
-        var startResponse = await cmsClient.StartChangeManagementAsync(new StartChangeManagementRequest { ClientSessionId = clientSessionId }, headers);
+        var startResponse = await cmsClient
+                                    .StartChangeManagementAsync(
+                                        new StartChangeManagementRequest 
+                                        { 
+                                            ClientSessionId = clientSessionId,
+                                            EncryptionKey = RedflyEncryptionKeys.AesKey,
+                                            EncryptedClientId = RedflyEncryption.EncryptToString(AppSession.SyncProfile!.Database.ClientId),
+                                            EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.ClientName),
+                                            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Id),
+                                            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Name),
+                                            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.HostName),
+                                            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppSession.Database!.DecryptedUserName};Password={AppSession.Database.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;")
+                                        }, 
+                                        headers);
 
         if (startResponse.Success)
         {

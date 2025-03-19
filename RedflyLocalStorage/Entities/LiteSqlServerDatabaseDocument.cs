@@ -53,5 +53,10 @@ namespace RedflyLocalStorage.Entities
             }
         }
 
+        public string GetPassword()
+        {
+            return RedflyEncryption.Decrypt(EncryptedPassword);
+        }
+
     }
 }

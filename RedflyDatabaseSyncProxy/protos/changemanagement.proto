@@ -15,6 +15,13 @@ service GrpcChangeManagement {
 // The request message containing the client's information.
 message StartChangeManagementRequest {
   string client_session_id = 1;
+  string encryptedDatabaseServerName = 2;
+  string encryptedServerOnlyConnectionString = 3;
+  string encryptedClientId = 4;
+  string encryptedClientName = 5;
+  string encryptedDatabaseId = 6;
+  string encryptedDatabaseName = 7;
+  string encryptionKey = 8;
 }
 
 // The response message containing the result of the start request.
