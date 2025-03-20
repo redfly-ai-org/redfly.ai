@@ -32,8 +32,15 @@ namespace RedflyDatabaseSyncProxy
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("This database has already been prepped for redfly.");
+                Console.WriteLine("Do you want to prep again? (y/n)");
+                var response = Console.ReadLine();
                 Console.ResetColor();
-                return true;
+
+                if (response != null &&
+                    response.Equals("n", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    return true;
+                }
             }
 
             if (!EnableDatabaseChangeTracking())
@@ -165,7 +172,12 @@ namespace RedflyDatabaseSyncProxy
             using var connection = new SqlConnection(selectedDatabase.ConnectionString);
             connection.Open();
             using var command = connection.CreateCommand();
-            command.CommandText = "SELECT name FROM sys.tables WHERE is_memory_optimized = 0";
+
+            command.CommandText = @"SELECT s.name AS SchemaName, t.name AS TableName
+                                    FROM sys.tables t
+                                    INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+                                    WHERE t.is_memory_optimized = 0";
+
 
             var tables = new List<string>();
             SqlDataReader reader;
@@ -174,17 +186,16 @@ namespace RedflyDatabaseSyncProxy
             {
                 while (reader.Read())
                 {
-                    tables.Add(reader.GetString(0));
+                    tables.Add($"{reader.GetString(0)}.{reader.GetString(1)}");
                 }
             }
 
             foreach (var table in tables)
             {
-                command.CommandText = @"
-                    SELECT i.name 
-                    FROM sys.indexes i
-                    INNER JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
-                    WHERE i.is_primary_key = 1 AND i.object_id = OBJECT_ID('" + table + "')";
+                command.CommandText = @"SELECT i.name 
+                                        FROM sys.indexes i
+                                        INNER JOIN sys.index_columns ic ON i.object_id = ic.object_id AND i.index_id = ic.index_id
+                                        WHERE i.is_primary_key = 1 AND i.object_id = OBJECT_ID('" + table + "')";
 
                 using (reader = command.ExecuteReader())
                 {
