@@ -10,6 +10,7 @@ using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage.Entities;
 using System.Data.SqlTypes;
+using System.Text.RegularExpressions;
 using System.Threading.Channels;
 
 namespace RedflyDatabaseSyncProxy;
@@ -399,7 +400,7 @@ internal class Program
         {
             await foreach (var message in call.ResponseStream.ReadAllAsync())
             {
-                Console.WriteLine($"Server: {message.Message}");
+                Console.WriteLine(FormatGrpcServerMessage(message.Message));
             }
         });
 
@@ -413,6 +414,30 @@ internal class Program
         // Complete the request stream
         await call.RequestStream.CompleteAsync();
         await responseTask;
+    }
+
+    private static string FormatGrpcServerMessage(string logMessage)
+    {
+        try
+        {
+            var regex = new Regex(@"Type: (?<Type>[^,]+), Data: \{ Operation = (?<Operation>[^}]+) \}");
+            var match = regex.Match(logMessage);
+
+            if (match.Success)
+            {
+                var type = match.Groups["Type"].Value;
+                var operation = match.Groups["Operation"].Value;
+                return $"{type}|{operation}";
+            }
+
+            return logMessage; // Return the original message if it doesn't match the expected format
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error formatting message: {ex}");
+
+            return logMessage; // Return the original message if an exception occurs
+        }
     }
 
 }
