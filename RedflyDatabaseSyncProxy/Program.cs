@@ -33,11 +33,18 @@ internal class Program
             Console.WriteLine("Contact us at developer@redfly.ai to directly work with us so you can do the same thing with your database (cloud/ on-premises).");
             Console.WriteLine("No matter how large or complex your DB is, redfly.ai can do it! \r\n");
 
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine("We suggest starting with a test database as we make non-invasive changes to your database which should NOT affect well designed, modern applications.\r\n");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("For sync to work, your database firewall should allow traffic from these Azure IP addresses:\r\n");
+            Console.WriteLine("20.237.7.43, 20.237.7.49, 20.237.7.128, 20.237.7.153, 20.237.7.201, 20.237.7.221, 40.71.11.140");
+            Console.WriteLine("40.121.154.115, 13.82.228.43, 40.121.158.167, 40.117.44.182, 168.61.50.107, 40.121.80.139, 40.117.44.94, 23.96.53.166, 40.121.152.91, 20.237.7.43, 20.237.7.49, 20.237.7.128, 20.237.7.153, 20.237.7.201, 20.237.7.221, 20.246.144.9, 20.246.144.108, 20.246.144.117, 20.246.144.140, 20.246.144.145, 20.246.144.213, 40.71.11.140\r\n");
+            Console.ResetColor();
+
             Console.WriteLine("Press any key to start the process of synchronizing your database with Redis transparently...");
             Console.ReadKey();
 
-            //TODO: This will change.
-            var grpcUrl = "https://localhost:7176";
+            var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
 
             var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
 
