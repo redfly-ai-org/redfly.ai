@@ -36,7 +36,7 @@ internal class Program
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("We suggest starting with a test database as we make non-invasive changes to your database which should NOT affect well designed, modern applications.\r\n");
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("For sync to work, your database should be accessible over the Internet and its firewall should allow traffic from these Azure IP addresses (US East Region). We plan to support non-public and local servers in a later release of this application.\r\n");
+            Console.WriteLine("For sync to work, your Database should be accessible over the Internet and its firewall should allow traffic from these Azure IP addresses (US East Region). We plan to support non-public and local servers in a later release of this application.\r\n");
             Console.WriteLine("20.237.7.43, 20.237.7.49, 20.237.7.128, 20.237.7.153, 20.237.7.201, 20.237.7.221, 40.71.11.140");
             Console.WriteLine("40.121.154.115, 13.82.228.43, 40.121.158.167, 40.117.44.182, 168.61.50.107, 40.121.80.139, 40.117.44.94, 23.96.53.166, 40.121.152.91, 20.237.7.43, 20.237.7.49, 20.237.7.128, 20.237.7.153, 20.237.7.201, 20.237.7.221, 20.246.144.9, 20.246.144.108, 20.246.144.117, 20.246.144.140, 20.246.144.145, 20.246.144.213, 40.71.11.140\r\n");
             Console.ResetColor();
