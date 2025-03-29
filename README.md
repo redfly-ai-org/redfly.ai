@@ -9,7 +9,8 @@ Provide source code that:
 2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand
    - Get the database ready for synchronization, by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
-   - Support for synchronizing databases which are on your local network, without opening firewall ports (WIP 🏃🏽‍♀️‍➡️)
+   - Postgres Support (WIP 🏃🏽‍♀️‍➡️ - prototype done, publishing here TBD ⌚)
+   - Support for synchronizing databases which are on your local network, without opening firewall ports (TBD ⌚)
 4. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
