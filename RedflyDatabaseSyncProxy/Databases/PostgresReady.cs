@@ -34,7 +34,7 @@ namespace RedflyDatabaseSyncProxy
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("This Postgres database has already been prepped for redfly.");
-                Console.WriteLine("Do you want to prep again? (y/n)");
+                Console.WriteLine("Do you want to walkthrough the prep instructions again? (y/n)");
                 response = Console.ReadLine();
                 Console.ResetColor();
 
@@ -64,7 +64,7 @@ namespace RedflyDatabaseSyncProxy
                 Console.WriteLine("These should be the MIN values for these configuration entries:");
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("    max_replication_slots >= 4");
-                Console.WriteLine("    max_wal_senders >= 4");
+                Console.WriteLine("    max_wal_senders >= 4\r\n");
                 Console.ResetColor();
 
                 Console.WriteLine("Please enter 'y' when you are ready to continue AFTER modifying these settings if they were different...");
@@ -78,7 +78,7 @@ namespace RedflyDatabaseSyncProxy
                 Console.WriteLine("You will also need to grant the REPLICATION privilege to the database user.");
                 Console.WriteLine("This can be done using the following script:");
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("ALTER ROLE your_username WITH REPLICATION;");
+                Console.WriteLine("ALTER ROLE your_username WITH REPLICATION;\r\n");
                 Console.ResetColor();
 
                 Console.WriteLine("Please enter 'y' when you are ready to continue AFTER granting the privilege if it was not already granted...");
@@ -91,7 +91,7 @@ namespace RedflyDatabaseSyncProxy
             {
                 Console.WriteLine("If you modified ANY of the following parameters, you will need to restart your Postgres server for them to take effect");
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("wal_level, max_replication_slots, max_wal_senders");
+                Console.WriteLine("wal_level, max_replication_slots, max_wal_senders\r\n");
                 Console.ResetColor();
 
                 Console.WriteLine("Please enter 'y' when you are ready to continue AFTER the restart was done if found necessary...");
