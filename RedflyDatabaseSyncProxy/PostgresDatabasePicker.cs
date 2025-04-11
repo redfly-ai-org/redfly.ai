@@ -8,10 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace RedflyDatabaseSyncProxy
 {
-    internal class SqlServerDatabasePicker
+    internal class PostgresDatabasePicker
     {
 
         internal static bool GetFromUser()
@@ -20,54 +21,70 @@ namespace RedflyDatabaseSyncProxy
             string databaseName = "";
             string userName = "";
             string password = "";
+            string pgOutputSlotName = "";
+            string publicationName = "";
 
             do
             {
                 while (string.IsNullOrWhiteSpace(serverName))
                 {
-                    Console.WriteLine("Please enter the Sql server name:");
+                    Console.WriteLine("Please enter the Postgres server name:");
                     serverName = Console.ReadLine() ?? string.Empty;
                 }
 
                 while (string.IsNullOrWhiteSpace(databaseName))
                 {
-                    Console.WriteLine("Please enter the Sql Server database name:");
+                    Console.WriteLine("Please enter the Postgres database name:");
                     databaseName = Console.ReadLine() ?? string.Empty;
                 }
 
                 while (string.IsNullOrWhiteSpace(userName))
                 {
-                    Console.WriteLine("Please enter the Sql Server username:");
+                    Console.WriteLine("Please enter the Postgres username:");
                     userName = Console.ReadLine() ?? string.Empty;
                 }
 
                 while (string.IsNullOrWhiteSpace(password))
                 {
-                    Console.WriteLine("Please enter the Sql Server password:");
+                    Console.WriteLine("Please enter the Postgres password:");
                     password = RedflyConsole.GetPasswordFromUser().ToString() ?? string.Empty;
+                }
+
+                while (string.IsNullOrWhiteSpace(pgOutputSlotName))
+                {
+                    Console.WriteLine("Please enter a name for the Postgres Output Slot for Logical Replication:");
+                    Console.WriteLine("Ex: redfly_pgout_slot");
+                    pgOutputSlotName = Console.ReadLine() ?? string.Empty;
+                }
+
+                while (string.IsNullOrWhiteSpace(publicationName))
+                {
+                    Console.WriteLine("Please enter a name for the  Postgres Publication Name for Logical Replication:");
+                    Console.WriteLine("Ex: redfly_publication");
+                    publicationName = Console.ReadLine() ?? string.Empty;
                 }
             }
             // Verify that we can connect to the database
-            while (!RedflySqlServer.VerifyConnectivity(serverName, databaseName, userName, password));
+            while (!RedflyPostgres.VerifyConnectivity(serverName, databaseName, userName, password));
 
-            AppSession.SqlServerDatabase = SaveDatabaseDetailsToLocalStorage(serverName, databaseName, userName, password);
+            AppSession.PostgresDatabase = SaveDatabaseDetailsToLocalStorage(serverName, databaseName, userName, password, pgOutputSlotName, publicationName);
 
-            return (AppSession.SqlServerDatabase != null);
+            return (AppSession.PostgresDatabase != null);
         }
 
         internal static bool SelectFromLocalStorage()
         {
-            var collection = new LiteSqlServerDatabaseCollection();
+            var collection = new LitePostgresDatabaseCollection();
             var all = collection.All();
 
             if (all.Count() == 0)
             {
-                Console.WriteLine("No Sql Server database details found in local storage.");
+                Console.WriteLine("No database details found in local storage.");
                 return false;
             }
             else
             {
-                Console.WriteLine("\r\nSome Sql Server databases are available in Local Storage.");
+                Console.WriteLine("\r\nSome databases are available in Local Storage.");
                 Console.WriteLine("Do you want to select one of these? (y/n)");
                 var response = Console.ReadLine();
 
@@ -77,7 +94,7 @@ namespace RedflyDatabaseSyncProxy
                     return false;
                 }
 
-                Console.WriteLine("Please select the Sql Server database to sync from:");
+                Console.WriteLine("Please select the database to sync from:");
 
                 string? selected = null;
                 int selectedIndex = 0;
@@ -97,31 +114,39 @@ namespace RedflyDatabaseSyncProxy
                        selectedIndex <= 0 ||
                        selectedIndex > all.Count());
 
-                AppSession.SqlServerDatabase = all.ElementAt(selectedIndex - 1);
+                AppSession.PostgresDatabase = all.ElementAt(selectedIndex - 1);
                 return true;
             }
         }
 
-        private static LiteSqlServerDatabaseDocument? SaveDatabaseDetailsToLocalStorage(string serverName, string databaseName, string userName, string password)
+        private static LitePostgresDatabaseDocument? SaveDatabaseDetailsToLocalStorage(
+            string serverName, 
+            string databaseName, 
+            string userName, 
+            string password,
+            string pgOutputSlotName,
+            string publicationName)
         {
-            var collection = new LiteSqlServerDatabaseCollection();
+            var collection = new LitePostgresDatabaseCollection();
 
             var found = collection.Find(serverName, databaseName, userName);
 
             if (found == null)
             {
-                var document = new LiteSqlServerDatabaseDocument
+                var document = new LitePostgresDatabaseDocument
                 {
                     EncryptedServerName = RedflyEncryption.EncryptToString(serverName),
                     EncryptedDatabaseName = RedflyEncryption.EncryptToString(databaseName),
                     EncryptedUserName = RedflyEncryption.EncryptToString(userName),
-                    EncryptedPassword = RedflyEncryption.EncryptToString(password)
+                    EncryptedPassword = RedflyEncryption.EncryptToString(password),
+                    EncryptedPgOutputSlotName = RedflyEncryption.EncryptToString(pgOutputSlotName),
+                    EncryptedPublicationName = RedflyEncryption.EncryptToString(publicationName),
                 };
 
                 collection.Add(document);
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("Added Sql Server Database details to encrypted local storage.");
+                Console.WriteLine("Added Postgres Database details to encrypted local storage.");
                 Console.ResetColor();
 
                 return document;
@@ -154,12 +179,24 @@ namespace RedflyDatabaseSyncProxy
                     changed = true;
                 }
 
+                if (found.EncryptedPgOutputSlotName != RedflyEncryption.EncryptToString(pgOutputSlotName))
+                {
+                    found.EncryptedPgOutputSlotName = RedflyEncryption.EncryptToString(pgOutputSlotName);
+                    changed = true;
+                }
+
+                if (found.EncryptedPublicationName != RedflyEncryption.EncryptToString(publicationName))
+                {
+                    found.EncryptedPublicationName = RedflyEncryption.EncryptToString(publicationName);
+                    changed = true;
+                }
+
                 if (changed)
                 {
                     collection.Update(found);
 
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Updated Sql Server Database details in encrypted local storage.");
+                    Console.WriteLine("Updated Postgres Database details in encrypted local storage.");
                     Console.ResetColor();
                 }
 

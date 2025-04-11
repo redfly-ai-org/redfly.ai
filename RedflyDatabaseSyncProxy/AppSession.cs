@@ -10,7 +10,9 @@ namespace RedflyDatabaseSyncProxy
     internal class AppSession
     {
 
-        internal static LiteSqlServerDatabaseDocument? Database { get; set; }
+        internal static LiteSqlServerDatabaseDocument? SqlServerDatabase { get; set; }
+
+        internal static LitePostgresDatabaseDocument? PostgresDatabase { get; set; }
 
         internal static LiteRedisServerDocument? RedisServer { get; set; }
 

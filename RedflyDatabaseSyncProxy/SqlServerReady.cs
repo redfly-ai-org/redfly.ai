@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace RedflyDatabaseSyncProxy
 {
-    internal class SqlServerDatabasePrep
+    internal class SqlServerReady
     {
 
         internal static bool ForChakraSync()
@@ -27,11 +27,11 @@ namespace RedflyDatabaseSyncProxy
                 }
             }
 
-            if (AppSession.Database != null &&
-                AppSession.Database.DatabasePrepped)
+            if (AppSession.SqlServerDatabase != null &&
+                AppSession.SqlServerDatabase.DatabasePrepped)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("This database has already been prepped for redfly.");
+                Console.WriteLine("This Sql Server database has already been prepped for redfly.");
                 Console.WriteLine("Do you want to prep again? (y/n)");
                 var response = Console.ReadLine();
                 Console.ResetColor();
@@ -46,7 +46,7 @@ namespace RedflyDatabaseSyncProxy
             if (!EnableDatabaseChangeTracking())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Failed to enable change tracking for this database.");
+                Console.WriteLine("Failed to enable change tracking for this Sql Server database.");
                 Console.ResetColor();
 
                 return false;
@@ -55,7 +55,7 @@ namespace RedflyDatabaseSyncProxy
             if (!AllowDatabaseSnapshotIsolation())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Failed to enable snapshot isolation for this database.");
+                Console.WriteLine("Failed to enable snapshot isolation for this Sql Server database.");
                 Console.ResetColor();
 
                 return false;
@@ -70,18 +70,18 @@ namespace RedflyDatabaseSyncProxy
                 return false;
             }
 
-           if (AppSession.Database != null)
+           if (AppSession.SqlServerDatabase != null)
            {
                 var collection = new LiteSqlServerDatabaseCollection();
 
-                var row = collection.Find(AppSession.Database.EncryptedServerName, 
-                                          AppSession.Database.EncryptedDatabaseName, 
-                                          AppSession.Database.EncryptedUserName);
+                var row = collection.Find(AppSession.SqlServerDatabase.EncryptedServerName, 
+                                          AppSession.SqlServerDatabase.EncryptedDatabaseName, 
+                                          AppSession.SqlServerDatabase.EncryptedUserName);
 
                 row.DatabasePrepped = true;
                 collection.Update(row);
 
-                AppSession.Database = row;
+                AppSession.SqlServerDatabase = row;
             }
             
             return true;
@@ -89,7 +89,7 @@ namespace RedflyDatabaseSyncProxy
 
         private static bool EnableDatabaseChangeTracking()
         {
-            var selectedDatabase = AppSession.Database;
+            var selectedDatabase = AppSession.SqlServerDatabase;
 
             if (selectedDatabase == null)
             {
@@ -124,7 +124,7 @@ namespace RedflyDatabaseSyncProxy
 
         private static bool AllowDatabaseSnapshotIsolation()
         {
-            var selectedDatabase = AppSession.Database;
+            var selectedDatabase = AppSession.SqlServerDatabase;
 
             if (selectedDatabase == null)
             {
@@ -162,7 +162,7 @@ namespace RedflyDatabaseSyncProxy
         /// </summary>
         private static bool AddVersionColumnAndEnableChangeTracking_ForAllSupportedTables()
         {
-            var selectedDatabase = AppSession.Database;
+            var selectedDatabase = AppSession.SqlServerDatabase;
 
             if (selectedDatabase == null)
             {
