@@ -70,21 +70,52 @@ internal class Program
                 return;
             }
 
-            if (!SqlServerDatabasePrep.ForChakraSync())
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("Change Management cannot be started without prepping the database.");
-                Console.WriteLine("Please prep the database and try again.");
-                Console.ResetColor();
+            bool isSqlServerSync = false;
+            Console.WriteLine("Are you trying to sync a Sql Server database? (y/n)");
+            response = Console.ReadLine();
 
-                return;
+            if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                isSqlServerSync = true;
+
+                if (!PostgresReady.ForChakraSync())
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Chakra Sync cannot be started without prepping the Sql Server database.");
+                    Console.WriteLine("Please prep the Sql Server database and try again.");
+                    Console.ResetColor();
+
+                    return;
+                }
+            }
+
+            bool isPostgresSync = false;
+            Console.WriteLine("Are you trying to sync a Postgres database? (y/n)");
+            response = Console.ReadLine();
+
+            if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                isPostgresSync = true;
+
+                if (!PostgresReady.ForChakraSync())
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Chakra Sync cannot be started without prepping the Postgres database.");
+                    Console.WriteLine("Please prep the Postgres database and try again.");
+                    Console.ResetColor();
+
+                    return;
+                }
             }
 
             var redisServerCollection = new LiteRedisServerCollection();
+
             var syncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
 
             var syncRelationship = syncRelationshipCollection
-                                        .FindByDatabase(AppSession.Database!.Id.ToString()).FirstOrDefault();
+                                        .FindByDatabase(AppSession.SqlServerDatabase!.Id.ToString()).FirstOrDefault();
 
             if (syncRelationship == null)
             {
@@ -93,7 +124,7 @@ internal class Program
                     if (!RedisServerPicker.GetFromUser())
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Change Management cannot be started without selecting a target Redis Server.");
+                        Console.WriteLine("Chakra Sync cannot be started without selecting a target Redis Server.");
                         Console.WriteLine("Please select a Redis Server and try again.");
                         Console.ResetColor();
                         return;
@@ -199,8 +230,8 @@ internal class Program
             if (SyncProfilesExist(getSyncProfilesResponse))
             {
                 syncProfile = (from p in getSyncProfilesResponse.Profiles
-                               where p.Database.HostName == AppSession.Database!.DecryptedServerName &&
-                                     p.Database.Name == AppSession.Database!.DecryptedDatabaseName &&
+                               where p.Database.HostName == AppSession.SqlServerDatabase!.DecryptedServerName &&
+                                     p.Database.Name == AppSession.SqlServerDatabase!.DecryptedDatabaseName &&
                                      p.RedisServer.HostName == AppSession.RedisServer!.DecryptedServerName
                                select p).FirstOrDefault();
             }
@@ -217,8 +248,8 @@ internal class Program
                         EncryptionKey = RedflyEncryptionKeys.AesKey,
                         Database = new AddOrUpdateSyncedDatabaseViewModel()
                         {
-                            EncryptedHostName = AppSession.Database!.EncryptedServerName,
-                            EncryptedName = AppSession.Database!.EncryptedDatabaseName
+                            EncryptedHostName = AppSession.SqlServerDatabase!.EncryptedServerName,
+                            EncryptedName = AppSession.SqlServerDatabase!.EncryptedDatabaseName
                         },
                         RedisServer = new AddOrUpdateSyncedRedisServerViewModel()
                         {
@@ -233,8 +264,8 @@ internal class Program
                             RedisPort = AppSession.RedisServer!.Port,
                             TimestampColumnAdded = true,
                             TimestampColumnAddedValidated = true,
-                            EncryptedClientDatabasePassword = AppSession.Database!.EncryptedPassword,
-                            EncryptedClientDatabaseUserName = AppSession.Database!.EncryptedUserName,
+                            EncryptedClientDatabasePassword = AppSession.SqlServerDatabase!.EncryptedPassword,
+                            EncryptedClientDatabaseUserName = AppSession.SqlServerDatabase!.EncryptedUserName,
                             EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
                         }
                     }
@@ -281,8 +312,8 @@ internal class Program
                 }
 
                 syncProfile = (from p in getSyncProfilesResponse.Profiles
-                               where p.Database.HostName == AppSession.Database!.DecryptedServerName &&
-                                     p.Database.Name == AppSession.Database!.DecryptedDatabaseName &&
+                               where p.Database.HostName == AppSession.SqlServerDatabase!.DecryptedServerName &&
+                                     p.Database.Name == AppSession.SqlServerDatabase!.DecryptedDatabaseName &&
                                      p.RedisServer.HostName == AppSession.RedisServer!.DecryptedServerName
                                select p).FirstOrDefault();
             }
@@ -290,7 +321,7 @@ internal class Program
             AppSession.SyncProfile = syncProfile;
             Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
 
-            // Start Change Management
+            // Start Chakra Sync
             await StartChakraSyncService(grpcUrl, grpcAuthToken);
         }
         catch (Exception ex)
@@ -313,7 +344,7 @@ internal class Program
     {
         LiteSqlServerSyncRelationshipDocument syncRelationship = new()
         {
-            SqlServerDatabaseId = AppSession.Database!.Id.ToString(),
+            SqlServerDatabaseId = AppSession.SqlServerDatabase!.Id.ToString(),
             RedisServerId = AppSession.RedisServer!.Id.ToString()
         };
         syncRelationshipCollection.Add(syncRelationship);
@@ -396,7 +427,7 @@ internal class Program
                     { "client-session-id", clientSessionId.ToString() }
                 };
 
-        // Start Change Management
+        // Start Chakra Sync
         var startResponse = await cmsClient
                                     .StartChakraSyncAsync(
                                         new StartChakraSyncRequest 
@@ -408,7 +439,7 @@ internal class Program
                                             EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Id),
                                             EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Name),
                                             EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.HostName),
-                                            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppSession.Database!.DecryptedUserName};Password={AppSession.Database.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;")
+                                            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppSession.SqlServerDatabase!.DecryptedUserName};Password={AppSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;")
                                         }, 
                                         headers);
 
