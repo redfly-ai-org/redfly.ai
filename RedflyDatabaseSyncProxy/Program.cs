@@ -6,6 +6,7 @@ using LiteDB;
 using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
+using RedflyDatabaseSyncProxy.Setup;
 using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage.Entities;
@@ -135,7 +136,7 @@ internal class Program
                     { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
             
-            if (!await HandleUserOrOrgSetup(channel, headers)) { return; }
+            if (!await RedflyUserOrOrg.Setup(channel, headers)) { return; }
 
             if (isSqlServerSync)
             {
@@ -280,70 +281,6 @@ internal class Program
         }
     }
 
-    private static async Task<bool> HandleUserOrOrgSetup(GrpcChannel channel, Metadata headers)
-    {
-        CancellationTokenSource cts;
-        Task progressTask;
-
-        var userSetupApiClient = new UserSetupApi.UserSetupApiClient(channel);
-        ServiceResponse? getUserSetupDataResponse = null;
-
-        cts = new CancellationTokenSource();
-        progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
-
-        try
-        {
-            getUserSetupDataResponse = await GetUserSetupData(userSetupApiClient, headers);
-        }
-        finally
-        {
-            cts.Cancel();
-            await progressTask;
-        }
-
-        if (UserAccountOrOrgSetupRequired(getUserSetupDataResponse))
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(getUserSetupDataResponse.Message);
-            Console.ResetColor();
-
-            ServiceValueResponse? addOrUpdateClientAndUserProfileResponse = null;
-
-            cts = new CancellationTokenSource();
-            progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
-
-            try
-            {
-                addOrUpdateClientAndUserProfileResponse = await PromptUserToSetupUserAccountAndOrg(userSetupApiClient, headers);
-            }
-            finally
-            {
-                cts.Cancel();
-                await progressTask;
-            }
-
-            if (!addOrUpdateClientAndUserProfileResponse.Success)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
-                Console.WriteLine("User Account and Organization setup could NOT be completed successfully. Please try again later");
-                Console.ResetColor();
-                return false;
-            }
-
-            if (addOrUpdateClientAndUserProfileResponse.Success)
-            {
-                Console.WriteLine(addOrUpdateClientAndUserProfileResponse.Message);
-                Console.WriteLine("User Account and Organization setup completed successfully.");
-
-                //Reload data, so it can be used.
-                getUserSetupDataResponse = await GetUserSetupData(userSetupApiClient, headers);
-            }
-        }
-
-        return true;
-    }
-
     private static void FindExistingSqlServerSyncRelationshipWithRedis(LiteRedisServerCollection redisServerCollection)
     {
         var sqlServerSyncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
@@ -435,61 +372,6 @@ internal class Program
         return (getSyncProfilesResponse.Success &&
                 getSyncProfilesResponse.Profiles != null &&
                 getSyncProfilesResponse.Profiles.Count > 0);
-    }
-
-    private static async Task<ServiceResponse> GetUserSetupData(UserSetupApi.UserSetupApiClient userSetupApiClient, Metadata headers)
-    {
-        var getUserSetupDataResponse = await userSetupApiClient
-                                            .GetUserSetupDataAsync(new UserIdRequest
-                                            {
-                                                UserId = Guid.NewGuid().ToString()
-                                            }, headers);
-        return getUserSetupDataResponse;
-    }
-
-    private static bool UserAccountOrOrgSetupRequired(ServiceResponse getUserSetupDataResponse)
-    {
-        return (!getUserSetupDataResponse.Success ||
-                getUserSetupDataResponse.Result == null ||
-                getUserSetupDataResponse.Result.IsFreshNewUser ||
-                string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserFirstName) ||
-                string.IsNullOrEmpty(getUserSetupDataResponse.Result.UserLastName) ||
-                string.IsNullOrEmpty(getUserSetupDataResponse.Result.ClientName));
-    }
-
-    private static async Task<ServiceValueResponse> PromptUserToSetupUserAccountAndOrg(UserSetupApi.UserSetupApiClient userSetupApiClient, Metadata headers)
-    {
-        var viewModel = new AddClientAndUserProfileViewModel();
-
-        //The user account and organization have to be setup first.
-        Console.WriteLine("Please setup your User Account and Organization to proceed further.");
-
-        do
-        {
-            Console.WriteLine("Please enter your First Name:");
-            viewModel.UserFirstName = Console.ReadLine();
-        }
-        while (string.IsNullOrWhiteSpace(viewModel.UserFirstName));
-
-        do
-        {
-            Console.WriteLine("Please enter your Last Name:");
-            viewModel.UserLastName = Console.ReadLine();
-        }
-        while (string.IsNullOrWhiteSpace(viewModel.UserLastName));
-
-        do
-        {
-            Console.WriteLine("Please enter your Organization Name:");
-            viewModel.ClientName = Console.ReadLine();
-        }
-        while (string.IsNullOrWhiteSpace(viewModel.ClientName));
-
-        var addOrUpdateClientAndUserProfileResponse = await userSetupApiClient.AddOrUpdateClientAndUserProfileAsync(new AddOrUpdateClientAndUserProfileRequest
-        {
-            Model = viewModel
-        }, headers);
-        return addOrUpdateClientAndUserProfileResponse;
     }
 
     private static async Task StartChakraSqlServerSyncService(string grpcUrl, string grpcAuthToken)
