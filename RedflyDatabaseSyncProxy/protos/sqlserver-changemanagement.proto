@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "RedflyDatabaseSyncProxy";
+option csharp_namespace = "RedflyDatabaseSyncProxy.Protos.SqlServer";
 
 package changemanagement;
 

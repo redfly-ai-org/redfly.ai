@@ -32,8 +32,4 @@
 		<Protobuf Include="protos\sync-api-service.proto" GrpcServices="Client" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="SyncServices\" />
-	</ItemGroup>
-
 </Project>
