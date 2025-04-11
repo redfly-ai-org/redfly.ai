@@ -77,43 +77,44 @@ internal class Program
                 return;
             }
 
-            bool isSqlServerSync = false;
-            Console.WriteLine("Are you trying to sync a Sql Server database? (y/n)");
+            bool isPostgresSync = false;
+
+            Console.WriteLine("Are you trying to sync a Postgres database? (y/n)");
             response = Console.ReadLine();
 
             if (response != null &&
                 response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
             {
-                isSqlServerSync = true;
+                isPostgresSync = true;
 
-                if (!SqlServerReady.ForChakraSync())
+                if (!PostgresReady.ForChakraSync())
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Chakra Sync cannot be started without prepping the Sql Server database.");
-                    Console.WriteLine("Please prep the Sql Server database and try again.");
+                    Console.WriteLine("Chakra Sync cannot be started without prepping the Postgres database.");
+                    Console.WriteLine("Please prep the Postgres database and try again.");
                     Console.ResetColor();
 
                     return;
                 }
             }
 
-            bool isPostgresSync = false;
+            bool isSqlServerSync = false;
 
-            if (!isSqlServerSync)
+            if (!isPostgresSync)
             {
-                Console.WriteLine("Are you trying to sync a Postgres database? (y/n)");
+                Console.WriteLine("Are you trying to sync a Sql Server database? (y/n)");
                 response = Console.ReadLine();
 
                 if (response != null &&
                     response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    isPostgresSync = true;
+                    isSqlServerSync = true;
 
-                    if (!PostgresReady.ForChakraSync())
+                    if (!SqlServerReady.ForChakraSync())
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("Chakra Sync cannot be started without prepping the Postgres database.");
-                        Console.WriteLine("Please prep the Postgres database and try again.");
+                        Console.WriteLine("Chakra Sync cannot be started without prepping the Sql Server database.");
+                        Console.WriteLine("Please prep the Sql Server database and try again.");
                         Console.ResetColor();
 
                         return;
