@@ -1,18 +1,13 @@
-﻿using Microsoft.Data.SqlClient;
+using Npgsql;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RedflyCoreFramework
 {
-    public class RedflySqlServer
+    public class RedflyPostgres
     {
-
         public static bool VerifyConnectivity(string? serverName, string? databaseName, string? userName, string password)
         {
-            //Return false if any of the parameters are null
+            // Return false if any of the parameters are null
             if (serverName == null || databaseName == null || userName == null)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
@@ -21,23 +16,22 @@ namespace RedflyCoreFramework
                 return false;
             }
 
-            var connectionString = $"Server={serverName};Database={databaseName};User Id={userName};Password={password};";
+            var connectionString = $"Host={serverName};Database={databaseName};Username={userName};Password={password};";
 
             try
             {
-                using (var connection = new SqlConnection(connectionString))
+                using (var connection = new NpgsqlConnection(connectionString))
                 {
                     connection.Open();
-                    Console.WriteLine("Successfully connected to the Sql Server database.");
+                    Console.WriteLine("Successfully connected to the Postgres database.");
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to connect to the Sql Server database: {ex.Message}");
+                Console.WriteLine($"Failed to connect to the Postgres database: {ex.Message}");
                 return false;
             }
         }
-
     }
 }
