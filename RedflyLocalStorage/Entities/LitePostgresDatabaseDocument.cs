@@ -18,7 +18,7 @@ public class LitePostgresDatabaseDocument : BaseLiteDocument
 
     public required string EncryptedPassword { get; set; }
 
-    public string EncryptedTestDecodingSlotName { get; set; } = "";
+    public string EncryptedTestDecodingSlotName { get; set; } = RedflyEncryption.EncryptToString("test_decoding_slot");
 
     public required string EncryptedPgOutputSlotName { get; set; }
 
