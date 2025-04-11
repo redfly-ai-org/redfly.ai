@@ -167,6 +167,14 @@ internal class Program
             {
                 getSyncProfilesResponse = await syncApiClient.GetSyncProfilesAsync(new GetSyncProfilesRequest() { PageNo = 1, PageSize = 10 }, headers);
             }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red; 
+                Console.WriteLine($"Error reading sync profiles from the server: {ex}"); 
+                Console.ResetColor();
+
+                throw;
+            }
             finally
             {
                 cts.Cancel();
