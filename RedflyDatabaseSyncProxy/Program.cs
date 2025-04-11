@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
 using RedflyDatabaseSyncProxy.Setup;
+using RedflyDatabaseSyncProxy.SyncProfiles;
 using RedflyDatabaseSyncProxy.SyncRelationships;
 using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
@@ -167,7 +168,7 @@ internal class Program
 
                 SyncProfileViewModel? syncProfile = null;
 
-                if (SyncProfilesExist(getSyncProfilesResponse))
+                if (SqlServerSyncProfile.Exists(getSyncProfilesResponse))
                 {
                     syncProfile = (from p in getSyncProfilesResponse.Profiles
                                    where p.Database.HostName == AppSession.SqlServerDatabase!.DecryptedServerName &&
@@ -280,13 +281,6 @@ internal class Program
 
             RedflyLocalDatabase.Dispose();
         }
-    }
-
-    private static bool SyncProfilesExist(GetSyncProfilesResponse getSyncProfilesResponse)
-    {
-        return (getSyncProfilesResponse.Success &&
-                getSyncProfilesResponse.Profiles != null &&
-                getSyncProfilesResponse.Profiles.Count > 0);
     }
 
     private static async Task StartChakraSqlServerSyncService(string grpcUrl, string grpcAuthToken)
