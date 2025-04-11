@@ -9,39 +9,39 @@ using System.Threading.Tasks;
 
 namespace RedflyLocalStorage.Collections;
 
-public class LiteSqlServerSyncRelationshipCollection : RedflyLocalCollection<LiteSqlServerSyncRelationshipDocument>
+public class LitePostgresSyncRelationshipCollection : RedflyLocalCollection<LitePostgresSyncRelationshipDocument>
 {
 
-    public LiteSqlServerSyncRelationshipCollection() : base("sqlserversyncrelationships")
+    public LitePostgresSyncRelationshipCollection() : base("postgressyncrelationships")
     {
         _lazyCollection.Value.EnsureIndex(
             name: "sqlsrvridrdsid",
             x => new
             {
-                x.SqlServerDatabaseId,
+                x.PostgresDatabaseId,
                 x.RedisServerId
             },
             unique: true);
     }
 
-    public IEnumerable<LiteSqlServerSyncRelationshipDocument> FindByDatabase(string sqlServerDatabaseId)
+    public IEnumerable<LitePostgresSyncRelationshipDocument> FindByDatabase(string sqlServerDatabaseId)
     {
         return _lazyCollection.Value
-                    .Find(x => x.SqlServerDatabaseId == sqlServerDatabaseId);
+                    .Find(x => x.PostgresDatabaseId == sqlServerDatabaseId);
     }
 
-    public IEnumerable<LiteSqlServerSyncRelationshipDocument> FindByRedisServer(string redisServerId)
+    public IEnumerable<LitePostgresSyncRelationshipDocument> FindByRedisServer(string redisServerId)
     {
         return _lazyCollection.Value
                     .Find(x =>
                             x.RedisServerId == redisServerId);
     }
 
-    public LiteSqlServerSyncRelationshipDocument Find(string sqlServerDatabaseId, string redisServerId)
+    public LitePostgresSyncRelationshipDocument Find(string sqlServerDatabaseId, string redisServerId)
     {
         return _lazyCollection.Value
                     .FindOne(x =>
-                                x.SqlServerDatabaseId == sqlServerDatabaseId &&
+                                x.PostgresDatabaseId == sqlServerDatabaseId &&
                                 x.RedisServerId == redisServerId);
     }
 
