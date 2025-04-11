@@ -9,38 +9,38 @@ using System.Threading.Tasks;
 
 namespace RedflyLocalStorage.Collections;
 
-public class LiteSqlServerDatabaseCollection : RedflyLocalCollection<LiteSqlServerDatabaseDocument>
+public class LitePostgresDatabaseCollection : RedflyLocalCollection<LitePostgresDatabaseDocument>
 {
 
-    public LiteSqlServerDatabaseCollection() : base("sqlserverdatabases")
+    public LitePostgresDatabaseCollection() : base("postgresdatabases")
     {
         //Sometimes users see differently based on access (future TODO).
         _lazyCollection.Value.EnsureIndex(
             name: "srvrnmdbnmusnm",
-            x => new 
-            { 
-                x.EncryptedServerName, 
-                x.EncryptedDatabaseName, 
-                x.EncryptedUserName 
-            }, 
+            x => new
+            {
+                x.EncryptedServerName,
+                x.EncryptedDatabaseName,
+                x.EncryptedUserName
+            },
             unique: true);
     }
 
-    public IEnumerable<LiteSqlServerDatabaseDocument> Find(string encryptedServerName)
+    public IEnumerable<LitePostgresDatabaseDocument> Find(string encryptedServerName)
     {
         return _lazyCollection.Value
                     .Find(x => x.EncryptedServerName == encryptedServerName);
     }
 
-    public IEnumerable<LiteSqlServerDatabaseDocument> Find(string encryptedServerName, string encryptedDatabaseName)
+    public IEnumerable<LitePostgresDatabaseDocument> Find(string encryptedServerName, string encryptedDatabaseName)
     {
         return _lazyCollection.Value
-                    .Find(x =>    
+                    .Find(x =>
                             x.EncryptedServerName == encryptedServerName &&
                             x.EncryptedDatabaseName == encryptedDatabaseName);
     }
 
-    public LiteSqlServerDatabaseDocument Find(string encryptedServerName, string encryptedDatabaseName, string encryptedUserName)
+    public LitePostgresDatabaseDocument Find(string encryptedServerName, string encryptedDatabaseName, string encryptedUserName)
     {
         return _lazyCollection.Value
                     .FindOne(x =>

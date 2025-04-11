@@ -5,14 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyLocalStorage.Entities
+namespace RedflyLocalStorage.Entities;
+
+public class LiteSqlServerSyncRelationshipDocument : BaseLiteDocument
 {
-    public class LiteSqlServerSyncRelationshipDocument : BaseLiteDocument
-    {
 
-        public required string SqlServerDatabaseId { get; set; }
+    public required string SqlServerDatabaseId { get; set; }
 
-        public required string RedisServerId { get; set; }
+    public required string RedisServerId { get; set; }
 
-    }
 }

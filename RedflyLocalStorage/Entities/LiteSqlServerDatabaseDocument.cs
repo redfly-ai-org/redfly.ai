@@ -6,57 +6,56 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyLocalStorage.Entities
+namespace RedflyLocalStorage.Entities;
+
+public class LiteSqlServerDatabaseDocument : BaseLiteDocument
 {
-    public class LiteSqlServerDatabaseDocument : BaseLiteDocument
+
+    public required string EncryptedServerName { get; set; }
+
+    public required string EncryptedDatabaseName { get; set; }
+
+    public required string EncryptedUserName { get; set; }
+
+    public required string EncryptedPassword { get; set; }
+
+    public bool DatabasePrepped { get; set; } = false;
+
+    public string ConnectionString
     {
-
-        public required string EncryptedServerName { get; set; }
-
-        public required string EncryptedDatabaseName { get; set; }
-
-        public required string EncryptedUserName { get; set; }
-
-        public required string EncryptedPassword { get; set; }
-
-        public bool DatabasePrepped { get; set; } = false;
-
-        public string ConnectionString
+        get
         {
-            get
-            {
-                return $"Server={RedflyEncryption.Decrypt(EncryptedServerName)};Database={RedflyEncryption.Decrypt(EncryptedDatabaseName)};User Id={RedflyEncryption.Decrypt(EncryptedUserName)};Password={RedflyEncryption.Decrypt(EncryptedPassword)};";
-            }
+            return $"Server={RedflyEncryption.Decrypt(EncryptedServerName)};Database={RedflyEncryption.Decrypt(EncryptedDatabaseName)};User Id={RedflyEncryption.Decrypt(EncryptedUserName)};Password={RedflyEncryption.Decrypt(EncryptedPassword)};";
         }
-
-        public string DecryptedServerName
-        {
-            get
-            {
-                return RedflyEncryption.Decrypt(EncryptedServerName);
-            }
-        }
-
-        public string DecryptedDatabaseName
-        {
-            get
-            {
-                return RedflyEncryption.Decrypt(EncryptedDatabaseName);
-            }
-        }
-
-        public string DecryptedUserName
-        {
-            get
-            {
-                return RedflyEncryption.Decrypt(EncryptedUserName);
-            }
-        }
-
-        public string GetPassword()
-        {
-            return RedflyEncryption.Decrypt(EncryptedPassword);
-        }
-
     }
+
+    public string DecryptedServerName
+    {
+        get
+        {
+            return RedflyEncryption.Decrypt(EncryptedServerName);
+        }
+    }
+
+    public string DecryptedDatabaseName
+    {
+        get
+        {
+            return RedflyEncryption.Decrypt(EncryptedDatabaseName);
+        }
+    }
+
+    public string DecryptedUserName
+    {
+        get
+        {
+            return RedflyEncryption.Decrypt(EncryptedUserName);
+        }
+    }
+
+    public string GetPassword()
+    {
+        return RedflyEncryption.Decrypt(EncryptedPassword);
+    }
+
 }
