@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
 using RedflyDatabaseSyncProxy.Setup;
+using RedflyDatabaseSyncProxy.SyncRelationships;
 using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage.Entities;
@@ -115,7 +116,7 @@ internal class Program
 
             if (isSqlServerSync)
             {
-                FindExistingSqlServerSyncRelationshipWithRedis(redisServerCollection);
+                SqlServerSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
             }
             else if (isPostgresSync)
             {
@@ -281,36 +282,6 @@ internal class Program
         }
     }
 
-    private static void FindExistingSqlServerSyncRelationshipWithRedis(LiteRedisServerCollection redisServerCollection)
-    {
-        var sqlServerSyncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
-
-        var sqlServerSyncRelationship = sqlServerSyncRelationshipCollection
-                                    .FindByDatabase(AppSession.SqlServerDatabase!.Id.ToString()).FirstOrDefault();
-
-        if (sqlServerSyncRelationship == null)
-        {
-            if (!RedisServerPicker.SelectFromLocalStorage())
-            {
-                if (!RedisServerPicker.GetFromUser())
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Chakra Sync cannot be started without selecting a target Redis Server.");
-                    Console.WriteLine("Please select a Redis Server and try again.");
-                    Console.ResetColor();
-                    return;
-                }
-            }
-
-            sqlServerSyncRelationship = CreateSqlServerSyncRelationship(sqlServerSyncRelationshipCollection);
-        }
-
-        AppSession.RedisServer = redisServerCollection
-                                      .FindById(new BsonValue(new ObjectId(sqlServerSyncRelationship.RedisServerId)));
-
-        Console.WriteLine($"This Sql Server database has a sync relationship with {AppSession.RedisServer.DecryptedServerName}:{AppSession.RedisServer.Port}");
-    }
-
     private static void FindExistingPostgresSyncRelationshipWithRedis(LiteRedisServerCollection redisServerCollection)
     {
         var postgresSyncRelationshipCollection = new LitePostgresSyncRelationshipCollection();
@@ -339,19 +310,6 @@ internal class Program
                                       .FindById(new BsonValue(new ObjectId(postgresSyncRelationship.RedisServerId)));
 
         Console.WriteLine($"This Postgres database has a sync relationship with {AppSession.RedisServer.DecryptedServerName}:{AppSession.RedisServer.Port}");
-    }
-
-    private static LiteSqlServerSyncRelationshipDocument CreateSqlServerSyncRelationship(LiteSqlServerSyncRelationshipCollection sqlServerSyncRelationshipCollection)
-    {
-        LiteSqlServerSyncRelationshipDocument syncRelationship = new()
-        {
-            SqlServerDatabaseId = AppSession.SqlServerDatabase!.Id.ToString(),
-            RedisServerId = AppSession.RedisServer!.Id.ToString()
-        };
-        sqlServerSyncRelationshipCollection.Add(syncRelationship);
-
-        Console.WriteLine($"The local sync relationship with this Redis Server has been saved successfully");
-        return syncRelationship;
     }
 
     private static LitePostgresSyncRelationshipDocument CreatePostgresSyncRelationship(LitePostgresSyncRelationshipCollection postgresSyncRelationshipCollection)
