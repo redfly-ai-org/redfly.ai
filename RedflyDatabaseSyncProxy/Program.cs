@@ -112,12 +112,12 @@ internal class Program
 
             var redisServerCollection = new LiteRedisServerCollection();
 
-            var syncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
+            var sqlServerSyncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
 
-            var syncRelationship = syncRelationshipCollection
+            var sqlServerSyncRelationship = sqlServerSyncRelationshipCollection
                                         .FindByDatabase(AppSession.SqlServerDatabase!.Id.ToString()).FirstOrDefault();
 
-            if (syncRelationship == null)
+            if (sqlServerSyncRelationship == null)
             {
                 if (!RedisServerPicker.SelectFromLocalStorage())
                 {
@@ -131,11 +131,11 @@ internal class Program
                     }
                 }
 
-                syncRelationship = CreateSyncRelationship(syncRelationshipCollection);
+                sqlServerSyncRelationship = CreateSqlServerSyncRelationship(sqlServerSyncRelationshipCollection);
             }
 
             AppSession.RedisServer = redisServerCollection
-                                                            .FindById(new BsonValue(new ObjectId(syncRelationship.RedisServerId)));
+                                                            .FindById(new BsonValue(new ObjectId(sqlServerSyncRelationship.RedisServerId)));
 
             Console.WriteLine($"This database has a sync relationship with {AppSession.RedisServer.DecryptedServerName}:{AppSession.RedisServer.Port}");
 
@@ -340,7 +340,7 @@ internal class Program
         }
     }
 
-    private static LiteSqlServerSyncRelationshipDocument CreateSyncRelationship(LiteSqlServerSyncRelationshipCollection syncRelationshipCollection)
+    private static LiteSqlServerSyncRelationshipDocument CreateSqlServerSyncRelationship(LiteSqlServerSyncRelationshipCollection syncRelationshipCollection)
     {
         LiteSqlServerSyncRelationshipDocument syncRelationship = new()
         {
