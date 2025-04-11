@@ -45,7 +45,7 @@ internal class Program
             Console.WriteLine("Press any key to start the process of synchronizing your database with Redis transparently...");
             Console.ReadKey();
 
-            var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
+            var grpcUrl = "https://localhost:7176"; // "https://hosted-chakra-grpc-linux.azurewebsites.net/";
 
             var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
 
@@ -375,7 +375,7 @@ internal class Program
     {
         var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
         var channel = GrpcChannel.ForAddress(grpcUrl);
-        var cmsClient = new GrpcChangeManagement.GrpcChangeManagementClient(channel);
+        var cmsClient = new NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient(channel);
 
         var headers = new Metadata
                 {
@@ -385,8 +385,8 @@ internal class Program
 
         // Start Change Management
         var startResponse = await cmsClient
-                                    .StartChangeManagementAsync(
-                                        new StartChangeManagementRequest 
+                                    .StartChakraSyncAsync(
+                                        new StartChakraSyncRequest 
                                         { 
                                             ClientSessionId = clientSessionId,
                                             EncryptionKey = RedflyEncryptionKeys.AesKey,

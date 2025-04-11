@@ -4,16 +4,16 @@ option csharp_namespace = "RedflyDatabaseSyncProxy";
 
 package changemanagement;
 
-// The GrpcChangeManagement service definition.
-service GrpcChangeManagement {
+// The NativeGrpcSqlServerChakraService service definition.
+service NativeGrpcSqlServerChakraService {
   // Starts the change management process for a client.
-  rpc StartChangeManagement(StartChangeManagementRequest) returns (StartChangeManagementResponse);
+  rpc StartChakraSync(StartChakraSyncRequest) returns (StartChakraSyncResponse);
   // Bi-directional stream for server to client callbacks.
   rpc CommunicateWithClient(stream ClientMessage) returns (stream ServerMessage);
 }
 
 // The request message containing the client's information.
-message StartChangeManagementRequest {
+message StartChakraSyncRequest {
   string client_session_id = 1;
   string encryptedDatabaseServerName = 2;
   string encryptedServerOnlyConnectionString = 3;
@@ -25,7 +25,7 @@ message StartChangeManagementRequest {
 }
 
 // The response message containing the result of the start request.
-message StartChangeManagementResponse {
+message StartChakraSyncResponse {
   bool success = 1;
   string message = 2;
 }
