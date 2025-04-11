@@ -17,7 +17,7 @@ namespace RedflyDatabaseSyncProxy
     internal class SqlServerDatabasePrep
     {
 
-        internal static bool ForChangeManagement()
+        internal static bool ForChakraSync()
         {
             if (!SqlServerDatabasePicker.SelectFromLocalStorage())
             {

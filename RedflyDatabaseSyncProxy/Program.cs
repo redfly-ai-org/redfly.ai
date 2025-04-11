@@ -57,7 +57,7 @@ internal class Program
                 return;
             }
 
-            if (!SqlServerDatabasePrep.ForChangeManagement())
+            if (!SqlServerDatabasePrep.ForChakraSync())
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Change Management cannot be started without prepping the database.");
@@ -278,7 +278,7 @@ internal class Program
             Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
 
             // Start Change Management
-            await StartChangeManagementService(grpcUrl, grpcAuthToken);
+            await StartChakraSyncService(grpcUrl, grpcAuthToken);
         }
         catch (Exception ex)
         {
@@ -371,7 +371,7 @@ internal class Program
         return addOrUpdateClientAndUserProfileResponse;
     }
 
-    private static async Task StartChangeManagementService(string grpcUrl, string grpcAuthToken)
+    private static async Task StartChakraSyncService(string grpcUrl, string grpcAuthToken)
     {
         var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
         var channel = GrpcChannel.ForAddress(grpcUrl);
