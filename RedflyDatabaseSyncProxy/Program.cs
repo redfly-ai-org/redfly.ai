@@ -83,7 +83,7 @@ internal class Program
             {
                 isSqlServerSync = true;
 
-                if (!PostgresReady.ForChakraSync())
+                if (!SqlServerReady.ForChakraSync())
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("Chakra Sync cannot be started without prepping the Sql Server database.");
@@ -95,22 +95,26 @@ internal class Program
             }
 
             bool isPostgresSync = false;
-            Console.WriteLine("Are you trying to sync a Postgres database? (y/n)");
-            response = Console.ReadLine();
 
-            if (response != null &&
-                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            if (!isSqlServerSync)
             {
-                isPostgresSync = true;
+                Console.WriteLine("Are you trying to sync a Postgres database? (y/n)");
+                response = Console.ReadLine();
 
-                if (!PostgresReady.ForChakraSync())
+                if (response != null &&
+                    response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Chakra Sync cannot be started without prepping the Postgres database.");
-                    Console.WriteLine("Please prep the Postgres database and try again.");
-                    Console.ResetColor();
+                    isPostgresSync = true;
 
-                    return;
+                    if (!PostgresReady.ForChakraSync())
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Chakra Sync cannot be started without prepping the Postgres database.");
+                        Console.WriteLine("Please prep the Postgres database and try again.");
+                        Console.ResetColor();
+
+                        return;
+                    }
                 }
             }
 
@@ -266,7 +270,25 @@ internal class Program
                 // Start Chakra Sync
                 await ChakraSqlServerSyncServiceClient.StartAsync(grpcUrl, grpcAuthToken);
             }
+            else if (isPostgresSync)
+            {
+                Console.WriteLine("Do you want to do an initial sync? (y/n)");
+                Console.WriteLine("This only makes sense if you are syncing the database for the first time and Redis is empty");
+                response = Console.ReadLine();
 
+                var runInitialSync = (response != null &&
+                                      response.Equals("y", StringComparison.CurrentCultureIgnoreCase));
+
+                await ChakraPostgresSyncServiceClient.StartAsync(grpcUrl, grpcAuthToken, runInitialSync);
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("We only support Sql Server and Postgres at present.");
+                Console.ResetColor();
+
+                return;
+            }
         }
         catch (Exception ex)
         {

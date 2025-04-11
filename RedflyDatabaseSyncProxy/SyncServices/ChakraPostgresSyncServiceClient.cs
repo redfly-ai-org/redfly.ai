@@ -7,18 +7,19 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using RedflyDatabaseSyncProxy.Protos.SqlServer;
+using RedflyDatabaseSyncProxy.Protos.Postgres;
+using Azure.Core;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
-internal class ChakraSqlServerSyncServiceClient
+internal class ChakraPostgresSyncServiceClient
 {
 
-    internal static async Task StartAsync(string grpcUrl, string grpcAuthToken)
+    internal static async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
     {
         var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
         var channel = GrpcChannel.ForAddress(grpcUrl);
-        var chakraClient = new NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient(channel);
+        var chakraClient = new NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient(channel);
 
         var headers = new Metadata
                 {
@@ -34,12 +35,27 @@ internal class ChakraSqlServerSyncServiceClient
                                             ClientSessionId = clientSessionId,
                                             // If the key changed AFTER the database was saved locally with a previous key, decryption won't happen!
                                             EncryptionKey = RedflyEncryptionKeys.AesKey,
-                                            EncryptedClientId = RedflyEncryption.EncryptToString(AppSession.SyncProfile!.Database.ClientId),
-                                            EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.ClientName),
-                                            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Id),
-                                            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Name),
-                                            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.HostName),
-                                            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppSession.SqlServerDatabase!.DecryptedUserName};Password={AppSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;")
+                                            // TODO: Return client id within ClientAndUserProfileViewModel from cloud so we can use it here.
+                                            EncryptedClientId = RedflyEncryption.EncryptToString(Guid.Empty.ToString()),
+                                            EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.ClientAndUserProfileViewModel!.ClientName),
+                                            EncryptedPostgresServerName = AppSession.PostgresDatabase!.EncryptedServerName,
+                                            EncryptedPostgresDatabaseName = AppSession.PostgresDatabase!.EncryptedDatabaseName,
+                                            EncryptedPostgresUserName = AppSession.PostgresDatabase!.EncryptedUserName,
+                                            EncryptedPostgresPassword = AppSession.PostgresDatabase!.EncryptedPassword,
+                                            EncryptedPostgresTestDecodingSlotName = AppSession.PostgresDatabase!.EncryptedTestDecodingSlotName,
+                                            EncryptedPostgresPgOutputSlotName = AppSession.PostgresDatabase!.EncryptedPgOutputSlotName,
+                                            EncryptedPostgresPublicationName = AppSession.PostgresDatabase!.EncryptedPublicationName,
+                                            EncryptedRedisServerName = AppSession.RedisServer!.EncryptedServerName,
+                                            RedisPortNo = AppSession.RedisServer!.Port,
+                                            EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
+                                            RedisUsesSsl = AppSession.RedisServer!.UsesSsl,
+                                            RedisSslProtocol = AppSession.RedisServer!.SslProtocol,
+                                            RedisAbortConnect = AppSession.RedisServer!.AbortConnect,
+                                            RedisConnectTimeout = AppSession.RedisServer!.ConnectTimeout,
+                                            RedisSyncTimeout = AppSession.RedisServer!.SyncTimeout,
+                                            RedisAsyncTimeout = AppSession.RedisServer!.AsyncTimeout,
+                                            RunInitialSync = runInitialSync,
+                                            EnableDataReconciliation = true
                                         },
                                         headers);
 

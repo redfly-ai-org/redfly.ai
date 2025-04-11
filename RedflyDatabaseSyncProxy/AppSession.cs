@@ -18,5 +18,7 @@ namespace RedflyDatabaseSyncProxy
 
         internal static SyncProfileViewModel? SyncProfile { get; set; }
 
+        internal static AddClientAndUserProfileViewModel? ClientAndUserProfileViewModel { get; set; }
+
     }
 }

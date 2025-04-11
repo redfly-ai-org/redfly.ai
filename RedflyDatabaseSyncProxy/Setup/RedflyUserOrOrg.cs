@@ -73,6 +73,11 @@ internal class RedflyUserOrOrg
             }
         }
 
+        if (getUserSetupDataResponse.Result != null)
+        {
+            AppSession.ClientAndUserProfileViewModel = getUserSetupDataResponse.Result;
+        }
+
         return true;
     }
 
