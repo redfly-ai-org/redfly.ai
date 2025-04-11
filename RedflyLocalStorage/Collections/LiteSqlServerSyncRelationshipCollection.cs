@@ -9,10 +9,10 @@ using System.Threading.Tasks;
 
 namespace RedflyLocalStorage.Collections
 {
-    public class LiteSyncRelationshipCollection : RedflyLocalCollection<LiteSyncRelationshipDocument>
+    public class LiteSqlServerSyncRelationshipCollection : RedflyLocalCollection<LiteSqlServerSyncRelationshipDocument>
     {
 
-        public LiteSyncRelationshipCollection() : base("syncrelationships")
+        public LiteSqlServerSyncRelationshipCollection() : base("syncrelationships")
         {
             _lazyCollection.Value.EnsureIndex(
                 name: "sqlsrvridrdsid",
@@ -24,20 +24,20 @@ namespace RedflyLocalStorage.Collections
                 unique: true);
         }
 
-        public IEnumerable<LiteSyncRelationshipDocument> FindByDatabase(string sqlServerDatabaseId)
+        public IEnumerable<LiteSqlServerSyncRelationshipDocument> FindByDatabase(string sqlServerDatabaseId)
         {
             return _lazyCollection.Value
                         .Find(x => x.SqlServerDatabaseId == sqlServerDatabaseId);
         }
 
-        public IEnumerable<LiteSyncRelationshipDocument> FindByRedisServer(string redisServerId)
+        public IEnumerable<LiteSqlServerSyncRelationshipDocument> FindByRedisServer(string redisServerId)
         {
             return _lazyCollection.Value
                         .Find(x =>
                                 x.RedisServerId == redisServerId);
         }
 
-        public LiteSyncRelationshipDocument Find(string sqlServerDatabaseId, string redisServerId)
+        public LiteSqlServerSyncRelationshipDocument Find(string sqlServerDatabaseId, string redisServerId)
         {
             return _lazyCollection.Value
                         .FindOne(x =>

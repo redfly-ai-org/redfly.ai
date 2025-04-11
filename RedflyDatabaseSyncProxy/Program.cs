@@ -81,7 +81,7 @@ internal class Program
             }
 
             var redisServerCollection = new LiteRedisServerCollection();
-            var syncRelationshipCollection = new LiteSyncRelationshipCollection();
+            var syncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
 
             var syncRelationship = syncRelationshipCollection
                                         .FindByDatabase(AppSession.Database!.Id.ToString()).FirstOrDefault();
@@ -309,9 +309,9 @@ internal class Program
         }
     }
 
-    private static LiteSyncRelationshipDocument CreateSyncRelationship(LiteSyncRelationshipCollection syncRelationshipCollection)
+    private static LiteSqlServerSyncRelationshipDocument CreateSyncRelationship(LiteSqlServerSyncRelationshipCollection syncRelationshipCollection)
     {
-        LiteSyncRelationshipDocument syncRelationship = new()
+        LiteSqlServerSyncRelationshipDocument syncRelationship = new()
         {
             SqlServerDatabaseId = AppSession.Database!.Id.ToString(),
             RedisServerId = AppSession.RedisServer!.Id.ToString()

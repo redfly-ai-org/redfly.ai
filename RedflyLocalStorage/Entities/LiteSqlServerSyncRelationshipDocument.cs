@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace RedflyLocalStorage.Entities
 {
-    public class LiteSyncRelationshipDocument : BaseLiteDocument
+    public class LiteSqlServerSyncRelationshipDocument : BaseLiteDocument
     {
 
         public required string SqlServerDatabaseId { get; set; }
