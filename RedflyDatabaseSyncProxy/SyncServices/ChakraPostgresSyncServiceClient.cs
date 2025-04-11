@@ -33,11 +33,11 @@ internal class ChakraPostgresSyncServiceClient
                                         new StartChakraSyncRequest
                                         {
                                             ClientSessionId = clientSessionId,
-                                            // If the key changed AFTER the database was saved locally with a previous key, decryption won't happen!
-                                            EncryptionKey = RedflyEncryptionKeys.AesKey,
                                             // TODO: Return client id within ClientAndUserProfileViewModel from cloud so we can use it here.
                                             EncryptedClientId = RedflyEncryption.EncryptToString(Guid.Empty.ToString()),
                                             EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.ClientAndUserProfileViewModel!.ClientName),
+                                            // If the key changed AFTER the database was saved locally with a previous key, decryption won't happen!
+                                            EncryptionKey = RedflyEncryptionKeys.AesKey,
                                             EncryptedPostgresServerName = AppSession.PostgresDatabase!.EncryptedServerName,
                                             EncryptedPostgresDatabaseName = AppSession.PostgresDatabase!.EncryptedDatabaseName,
                                             EncryptedPostgresUserName = AppSession.PostgresDatabase!.EncryptedUserName,
