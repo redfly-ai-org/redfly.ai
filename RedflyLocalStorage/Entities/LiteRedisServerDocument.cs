@@ -14,6 +14,13 @@ namespace RedflyLocalStorage.Entities
         public required string EncryptedPassword { get; set; }        
         public required int Port { get; set; }
 
+        public bool UsesSsl { get; set; } = true;
+        public string SslProtocol { get; set; } = "tls12";
+        public bool AbortConnect { get; set; } = false;
+        public int ConnectTimeout { get; set; } = 8000;
+        public int SyncTimeout { get; set; } = 8000;
+        public int AsyncTimeout { get; set; } = 8000;
+
         public string DecryptedServerName
         {
             get
