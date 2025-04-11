@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option csharp_namespace = "RedflyDatabaseSyncProxy.Protos.Postgres";
+
+package changemanagement;
+
+// The NativeGrpcPostgresChakraService service definition.
+service NativeGrpcPostgresChakraService {
+  // Starts the change management process for a client.
+  rpc StartChakraSync(StartChakraSyncRequest) returns (StartChakraSyncResponse);
+  // Bi-directional stream for server to client callbacks.
+  rpc CommunicateWithClient(stream ClientMessage) returns (stream ServerMessage);
+}
+
+// The request message containing the client's information.
+message StartChakraSyncRequest {
+  string client_session_id = 1;
+  string encryptedClientId = 2;
+  string encryptedClientName = 3;
+  string encryptionKey = 4;
+  string encryptedPostgresServerName = 5;
+  string encryptedPostgresDatabaseName = 6;
+  string encryptedPostgresUserName = 7;
+  string encryptedPostgresPassword = 8;
+  string encryptedPostgresTestDecodingSlotName = 9;
+  string encryptedPostgresPgOutputSlotName = 10;
+  string encryptedPostgresPublicationName = 11;
+  string encryptedRedisServerName = 12;
+  int32 redisPortNo = 13;
+  string encryptedRedisPassword = 14;
+  bool redisUsesSsl = 15;
+  string redisSslProtocol = 16;
+  bool redisAbortConnect = 17;
+  int32 redisConnectTimeout = 18;
+  int32 redisSyncTimeout = 19;
+  int32 redisAsyncTimeout = 20;
+  bool runInitialSync = 21;
+  bool enableDataReconciliation = 22;
+}
+
+// The response message containing the result of the start request.
+message StartChakraSyncResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// The message from the client to the server.
+message ClientMessage {
+  string client_session_id = 1;
+  string message = 2;
+}
+
+// The message from the server to the client.
+message ServerMessage {
+  string message = 1;
+}
