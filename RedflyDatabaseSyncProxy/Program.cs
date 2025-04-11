@@ -45,7 +45,20 @@ internal class Program
             Console.WriteLine("Press any key to start the process of synchronizing your database with Redis transparently...");
             Console.ReadKey();
 
-            var grpcUrl = "https://localhost:7176"; // "https://hosted-chakra-grpc-linux.azurewebsites.net/";
+            var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
+
+            Console.WriteLine("Connect to the local DEV environment? (y/n)");
+            var response = Console.ReadLine();
+            
+            if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                grpcUrl = "https://localhost:7176";                
+            }
+
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Will connect to: {grpcUrl}");
+            Console.ResetColor();
 
             var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
 
@@ -401,11 +414,11 @@ internal class Program
 
         if (startResponse.Success)
         {
-            Console.WriteLine("Change management service started successfully.");
+            Console.WriteLine("Chakra Sync Service started successfully.");
         }
         else
         {
-            Console.WriteLine("Failed to start change management service.");
+            Console.WriteLine("Failed to start the Chakra Sync Service.");
             return;
         }
 
