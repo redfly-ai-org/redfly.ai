@@ -149,7 +149,10 @@ namespace RedflyGrpcAuthServiceClient
 
                 if (retryCount < 3)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Retrying login {retryCount + 1}...");
+                    Console.ResetColor();
+
                     await Task.Delay(1000);
                     return await LoginAsync(authServiceClient, loginRequest, retryCount + 1);
                 }
@@ -198,15 +201,20 @@ namespace RedflyGrpcAuthServiceClient
             {
                 if (retryCount < 3)
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Retrying Secure Call {retryCount + 1}...");
+                    Console.ResetColor();
+
                     await Task.Delay(1000);
 
                     return await TestSecureGrpcCall(client, token, retryCount + 1);
                 }
                 else
                 {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Failed to make secure request after {retryCount + 1} attempts.");
                     Console.WriteLine(ex.ToString());
+                    Console.ResetColor();
 
                     return false;
                 }
