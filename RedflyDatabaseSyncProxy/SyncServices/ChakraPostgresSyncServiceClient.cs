@@ -25,7 +25,7 @@ internal class ChakraPostgresSyncServiceClient
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
         {
-            LoggerFactory = loggerFactory
+            LoggerFactory = loggerFactory,
         });
 
         var chakraClient = new NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient(channel);
@@ -84,26 +84,35 @@ internal class ChakraPostgresSyncServiceClient
             return;
         }
 
+        Console.WriteLine("Going to start bi-directional streaming with server");
+
         // Bi-directional streaming for communication with the server
-        using var call = chakraClient.CommunicateWithClient(headers);
+        using var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
 
         var responseTask = Task.Run(async () =>
         {
-            await foreach (var message in call.ResponseStream.ReadAllAsync())
+            await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
             {
                 Console.WriteLine(FormatGrpcServerMessage(message.Message));
             }
         });
 
         // Send initial message to establish the stream
-        await call.RequestStream.WriteAsync(new ClientMessage { ClientSessionId = clientSessionId, Message = "Client connected" });
+        await asyncDuplexStreamingCall
+                .RequestStream
+                .WriteAsync(
+                    new ClientMessage 
+                    { 
+                        ClientSessionId = clientSessionId, 
+                        Message = "Client connected" 
+                    });
 
         // Keep the client running to listen for server messages
         Console.WriteLine("Press any key to exit...");
         Console.ReadKey();
 
         // Complete the request stream
-        await call.RequestStream.CompleteAsync();
+        await asyncDuplexStreamingCall.RequestStream.CompleteAsync();
         await responseTask;
     }
 
