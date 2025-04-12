@@ -26,6 +26,10 @@ internal class ChakraPostgresSyncServiceClient
         var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
         {
             LoggerFactory = loggerFactory,
+            HttpHandler = new SocketsHttpHandler
+            {
+                EnableMultipleHttp2Connections = true
+            }
         });
 
         var chakraClient = new NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient(channel);
@@ -183,6 +187,15 @@ internal class ChakraPostgresSyncServiceClient
                     Console.WriteLine($"gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds/1000} secs... (Attempt {attempt}/{maxRetryAttempts})");
                     Console.ResetColor();
 
+                    await asyncDuplexStreamingCall
+                            .RequestStream
+                            .WriteAsync(
+                                new ClientMessage
+                                {
+                                    ClientSessionId = clientSessionId,
+                                    Message = $"Client connected (Attempt {attempt})"
+                                });
+
                     await Task.Delay(delayMilliseconds);
 
                     // Exponential backoff
@@ -208,7 +221,7 @@ internal class ChakraPostgresSyncServiceClient
                     new ClientMessage
                     {
                         ClientSessionId = clientSessionId,
-                        Message = "Client connected"
+                        Message = "Client connected (initial attempt)"
                     });
 
         Console.WriteLine("Initial message successfully sent to server");
