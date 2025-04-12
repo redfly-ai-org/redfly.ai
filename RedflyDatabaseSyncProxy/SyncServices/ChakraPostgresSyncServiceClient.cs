@@ -158,6 +158,7 @@ internal class ChakraPostgresSyncServiceClient
     private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task responseTask)> StartBidirectionalStreaming(string clientSessionId, NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, Metadata headers)
     {
         Console.WriteLine("Going to start bi-directional streaming with server");
+        var serverCommunicationReceived = false;
 
         // Bi-directional streaming for communication with the server
         var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
@@ -171,7 +172,8 @@ internal class ChakraPostgresSyncServiceClient
             {
                 try
                 {
-                    Console.WriteLine($"Attempt #{attempt}: Reading from bi-directional stream");
+                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: Reading from bi-directional stream");
+                    serverCommunicationReceived = true;
 
                     await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
                     {
@@ -184,8 +186,10 @@ internal class ChakraPostgresSyncServiceClient
                 catch (RpcException ex) when (attempt < maxRetryAttempts)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds/1000} secs... (Attempt {attempt}/{maxRetryAttempts})");
+                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds/1000} secs... (Attempt {attempt}/{maxRetryAttempts})");
                     Console.ResetColor();
+
+                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: Sending another initial message to establish the stream");
 
                     await asyncDuplexStreamingCall
                             .RequestStream
@@ -193,7 +197,7 @@ internal class ChakraPostgresSyncServiceClient
                                 new ClientMessage
                                 {
                                     ClientSessionId = clientSessionId,
-                                    Message = $"Client connected (Attempt {attempt})"
+                                    Message = $"Client connected (Attempt #{attempt})"
                                 });
 
                     await Task.Delay(delayMilliseconds);
@@ -204,7 +208,7 @@ internal class ChakraPostgresSyncServiceClient
                 catch (Exception ex)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"An unexpected error occurred: {ex.ToString()}");
+                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: An unexpected error occurred: {ex.ToString()}");
                     Console.ResetColor();
 
                     throw; // Re-throw the exception if it's not a gRPC error or max attempts are reached
@@ -212,7 +216,7 @@ internal class ChakraPostgresSyncServiceClient
             }
         });
 
-        Console.WriteLine("Sending initial message to establish the stream");
+        Console.WriteLine("INIT: Sending initial message to establish the stream");
 
         // Send initial message to establish the stream
         await asyncDuplexStreamingCall
@@ -221,10 +225,43 @@ internal class ChakraPostgresSyncServiceClient
                     new ClientMessage
                     {
                         ClientSessionId = clientSessionId,
-                        Message = "Client connected (initial attempt)"
+                        Message = "Client connected (initial attempt #1)"
                     });
 
-        Console.WriteLine("Initial message successfully sent to server");
+        Console.WriteLine("INIT: Initial message successfully sent to server");
+        Console.WriteLine("INIT: Waiting for 1 minute to see IF the server responded...");
+        await Task.Delay(60 * 1000);
+
+        if (!serverCommunicationReceived)
+        {
+            Console.WriteLine("INIT: Sending initial message #2 to establish the stream");
+
+            await asyncDuplexStreamingCall
+                .RequestStream
+                .WriteAsync(
+                    new ClientMessage
+                    {
+                        ClientSessionId = clientSessionId,
+                        Message = "Client connected (initial attempt #2)"
+                    });
+        }
+
+        if (!serverCommunicationReceived)
+        {
+            Console.WriteLine("INIT: Waiting for 2 minutes to see IF the server responded...");
+            await Task.Delay(2 * 60 * 1000);
+
+            Console.WriteLine("INIT: Sending initial message #3 to establish the stream");
+
+            await asyncDuplexStreamingCall
+                .RequestStream
+                .WriteAsync(
+                    new ClientMessage
+                    {
+                        ClientSessionId = clientSessionId,
+                        Message = "Client connected (initial attempt #3)"
+                    });
+        }
 
         return (asyncDuplexStreamingCall, responseTask);
     }
