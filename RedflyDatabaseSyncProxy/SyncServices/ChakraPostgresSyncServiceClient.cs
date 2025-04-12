@@ -37,51 +37,9 @@ internal class ChakraPostgresSyncServiceClient
                 };
 
         // Start Chakra Sync
-        var startResponse = await chakraClient
-                                    .StartChakraSyncAsync(
-                                        new StartChakraSyncRequest
-                                        {
-                                            ClientSessionId = clientSessionId,
-                                            // TODO: Return client id within ClientAndUserProfileViewModel from cloud so we can use it here.
-                                            EncryptedClientId = RedflyEncryption.EncryptToString(Guid.Empty.ToString()),
-                                            EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.ClientAndUserProfileViewModel!.ClientName),
-                                            // If the key changed AFTER the database was saved locally with a previous key, decryption won't happen!
-                                            EncryptionKey = RedflyEncryptionKeys.AesKey,
-                                            EncryptedPostgresServerName = AppSession.PostgresDatabase!.EncryptedServerName,
-                                            EncryptedPostgresDatabaseName = AppSession.PostgresDatabase!.EncryptedDatabaseName,
-                                            EncryptedPostgresUserName = AppSession.PostgresDatabase!.EncryptedUserName,
-                                            EncryptedPostgresPassword = AppSession.PostgresDatabase!.EncryptedPassword,
-                                            EncryptedPostgresTestDecodingSlotName = AppSession.PostgresDatabase!.EncryptedTestDecodingSlotName,
-                                            EncryptedPostgresPgOutputSlotName = AppSession.PostgresDatabase!.EncryptedPgOutputSlotName,
-                                            EncryptedPostgresPublicationName = AppSession.PostgresDatabase!.EncryptedPublicationName,
-                                            EncryptedRedisServerName = AppSession.RedisServer!.EncryptedServerName,
-                                            RedisPortNo = AppSession.RedisServer!.Port,
-                                            EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
-                                            RedisUsesSsl = AppSession.RedisServer!.UsesSsl,
-                                            RedisSslProtocol = AppSession.RedisServer!.SslProtocol,
-                                            RedisAbortConnect = AppSession.RedisServer!.AbortConnect,
-                                            RedisConnectTimeout = AppSession.RedisServer!.ConnectTimeout,
-                                            RedisSyncTimeout = AppSession.RedisServer!.SyncTimeout,
-                                            RedisAsyncTimeout = AppSession.RedisServer!.AsyncTimeout,
-                                            RunInitialSync = runInitialSync,
-                                            EnableDataReconciliation = true
-                                        },
-                                        headers);
-
-        if (startResponse.Success)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Chakra Sync Service started successfully.");
-            Console.WriteLine(startResponse.Message);
-            Console.ResetColor();
-        }
-        else
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Failed to start the Chakra Sync Service.");
-            Console.WriteLine(startResponse.Message);
-            Console.ResetColor();
-            return;
+        if (!await StartChakraSyncAsyncWithRetry(runInitialSync, clientSessionId, chakraClient, headers))
+        { 
+            return; 
         }
 
         AsyncDuplexStreamingCall<ClientMessage, ServerMessage>? asyncDuplexStreamingCall = null;
@@ -105,6 +63,94 @@ internal class ChakraPostgresSyncServiceClient
         }
     }
 
+    private static async Task<bool> StartChakraSyncAsyncWithRetry(
+                                        bool runInitialSync,
+                                        string clientSessionId,
+                                        NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient,
+                                        Metadata headers)
+    {
+        int maxRetryAttempts = 5; // Maximum number of retry attempts
+        int delayMilliseconds = 1000; // Initial delay in milliseconds
+
+        for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
+        {
+            try
+            {
+                Console.WriteLine($"Attempt #{attempt}: StartChakraSyncAsync");
+
+                var startResponse = await chakraClient
+                    .StartChakraSyncAsync(
+                        new StartChakraSyncRequest
+                        {
+                            ClientSessionId = clientSessionId,
+                            EncryptedClientId = RedflyEncryption.EncryptToString(Guid.Empty.ToString()),
+                            EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.ClientAndUserProfileViewModel!.ClientName),
+                            EncryptionKey = RedflyEncryptionKeys.AesKey,
+                            EncryptedPostgresServerName = AppSession.PostgresDatabase!.EncryptedServerName,
+                            EncryptedPostgresDatabaseName = AppSession.PostgresDatabase!.EncryptedDatabaseName,
+                            EncryptedPostgresUserName = AppSession.PostgresDatabase!.EncryptedUserName,
+                            EncryptedPostgresPassword = AppSession.PostgresDatabase!.EncryptedPassword,
+                            EncryptedPostgresTestDecodingSlotName = AppSession.PostgresDatabase!.EncryptedTestDecodingSlotName,
+                            EncryptedPostgresPgOutputSlotName = AppSession.PostgresDatabase!.EncryptedPgOutputSlotName,
+                            EncryptedPostgresPublicationName = AppSession.PostgresDatabase!.EncryptedPublicationName,
+                            EncryptedRedisServerName = AppSession.RedisServer!.EncryptedServerName,
+                            RedisPortNo = AppSession.RedisServer!.Port,
+                            EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
+                            RedisUsesSsl = AppSession.RedisServer!.UsesSsl,
+                            RedisSslProtocol = AppSession.RedisServer!.SslProtocol,
+                            RedisAbortConnect = AppSession.RedisServer!.AbortConnect,
+                            RedisConnectTimeout = AppSession.RedisServer!.ConnectTimeout,
+                            RedisSyncTimeout = AppSession.RedisServer!.SyncTimeout,
+                            RedisAsyncTimeout = AppSession.RedisServer!.AsyncTimeout,
+                            RunInitialSync = runInitialSync,
+                            EnableDataReconciliation = true
+                        },
+                        headers);
+
+                if (startResponse.Success)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Chakra Sync Service started successfully.");
+                    Console.WriteLine(startResponse.Message);
+                    Console.ResetColor();
+                    return true;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Failed to start the Chakra Sync Service.");
+                    Console.WriteLine(startResponse.Message);
+                    Console.ResetColor();
+                    return false;
+                }
+            }
+            catch (RpcException ex) when (attempt < maxRetryAttempts)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds / 1000} seconds... (Attempt {attempt}/{maxRetryAttempts})");
+                Console.ResetColor();
+
+                await Task.Delay(delayMilliseconds);
+
+                // Exponential backoff
+                delayMilliseconds *= 2;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                Console.ResetColor();
+
+                throw; // Re-throw the exception if it's not a gRPC error
+            }
+        }
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("Max retry attempts reached. Failed to start the Chakra Sync Service.");
+        Console.ResetColor();
+        return false;
+    }
+
     private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task responseTask)> StartBidirectionalStreaming(string clientSessionId, NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, Metadata headers)
     {
         Console.WriteLine("Going to start bi-directional streaming with server");
@@ -114,9 +160,42 @@ internal class ChakraPostgresSyncServiceClient
 
         var responseTask = Task.Run(async () =>
         {
-            await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
+            int maxRetryAttempts = 5; // Maximum number of retry attempts
+            int delayMilliseconds = 3000; // Initial delay in milliseconds
+
+            for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
             {
-                Console.WriteLine(FormatGrpcServerMessage(message.Message));
+                try
+                {
+                    Console.WriteLine($"Attempt #{attempt}: Reading from bi-directional stream");
+
+                    await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
+                    {
+                        Console.WriteLine(FormatGrpcServerMessage(message.Message));
+                    }
+
+                    // Exit the retry loop if successful
+                    break;
+                }
+                catch (RpcException ex) when (attempt < maxRetryAttempts)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds/1000} secs... (Attempt {attempt}/{maxRetryAttempts})");
+                    Console.ResetColor();
+
+                    await Task.Delay(delayMilliseconds);
+
+                    // Exponential backoff
+                    delayMilliseconds *= 2;
+                }
+                catch (Exception ex)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"An unexpected error occurred: {ex.ToString()}");
+                    Console.ResetColor();
+
+                    throw; // Re-throw the exception if it's not a gRPC error or max attempts are reached
+                }
             }
         });
 
