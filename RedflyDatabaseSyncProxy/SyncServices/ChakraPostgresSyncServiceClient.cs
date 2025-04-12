@@ -61,11 +61,17 @@ internal class ChakraPostgresSyncServiceClient
 
         if (startResponse.Success)
         {
+            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Chakra Sync Service started successfully.");
+            Console.WriteLine(startResponse.Message);
+            Console.ResetColor();
         }
         else
         {
+            Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Failed to start the Chakra Sync Service.");
+            Console.WriteLine(startResponse.Message);
+            Console.ResetColor();
             return;
         }
 
