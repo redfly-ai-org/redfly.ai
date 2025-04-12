@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RedflyDatabaseSyncProxy.Protos.Postgres;
 using Azure.Core;
+using Microsoft.Extensions.Logging;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
@@ -18,7 +19,15 @@ internal class ChakraPostgresSyncServiceClient
     internal static async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
     {
         var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
-        var channel = GrpcChannel.ForAddress(grpcUrl);
+        //var channel = GrpcChannel.ForAddress(grpcUrl);
+
+        AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+        var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
+        {
+            LoggerFactory = loggerFactory
+        });
+
         var chakraClient = new NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient(channel);
 
         var headers = new Metadata
