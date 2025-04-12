@@ -84,10 +84,33 @@ internal class ChakraPostgresSyncServiceClient
             return;
         }
 
+        AsyncDuplexStreamingCall<ClientMessage, ServerMessage>? asyncDuplexStreamingCall = null;
+        Task responseTask;
+
+        try
+        {
+            (asyncDuplexStreamingCall, responseTask) = await StartBidirectionalStreaming(clientSessionId, chakraClient, headers);
+
+            // Keep the client running to listen for server messages
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
+
+            // Complete the request stream
+            await asyncDuplexStreamingCall.RequestStream.CompleteAsync();
+            await responseTask;
+        }
+        finally
+        {
+            asyncDuplexStreamingCall?.Dispose();
+        }
+    }
+
+    private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task responseTask)> StartBidirectionalStreaming(string clientSessionId, NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, Metadata headers)
+    {
         Console.WriteLine("Going to start bi-directional streaming with server");
 
         // Bi-directional streaming for communication with the server
-        using var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
+        var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
 
         var responseTask = Task.Run(async () =>
         {
@@ -97,25 +120,22 @@ internal class ChakraPostgresSyncServiceClient
             }
         });
 
+        Console.WriteLine("Sending initial message to establish the stream");
+
         // Send initial message to establish the stream
         await asyncDuplexStreamingCall
                 .RequestStream
                 .WriteAsync(
-                    new ClientMessage 
-                    { 
-                        ClientSessionId = clientSessionId, 
-                        Message = "Client connected" 
+                    new ClientMessage
+                    {
+                        ClientSessionId = clientSessionId,
+                        Message = "Client connected"
                     });
 
-        // Keep the client running to listen for server messages
-        Console.WriteLine("Press any key to exit...");
-        Console.ReadKey();
+        Console.WriteLine("Initial message successfully sent to server");
 
-        // Complete the request stream
-        await asyncDuplexStreamingCall.RequestStream.CompleteAsync();
-        await responseTask;
+        return (asyncDuplexStreamingCall, responseTask);
     }
-
 
     private static string FormatGrpcServerMessage(string logMessage)
     {
