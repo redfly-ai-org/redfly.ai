@@ -82,15 +82,47 @@ internal class RedflyUserOrOrg
     }
 
 
-    private static async Task<ServiceResponse> GetUserSetupData(UserSetupApi.UserSetupApiClient userSetupApiClient, Metadata headers)
+    private static async Task<ServiceResponse> GetUserSetupData(
+        UserSetupApi.UserSetupApiClient userSetupApiClient, 
+        Metadata headers)
     {
-        var getUserSetupDataResponse = await userSetupApiClient
-                                            .GetUserSetupDataAsync(new UserIdRequest
-                                            {
-                                                UserId = Guid.NewGuid().ToString()
-                                            }, headers);
-        return getUserSetupDataResponse;
+        const int maxRetryAttempts = 5;
+        const int delayMilliseconds = 1000;
+
+        for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
+        {
+            try
+            {
+                Console.WriteLine($"Attempt {attempt}: Fetching user setup data...");
+                var getUserSetupDataResponse = await userSetupApiClient
+                                                    .GetUserSetupDataAsync(new UserIdRequest
+                                                    {
+                                                        UserId = Guid.NewGuid().ToString()
+                                                    }, headers);
+
+                Console.WriteLine("Successfully fetched user setup data.");
+                return getUserSetupDataResponse;
+            }
+            catch (RpcException ex) when (attempt < maxRetryAttempts)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"Attempt {attempt} failed: {ex.Message}. Retrying in {(delayMilliseconds * attempt)/1000} secs...");
+                Console.ResetColor();
+
+                await Task.Delay(delayMilliseconds * attempt);
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                Console.ResetColor();
+                throw;
+            }
+        }
+
+        throw new Exception("Failed to fetch user setup data after multiple attempts.");
     }
+
 
 
     private static bool IsSetupRequired(ServiceResponse getUserSetupDataResponse)
