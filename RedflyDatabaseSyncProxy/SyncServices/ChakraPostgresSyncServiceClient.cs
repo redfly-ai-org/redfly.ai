@@ -191,14 +191,23 @@ internal class ChakraPostgresSyncServiceClient
 
                     Console.WriteLine($"BI-DIR> Attempt #{attempt}: Sending another initial message to establish the stream");
 
-                    await asyncDuplexStreamingCall
-                            .RequestStream
-                            .WriteAsync(
-                                new ClientMessage
-                                {
-                                    ClientSessionId = clientSessionId,
-                                    Message = $"Client connected (Attempt #{attempt})"
-                                });
+                    try
+                    {
+                        await asyncDuplexStreamingCall
+                                .RequestStream
+                                .WriteAsync(
+                                    new ClientMessage
+                                    {
+                                        ClientSessionId = clientSessionId,
+                                        Message = $"Client connected (Attempt #{attempt})"
+                                    });
+                    }
+                    catch (Exception writeEx)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"BI-DIR> Attempt #{attempt}: Error sending initial message: {writeEx.ToString()}");
+                        Console.ResetColor();
+                    }
 
                     await Task.Delay(delayMilliseconds);
 
@@ -218,32 +227,46 @@ internal class ChakraPostgresSyncServiceClient
 
         Console.WriteLine("INIT: Sending initial message to establish the stream");
 
-        // Send initial message to establish the stream
-        await asyncDuplexStreamingCall
-                .RequestStream
-                .WriteAsync(
-                    new ClientMessage
-                    {
-                        ClientSessionId = clientSessionId,
-                        Message = "Client connected (initial attempt #1)"
-                    });
+        try
+        {
+            // Send initial message to establish the stream
+            await asyncDuplexStreamingCall
+                    .RequestStream
+                    .WriteAsync(
+                        new ClientMessage
+                        {
+                            ClientSessionId = clientSessionId,
+                            Message = "Client connected (initial attempt #1)"
+                        });
 
-        Console.WriteLine("INIT: Initial message successfully sent to server");
-        Console.WriteLine("INIT: Waiting for 1 minute to see IF the server responded...");
-        await Task.Delay(60 * 1000);
+            Console.WriteLine("INIT: Initial message successfully sent to server");
+            Console.WriteLine("INIT: Waiting for 1 minute to see IF the server responded...");
+            await Task.Delay(60 * 1000);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"INIT: Error sending initial message: {ex.ToString()}");
+        }
 
         if (!serverCommunicationReceived)
         {
             Console.WriteLine("INIT: Sending initial message #2 to establish the stream");
 
-            await asyncDuplexStreamingCall
-                .RequestStream
-                .WriteAsync(
-                    new ClientMessage
-                    {
-                        ClientSessionId = clientSessionId,
-                        Message = "Client connected (initial attempt #2)"
-                    });
+            try
+            {
+                await asyncDuplexStreamingCall
+                    .RequestStream
+                    .WriteAsync(
+                        new ClientMessage
+                        {
+                            ClientSessionId = clientSessionId,
+                            Message = "Client connected (initial attempt #2)"
+                        });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"INIT: Error sending initial message #2: {ex.ToString()}");
+            }
         }
 
         if (!serverCommunicationReceived)
@@ -253,14 +276,21 @@ internal class ChakraPostgresSyncServiceClient
 
             Console.WriteLine("INIT: Sending initial message #3 to establish the stream");
 
-            await asyncDuplexStreamingCall
-                .RequestStream
-                .WriteAsync(
-                    new ClientMessage
-                    {
-                        ClientSessionId = clientSessionId,
-                        Message = "Client connected (initial attempt #3)"
-                    });
+            try
+            {
+                await asyncDuplexStreamingCall
+                    .RequestStream
+                    .WriteAsync(
+                        new ClientMessage
+                        {
+                            ClientSessionId = clientSessionId,
+                            Message = "Client connected (initial attempt #3)"
+                        });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"INIT: Error sending initial message #3: {ex.ToString()}");
+            }
         }
 
         return (asyncDuplexStreamingCall, responseTask);
