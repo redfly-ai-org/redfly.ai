@@ -166,7 +166,7 @@ internal class ChakraPostgresSyncServiceClient
         var responseTask = Task.Run(async () =>
         {
             int maxRetryAttempts = 5; // Maximum number of retry attempts
-            int delayMilliseconds = 3000; // Initial delay in milliseconds
+            int delayMilliseconds = 1000 * 30; // Initial delay in milliseconds
 
             for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
             {
