@@ -162,6 +162,7 @@ internal class ChakraPostgresSyncServiceClient
 
         // Bi-directional streaming for communication with the server
         var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
+        var biDirMessageWasReceived = false;
 
         var responseTask = Task.Run(async () =>
         {
@@ -178,12 +179,13 @@ internal class ChakraPostgresSyncServiceClient
                     await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
                     {
                         Console.WriteLine(FormatGrpcServerMessage(message.Message));
+                        biDirMessageWasReceived = true;
                     }
 
                     // Exit the retry loop if successful
                     break;
                 }
-                catch (RpcException ex) when (attempt < maxRetryAttempts)
+                catch (RpcException ex) when (attempt < maxRetryAttempts && !biDirMessageWasReceived)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"BI-DIR> Attempt #{attempt}: gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds/1000} secs... (Attempt {attempt}/{maxRetryAttempts})");
@@ -248,7 +250,8 @@ internal class ChakraPostgresSyncServiceClient
             Console.WriteLine($"INIT: Error sending initial message: {ex.ToString()}");
         }
 
-        if (!serverCommunicationReceived)
+        if (!serverCommunicationReceived &&
+            !biDirMessageWasReceived)
         {
             Console.WriteLine("INIT: Sending initial message #2 to establish the stream");
 
@@ -269,7 +272,8 @@ internal class ChakraPostgresSyncServiceClient
             }
         }
 
-        if (!serverCommunicationReceived)
+        if (!serverCommunicationReceived &&
+            !biDirMessageWasReceived)
         {
             Console.WriteLine("INIT: Waiting for 2 minutes to see IF the server responded...");
             await Task.Delay(2 * 60 * 1000);
