@@ -220,6 +220,7 @@ internal class ChakraPostgresSyncServiceClient
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"BI-DIR> Attempt #{attempt}: An unexpected error occurred: {ex.ToString()}");
+                    Console.WriteLine("GIVING UP AFTER EXHAUSTING RETRIES");
                     Console.ResetColor();
 
                     throw; // Re-throw the exception if it's not a gRPC error or max attempts are reached
@@ -297,6 +298,7 @@ internal class ChakraPostgresSyncServiceClient
             }
         }
 
+        Console.WriteLine("Returning after starting BI-DIR streaming.");
         return (asyncDuplexStreamingCall, responseTask);
     }
 
