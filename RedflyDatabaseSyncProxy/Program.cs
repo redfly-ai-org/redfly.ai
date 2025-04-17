@@ -54,7 +54,7 @@ internal class Program
 
             var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
 
-            Console.WriteLine("Connect to the local DEV environment? (y/n)");
+            Console.WriteLine("Connect to the LOCAL WIN DEV environment? (y/n)");
             Console.WriteLine("This option is only relevant to redfly employees.");
             var response = Console.ReadLine();
 
@@ -62,6 +62,18 @@ internal class Program
                 response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
             {
                 grpcUrl = "https://localhost:7176";
+            }
+            else
+            {
+                Console.WriteLine("Connect to the LOCAL LINUX/ WSL DEV environment? (y/n)");
+                Console.WriteLine("This option is only relevant to redfly employees.");
+                response = Console.ReadLine();
+
+                if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    grpcUrl = "http://localhost:5053";
+                }
             }
 
             Console.ForegroundColor = ConsoleColor.Green;
