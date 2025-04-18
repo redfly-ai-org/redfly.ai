@@ -51,7 +51,7 @@ internal class ChakraPostgresSyncServiceClient
 
         try
         {
-            (asyncDuplexStreamingCall, responseTask) = await StartBidirectionalStreaming(clientSessionId, chakraClient, headers);
+            (asyncDuplexStreamingCall, responseTask) = await StartBidirectionalStreamingAsync(clientSessionId, chakraClient, headers);
 
             // Keep the client running to listen for server messages
             Console.WriteLine("Press any key to exit...");
@@ -155,80 +155,48 @@ internal class ChakraPostgresSyncServiceClient
         return false;
     }
 
-    private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task responseTask)> StartBidirectionalStreaming(string clientSessionId, NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, Metadata headers)
+    private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task responseTask)> StartBidirectionalStreamingAsync(
+                                                    string clientSessionId, 
+                                                    NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, 
+                                                    Metadata headers,
+                                                    int retryCount = 0)
     {
-        Console.WriteLine("Going to start bi-directional streaming with server");
-        var serverCommunicationReceived = false;
+        var streamingSucceeded = false;
+        Console.WriteLine($"Attempt #{retryCount}: Going to start bi-directional streaming with server");
 
         // Bi-directional streaming for communication with the server
         var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
-        var biDirMessageWasReceived = false;
 
         var responseTask = Task.Run(async () =>
         {
-            int maxRetryAttempts = 5; // Maximum number of retry attempts
-            int delayMilliseconds = 1000 * 30; // Initial delay in milliseconds
-
-            for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
+            try
             {
-                try
+                Console.WriteLine($"BI-DIR> Attempt #{retryCount}: Reading from bi-directional stream");
+
+                await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
                 {
-                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: Reading from bi-directional stream");
-                    serverCommunicationReceived = true;
-
-                    await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
-                    {
-                        Console.WriteLine(FormatGrpcServerMessage(message.Message));
-                        biDirMessageWasReceived = true;
-                    }
-
-                    // Exit the retry loop if successful
-                    break;
+                    Console.WriteLine(FormatGrpcServerMessage(message.Message));
+                    streamingSucceeded = true;
                 }
-                catch (RpcException ex) when (attempt < maxRetryAttempts && !biDirMessageWasReceived)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds/1000} secs... (Attempt {attempt}/{maxRetryAttempts})");
-                    Console.ResetColor();
-
-                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: Sending another initial message to establish the stream");
-
-                    try
-                    {
-                        await asyncDuplexStreamingCall
-                                .RequestStream
-                                .WriteAsync(
-                                    new ClientMessage
-                                    {
-                                        ClientSessionId = clientSessionId,
-                                        Message = $"Client connected (Attempt #{attempt})"
-                                    });
-                    }
-                    catch (Exception writeEx)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"BI-DIR> Attempt #{attempt}: Error sending initial message: {writeEx.ToString()}");
-                        Console.ResetColor();
-                    }
-
-                    await Task.Delay(delayMilliseconds);
-
-                    // Exponential backoff
-                    delayMilliseconds *= 2;
-                }
-                catch (Exception ex)
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"BI-DIR> Attempt #{attempt}: An unexpected error occurred: {ex.ToString()}");
-                    Console.WriteLine("GIVING UP AFTER EXHAUSTING RETRIES");
-                    Console.ResetColor();
-
-                    throw; // Re-throw the exception if it's not a gRPC error or max attempts are reached
-                }
+            }
+            catch (RpcException ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"BI-DIR> Attempt #{retryCount}: gRPC error occurred: {ex.Status}");
+                Console.ResetColor();
+                streamingSucceeded = false;
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"BI-DIR> Attempt #{retryCount}: An unexpected error occurred: {ex.ToString()}");
+                Console.WriteLine($"Attempt #{retryCount}: GIVING UP AFTER EXHAUSTING RETRIES");
+                Console.ResetColor();
+                streamingSucceeded = false;
             }
         });
 
-        Console.WriteLine("INIT: Sending initial message to establish the stream");
+        Console.WriteLine($"INIT> Attempt #{retryCount}: Sending initial message to establish the stream");
 
         try
         {
@@ -242,63 +210,42 @@ internal class ChakraPostgresSyncServiceClient
                             Message = "Client connected (initial attempt #1)"
                         });
 
-            Console.WriteLine("INIT: Initial message successfully sent to server");
-            Console.WriteLine("INIT: Waiting for 1 minute to see IF the server responded...");
-            await Task.Delay(60 * 1000);
+            Console.WriteLine($"INIT> Attempt #{retryCount}: Initial message successfully sent to server");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"INIT: Error sending initial message: {ex.ToString()}");
+            retryCount += 1;
+            Console.WriteLine($"INIT>Attempt #{retryCount}: Error sending initial message: {ex.ToString()}. Waiting 10 seconds before attempt {retryCount}...");
+
+            await Task.Delay(10 * 1000);
+            return await StartBidirectionalStreamingAsync(clientSessionId, chakraClient, headers, retryCount);
         }
 
-        if (!serverCommunicationReceived &&
-            !biDirMessageWasReceived)
+        Console.WriteLine("INIT: Waiting for 1 minute to see IF the bi-directional streaming is still working properly...");
+        await Task.Delay(60 * 1000);
+
+        if (!streamingSucceeded)
         {
-            Console.WriteLine("INIT: Sending initial message #2 to establish the stream");
+            retryCount += 1;
+            Console.WriteLine($"INIT>Attempt #{retryCount}: Bi-directional streaming failed after a minute. Waiting 10 seconds before attempt {retryCount}...");
 
-            try
-            {
-                await asyncDuplexStreamingCall
-                    .RequestStream
-                    .WriteAsync(
-                        new ClientMessage
-                        {
-                            ClientSessionId = clientSessionId,
-                            Message = "Client connected (initial attempt #2)"
-                        });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"INIT: Error sending initial message #2: {ex.ToString()}");
-            }
+            await Task.Delay(10 * 1000);
+            return await StartBidirectionalStreamingAsync(clientSessionId, chakraClient, headers, retryCount);
         }
 
-        if (!serverCommunicationReceived &&
-            !biDirMessageWasReceived)
+        Console.WriteLine("INIT: Waiting for 5 minutes to see IF the bi-directional streaming is still working properly...");
+        await Task.Delay(5 * 60 * 1000);
+
+        if (!streamingSucceeded)
         {
-            Console.WriteLine("INIT: Waiting for 2 minutes to see IF the server responded...");
-            await Task.Delay(2 * 60 * 1000);
+            retryCount += 1;
+            Console.WriteLine($"INIT>Attempt #{retryCount}: Bi-directional streaming failed after 5 minutes. Waiting 10 seconds before attempt {retryCount}...");
 
-            Console.WriteLine("INIT: Sending initial message #3 to establish the stream");
-
-            try
-            {
-                await asyncDuplexStreamingCall
-                    .RequestStream
-                    .WriteAsync(
-                        new ClientMessage
-                        {
-                            ClientSessionId = clientSessionId,
-                            Message = "Client connected (initial attempt #3)"
-                        });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"INIT: Error sending initial message #3: {ex.ToString()}");
-            }
+            await Task.Delay(10 * 1000);
+            return await StartBidirectionalStreamingAsync(clientSessionId, chakraClient, headers, retryCount);
         }
 
-        Console.WriteLine("Returning after starting BI-DIR streaming.");
+        Console.WriteLine($"Attempt #{retryCount}: Returning after starting BI-DIR streaming.");
         return (asyncDuplexStreamingCall, responseTask);
     }
 
