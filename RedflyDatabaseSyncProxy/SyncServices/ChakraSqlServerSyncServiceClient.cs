@@ -53,10 +53,6 @@ internal class ChakraSqlServerSyncServiceClient
             return;
         }
 
-        // Delay a minute for the server to start
-        Console.WriteLine("Waiting for the Service to fully startup.");
-        await Task.Delay(TimeSpan.FromSeconds(30));
-
         // Bi-directional streaming for communication with the server
         using var call = chakraClient.CommunicateWithClient(headers);
 
