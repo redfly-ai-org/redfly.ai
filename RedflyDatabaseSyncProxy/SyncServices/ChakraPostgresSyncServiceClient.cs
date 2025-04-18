@@ -200,14 +200,17 @@ internal class ChakraPostgresSyncServiceClient
 
         try
         {
-            // Send initial message to establish the stream
+            // Send initial message to establish the stream - retrying this never works
+            // The CommunicateWithClient() method is what needs to be called again to
+            // re-establish the stream. It could re-establish a new stream when the old
+            // one dies.
             await asyncDuplexStreamingCall
                     .RequestStream
                     .WriteAsync(
                         new ClientMessage
                         {
                             ClientSessionId = clientSessionId,
-                            Message = "Client connected (initial attempt #1)"
+                            Message = $"Client Registration Message. Attempt {retryCount}"
                         });
 
             Console.WriteLine($"INIT> Attempt #{retryCount}: Initial message successfully sent to server");
