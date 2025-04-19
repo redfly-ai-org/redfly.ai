@@ -8,6 +8,8 @@ package changemanagement;
 service NativeGrpcSqlServerChakraService {
   // Starts the change management process for a client.
   rpc StartChakraSync(StartChakraSyncRequest) returns (StartChakraSyncResponse);
+  // Stops the change management process for a client.
+  rpc StopChakraSync(StopChakraSyncRequest) returns (StopChakraSyncResponse);
   // Bi-directional stream for server to client callbacks.
   rpc CommunicateWithClient(stream ClientMessage) returns (stream ServerMessage);
 }
@@ -26,6 +28,17 @@ message StartChakraSyncRequest {
 
 // The response message containing the result of the start request.
 message StartChakraSyncResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// The request message to stop the change management process.
+message StopChakraSyncRequest {
+  string client_session_id = 1;
+}
+
+// The response message containing the result of the stop request.
+message StopChakraSyncResponse {
   bool success = 1;
   string message = 2;
 }

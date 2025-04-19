@@ -57,9 +57,32 @@ internal class ChakraPostgresSyncServiceClient
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
 
-            // Complete the request stream
-            await asyncDuplexStreamingCall.RequestStream.CompleteAsync();
-            await responseTask;
+            try
+            {
+                var stopResponse = await chakraClient
+                        .StopChakraSyncAsync(new StopChakraSyncRequest() { ClientSessionId = clientSessionId }, headers);
+
+                if (stopResponse.Success)
+                {
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Chakra Sync Service stopped successfully.");
+                    Console.WriteLine(stopResponse.Message);
+                    Console.ResetColor();
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Failed to stop the Chakra Sync Service.");
+                    Console.WriteLine(stopResponse.Message);
+                    Console.ResetColor();
+                }
+            }
+            finally
+            {
+                // Complete the request stream
+                await asyncDuplexStreamingCall.RequestStream.CompleteAsync();
+                await responseTask;
+            }
         }
         finally
         {
