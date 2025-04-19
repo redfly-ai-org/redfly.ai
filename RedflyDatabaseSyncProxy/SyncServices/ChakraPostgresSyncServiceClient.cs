@@ -75,20 +75,34 @@ internal class ChakraPostgresSyncServiceClient
 
             var connMonitorTask = Task.Run(async () =>
             {
+                int delayTimeMs = 15 * 1000; // Start with 15 seconds
+                const int minDelayMs = 15 * 1000; // Minimum delay: 15 seconds
+                const int maxDelayMs = 5 * 60 * 1000; // Maximum delay: 5 minutes
+                const int delayStepMs = 15 * 1000; // Step to increase or decrease delay: 15 seconds
+
                 while (!connMonitorCancelToken.IsCancellationRequested)
                 {
-                    await Task.Delay(60 * 1000, connMonitorCancelToken);
+                    await Task.Delay(delayTimeMs, connMonitorCancelToken);
 
                     if (!_bidirectionalStreamingIsWorking)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("INIT: Reconnecting to the server to restart bi-directional streaming...");
+                        Console.WriteLine($"MONITOR: Reconnecting to the server to restart bi-directional streaming. The last delay time was {delayTimeMs/1000} secs.");
                         Console.ResetColor();
 
                         _bidirStreamingRetryCount += 1;
                         (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, headers);
+
+                        // Decrease delay time when the flag is false
+                        delayTimeMs = Math.Max(minDelayMs, delayTimeMs - delayStepMs);
+                    }
+                    else
+                    {
+                        // Increase delay time when the flag is true
+                        delayTimeMs = Math.Min(maxDelayMs, delayTimeMs + delayStepMs);
                     }
                 }
+
             }, connMonitorCancelToken);
 
             // Keep the client running to listen for server messages
@@ -316,7 +330,7 @@ internal class ChakraPostgresSyncServiceClient
             return await StartBidirStreamingAsync(chakraClient, headers);
         }
 
-        Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Returning after starting BI-DIR streaming.");
+        Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Started BI-DIR streaming.");
         return (asyncDuplexStreamingCall, bidirectionalTask);
     }
 
