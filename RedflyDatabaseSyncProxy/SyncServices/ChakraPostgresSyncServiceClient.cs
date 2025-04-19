@@ -262,6 +262,7 @@ internal class ChakraPostgresSyncServiceClient
         {
             try
             {
+                _bidirectionalStreamingIsWorking = true;
                 Console.WriteLine($"BI-DIR> Attempt #{_bidirectionalStreamingRetryCount}: Reading from bi-directional stream");
 
                 await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
