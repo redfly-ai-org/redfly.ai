@@ -26,4 +26,12 @@ public class FixedSizeList<T>
     public int Count => _list.Count;
 
     public IReadOnlyList<T> Items => _list.AsReadOnly();
+
+    public bool All(Func<T, bool> predicate)
+    {
+        if (predicate == null)
+            throw new ArgumentNullException(nameof(predicate));
+
+        return _list.All(predicate);
+    }
 }
