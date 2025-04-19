@@ -20,11 +20,24 @@ internal class ChakraPostgresSyncServiceClient
     private static bool _bidirectionalStreamingIsWorking = false;
     private static int _bidirectionalStreamingRetryCount = 0;
 
+    private static string _clientSessionId = GenerateUniqueClientSessionId();
+
+    private static string GenerateUniqueClientSessionId()
+    {
+        // Combine the machine name and a GUID to ensure uniqueness
+        string machineName = Environment.MachineName;
+        string guid = "9052b6a0-03bf-4f36-b811-e7038ef1b692";
+
+        // Hash the combination for a consistent length (optional)
+        using (var sha256 = System.Security.Cryptography.SHA256.Create())
+        {
+            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{machineName}-{guid}"));
+            return Convert.ToBase64String(hashBytes).Substring(0, 32); // Truncate for readability
+        }
+    }
+
     internal static async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
     {
-        var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
-        //var channel = GrpcChannel.ForAddress(grpcUrl);
-
         AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
@@ -41,11 +54,11 @@ internal class ChakraPostgresSyncServiceClient
         var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {grpcAuthToken}" },
-                    { "client-session-id", clientSessionId.ToString() }
+                    { "client-session-id", _clientSessionId.ToString() }
                 };
 
         // Start Chakra Sync
-        if (!await StartChakraSyncAsyncWithRetry(runInitialSync, clientSessionId, chakraClient, headers))
+        if (!await StartChakraSyncAsyncWithRetry(runInitialSync, chakraClient, headers))
         { 
             return; 
         }
@@ -55,7 +68,7 @@ internal class ChakraPostgresSyncServiceClient
 
         try
         {
-            (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(clientSessionId, chakraClient, headers);
+            (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, headers);
 
             var connMonitorCancelTokenSource = new CancellationTokenSource();
             var connMonitorCancelToken = connMonitorCancelTokenSource.Token;
@@ -73,7 +86,7 @@ internal class ChakraPostgresSyncServiceClient
                     {
                         _bidirectionalStreamingRetryCount += 1;
 
-                        (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(clientSessionId, chakraClient, headers);
+                        (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, headers);
                     }
                 }
             }, connMonitorCancelToken);
@@ -86,7 +99,7 @@ internal class ChakraPostgresSyncServiceClient
 
             try
             {
-                await StopChakraSyncAsync(clientSessionId, chakraClient, headers);
+                await StopChakraSyncAsync(chakraClient, headers);
 
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Stopped Chakra Sync.");
@@ -122,12 +135,14 @@ internal class ChakraPostgresSyncServiceClient
         }
     }
 
-    private static async Task StopChakraSyncAsync(string clientSessionId, NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, Metadata headers)
+    private static async Task StopChakraSyncAsync(
+                                NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, 
+                                Metadata headers)
     {
         var stopResponse = await chakraClient
                                     .StopChakraSyncAsync(
                                         new StopChakraSyncRequest() 
-                                                { ClientSessionId = clientSessionId }, 
+                                                { ClientSessionId = _clientSessionId }, 
                                         headers);
 
         if (stopResponse.Success)
@@ -148,7 +163,6 @@ internal class ChakraPostgresSyncServiceClient
 
     private static async Task<bool> StartChakraSyncAsyncWithRetry(
                                         bool runInitialSync,
-                                        string clientSessionId,
                                         NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient,
                                         Metadata headers)
     {
@@ -165,7 +179,7 @@ internal class ChakraPostgresSyncServiceClient
                     .StartChakraSyncAsync(
                         new StartChakraSyncRequest
                         {
-                            ClientSessionId = clientSessionId,
+                            ClientSessionId = _clientSessionId,
                             EncryptedClientId = RedflyEncryption.EncryptToString(Guid.Empty.ToString()),
                             EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.ClientAndUserProfileViewModel!.ClientName),
                             EncryptionKey = RedflyEncryptionKeys.AesKey,
@@ -235,7 +249,6 @@ internal class ChakraPostgresSyncServiceClient
     }
 
     private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task bidirectionalTask)> StartBidirStreamingAsync(
-                                string clientSessionId, 
                                 NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, 
                                 Metadata headers)
     {
@@ -287,7 +300,7 @@ internal class ChakraPostgresSyncServiceClient
                     .WriteAsync(
                         new ClientMessage
                         {
-                            ClientSessionId = clientSessionId,
+                            ClientSessionId = _clientSessionId,
                             Message = $"Client Registration Message. Attempt {_bidirectionalStreamingRetryCount}"
                         });
 
@@ -299,7 +312,7 @@ internal class ChakraPostgresSyncServiceClient
             Console.WriteLine($"INIT>Attempt #{_bidirectionalStreamingRetryCount}: Error sending initial message: {ex.ToString()}. Waiting 10 seconds before attempt {_bidirectionalStreamingRetryCount}...");
 
             await Task.Delay(10 * 1000);
-            return await StartBidirStreamingAsync(clientSessionId, chakraClient, headers);
+            return await StartBidirStreamingAsync(chakraClient, headers);
         }
 
         Console.WriteLine($"Attempt #{_bidirectionalStreamingRetryCount}: Returning after starting BI-DIR streaming.");
