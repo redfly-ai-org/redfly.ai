@@ -188,9 +188,9 @@ internal class ChakraPostgresSyncServiceClient
 
         if (stopResponse.Success)
         {
-            Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Chakra Sync Service stopped successfully.");
-            Console.WriteLine(stopResponse.Message);
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"SERVER|{stopResponse.Message}");
             Console.ResetColor();
         }
         else
@@ -248,7 +248,7 @@ internal class ChakraPostgresSyncServiceClient
                 if (startResponse.Success)
                 {
                     Console.WriteLine("Chakra Sync Service started successfully.");
-                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"SERVER|{startResponse.Message}");
                     Console.ResetColor();
                     return true;
@@ -308,7 +308,7 @@ internal class ChakraPostgresSyncServiceClient
 
                 await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
                 {
-                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine(FormatGrpcServerMessage(message.Message));
                     Console.ResetColor();
                     _bidirectionalStreamingIsWorking = true;
