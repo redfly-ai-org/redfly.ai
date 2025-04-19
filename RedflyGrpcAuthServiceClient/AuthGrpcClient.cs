@@ -13,7 +13,7 @@ namespace RedflyGrpcAuthServiceClient
     public static class AuthGrpcClient
     {
 
-        public static async Task<string?> RunAsync(string grpcUrl)
+        public static async Task<string?> RunAsync(string grpcUrl, bool autoLogin = false)
         {
             try
             {
@@ -43,25 +43,34 @@ namespace RedflyGrpcAuthServiceClient
                 StringBuilder passwordBuilder;
                 bool credentialsLoadedFromDisk = false;
 
-                if (SecureCredentials.Exist())
+                if (autoLogin)
                 {
-                    Console.WriteLine("Do you want to login using the saved credentials? (y/n)");
-                    var response = Console.ReadLine();
-
-                    if (response?.ToLower() == "y")
+                    (userName, passwordBuilder) = SecureCredentials.Get();
+                    credentialsLoadedFromDisk = true;
+                    Console.WriteLine("Using saved login credentials...");
+                }
+                else
+                {
+                    if (SecureCredentials.Exist())
                     {
-                        (userName, passwordBuilder) = SecureCredentials.Get();
-                        credentialsLoadedFromDisk = true;
-                        Console.WriteLine("Using saved login credentials...");
+                        Console.WriteLine("Do you want to login using the saved credentials? (y/n)");
+                        var response = Console.ReadLine();
+
+                        if (response?.ToLower() == "y")
+                        {
+                            (userName, passwordBuilder) = SecureCredentials.Get();
+                            credentialsLoadedFromDisk = true;
+                            Console.WriteLine("Using saved login credentials...");
+                        }
+                        else
+                        {
+                            PromptUserForLogin(out userName, out passwordBuilder, out credentialsLoadedFromDisk);
+                        }
                     }
                     else
                     {
                         PromptUserForLogin(out userName, out passwordBuilder, out credentialsLoadedFromDisk);
                     }
-                }
-                else
-                {
-                    PromptUserForLogin(out userName, out passwordBuilder, out credentialsLoadedFromDisk);
                 }
 
                 var loginRequest = new LoginRequest

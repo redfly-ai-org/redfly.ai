@@ -95,7 +95,7 @@ internal class ChakraPostgresSyncServiceClient
                             _lastBidirErrors.All(e => e is RpcException rpcEx && rpcEx.StatusCode == StatusCode.Unauthenticated))
                         {
                             // Authenticate again.
-                            var authToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
+                            var authToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl, autoLogin: true);
 
                             if (authToken == null ||
                                 authToken.Length == 0)
