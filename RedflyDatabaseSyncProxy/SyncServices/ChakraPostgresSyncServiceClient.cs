@@ -21,6 +21,7 @@ internal class ChakraPostgresSyncServiceClient
     private static int _bidirStreamingRetryCount = 0;
 
     private static string _clientSessionId = GenerateUniqueClientSessionId();
+    private static readonly FixedSizeList<Exception> _lastBidirErrors = new FixedSizeList<Exception>(100);
 
     private static string GenerateUniqueClientSessionId()
     {
@@ -54,14 +55,14 @@ internal class ChakraPostgresSyncServiceClient
 
         var chakraClient = new NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient(channel);
 
-        var headers = new Metadata
+        var grpcHeaders = new Metadata
                 {
                     { "Authorization", $"Bearer {grpcAuthToken}" },
                     { "client-session-id", _clientSessionId.ToString() }
                 };
 
         // Start Chakra Sync
-        if (!await StartChakraSyncAsyncWithRetry(runInitialSync, chakraClient, headers))
+        if (!await StartChakraSyncAsyncWithRetry(runInitialSync, chakraClient, grpcHeaders))
         { 
             return; 
         }
@@ -71,7 +72,7 @@ internal class ChakraPostgresSyncServiceClient
 
         try
         {
-            (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, headers);
+            (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, grpcHeaders);
 
             var connMonitorCancelTokenSource = new CancellationTokenSource();
             var connMonitorCancelToken = connMonitorCancelTokenSource.Token;
@@ -94,7 +95,7 @@ internal class ChakraPostgresSyncServiceClient
                         Console.ResetColor();
 
                         _bidirStreamingRetryCount += 1;
-                        (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, headers);
+                        (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, grpcHeaders);
 
                         // Decrease delay time when the flag is false
                         delayTimeMs = Math.Max(minDelayMs, delayTimeMs - delayStepMs);
@@ -116,7 +117,7 @@ internal class ChakraPostgresSyncServiceClient
 
             try
             {
-                await StopChakraSyncAsync(chakraClient, headers);
+                await StopChakraSyncAsync(chakraClient, grpcHeaders);
 
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("Stopped Chakra Sync.");
@@ -288,15 +289,19 @@ internal class ChakraPostgresSyncServiceClient
                     _bidirectionalStreamingIsWorking = true;
                 }
             }
-            catch (RpcException ex)
+            catch (RpcException rpcex)
             {
+                _lastBidirErrors.Add(rpcex);
+
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"BI-DIR> Session #{_bidirStreamingRetryCount}: gRPC error occurred: {ex.Status}");
+                Console.WriteLine($"BI-DIR> Session #{_bidirStreamingRetryCount}: gRPC error occurred: {rpcex.Status}");
                 Console.ResetColor();
                 _bidirectionalStreamingIsWorking = false;
             }
             catch (Exception ex)
             {
+                _lastBidirErrors.Add(ex);
+
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"BI-DIR> Session #{_bidirStreamingRetryCount}: An unexpected error occurred: {ex.ToString()}");
                 Console.WriteLine($"Session #{_bidirStreamingRetryCount}: GIVING UP AFTER EXHAUSTING RETRIES");
@@ -326,6 +331,8 @@ internal class ChakraPostgresSyncServiceClient
         }
         catch (Exception ex)
         {
+            _lastBidirErrors.Add(ex);
+
             _bidirStreamingRetryCount += 1;
             Console.WriteLine($"INIT>Session #{_bidirStreamingRetryCount}: Error sending initial message: {ex.ToString()}. Waiting 10 seconds before attempt {_bidirStreamingRetryCount}...");
 
