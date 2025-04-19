@@ -38,7 +38,7 @@ internal class Program
             Console.WriteLine("No matter how large or complex your DB is, redfly.ai can do it! \r\n");
 
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("We suggest starting with a test database as we make non-invasive changes to your database which should NOT affect well designed, modern applications.\r\n");
+            Console.WriteLine("We suggest starting with a test database as we make non-invasive changes to your database (SQL Server only) which should NOT affect well designed, modern applications. For Postgres, the database schema is NOT affected.\r\n");
             
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("For sync to work, your Database should be accessible over the Internet and its firewall should allow traffic from these Azure IP addresses (US East Region). We plan to support non-public and local servers in a later release of this application.\r\n");
