@@ -47,11 +47,11 @@ internal class ChakraPostgresSyncServiceClient
         }
 
         AsyncDuplexStreamingCall<ClientMessage, ServerMessage>? asyncDuplexStreamingCall = null;
-        Task responseTask;
+        Task bidirectionalTask;
 
         try
         {
-            (asyncDuplexStreamingCall, responseTask) = await StartBidirectionalStreamingAsync(clientSessionId, chakraClient, headers);
+            (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirectionalStreamingAsync(clientSessionId, chakraClient, headers);
 
             // Keep the client running to listen for server messages
             Console.WriteLine("Press any key to exit...");
@@ -81,7 +81,7 @@ internal class ChakraPostgresSyncServiceClient
             {
                 // Complete the request stream
                 await asyncDuplexStreamingCall.RequestStream.CompleteAsync();
-                await responseTask;
+                await bidirectionalTask;
             }
         }
         finally
@@ -178,7 +178,7 @@ internal class ChakraPostgresSyncServiceClient
         return false;
     }
 
-    private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task responseTask)> StartBidirectionalStreamingAsync(
+    private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task bidirectionalTask)> StartBidirectionalStreamingAsync(
                                                     string clientSessionId, 
                                                     NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient, 
                                                     Metadata headers,
@@ -190,7 +190,7 @@ internal class ChakraPostgresSyncServiceClient
         // Bi-directional streaming for communication with the server
         var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
 
-        var responseTask = Task.Run(async () =>
+        var bidirectionalTask = Task.Run(async () =>
         {
             try
             {
@@ -272,7 +272,7 @@ internal class ChakraPostgresSyncServiceClient
         }
 
         Console.WriteLine($"Attempt #{retryCount}: Returning after starting BI-DIR streaming.");
-        return (asyncDuplexStreamingCall, responseTask);
+        return (asyncDuplexStreamingCall, bidirectionalTask);
     }
 
     private static string FormatGrpcServerMessage(string logMessage)
