@@ -45,7 +45,10 @@ internal class ChakraPostgresSyncServiceClient
             LoggerFactory = loggerFactory,
             HttpHandler = new SocketsHttpHandler
             {
-                EnableMultipleHttp2Connections = true
+                EnableMultipleHttp2Connections = true,
+                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
             }
         });
 
