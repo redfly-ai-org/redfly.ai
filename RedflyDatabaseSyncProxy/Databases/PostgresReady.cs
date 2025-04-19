@@ -32,7 +32,7 @@ namespace RedflyDatabaseSyncProxy
             if (AppSession.PostgresDatabase != null &&
                 AppSession.PostgresDatabase.DatabasePrepped)
             {
-                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("This Postgres database has already been prepped for redfly.");
                 Console.WriteLine("Do you want to walkthrough the prep instructions again? (y/n)");
                 response = Console.ReadLine();
