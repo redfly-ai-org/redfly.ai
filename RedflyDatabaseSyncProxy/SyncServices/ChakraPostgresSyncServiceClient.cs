@@ -113,9 +113,9 @@ internal class ChakraPostgresSyncServiceClient
                                             };
                         }
 
-                        //Console.ForegroundColor = ConsoleColor.Red;
-                        //Console.WriteLine($"MONITOR: Reconnecting to the server to restart bi-directional streaming. The last delay time was {delayTimeMs/1000} secs.");
-                        //Console.ResetColor();
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"MONITOR: Reconnecting to the server to restart bi-directional streaming. The last delay time was {delayTimeMs / 1000} secs.");
+                        Console.ResetColor();
 
                         _bidirStreamingRetryCount += 1;
                         (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, grpcHeaders);
@@ -365,7 +365,7 @@ internal class ChakraPostgresSyncServiceClient
             return await StartBidirStreamingAsync(chakraClient, headers);
         }
 
-        //Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Started BI-DIR streaming.");
+        Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Started BI-DIR streaming.");
         return (asyncDuplexStreamingCall, bidirectionalTask);
     }
 
