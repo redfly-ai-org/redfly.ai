@@ -248,6 +248,14 @@ internal class ChakraPostgresSyncServiceClient
                 if (startResponse.Success)
                 {
                     Console.WriteLine("Chakra Sync Service started successfully.");
+                    Console.WriteLine("After you see the Logical Replication start, you can modify your database to start seeing it sync to Redis immediately.");
+                    Console.WriteLine("If you don't see the update log, refresh your Redis to confirm that changes are available immediately.");
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("    Please ignore the Grpc errors - these are normal.");
+                    Console.ResetColor();
+
+
                     Console.ForegroundColor = ConsoleColor.Cyan;
                     Console.WriteLine($"SERVER|{startResponse.Message}");
                     Console.ResetColor();
