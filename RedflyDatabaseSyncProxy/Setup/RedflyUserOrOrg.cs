@@ -93,21 +93,21 @@ internal class RedflyUserOrOrg
         {
             try
             {
-                Console.WriteLine($"Attempt {attempt}: Fetching user setup data...");
+                Console.WriteLine($"\rAttempt {attempt}: Getting User Setup data from the server...");
                 var getUserSetupDataResponse = await userSetupApiClient
                                                     .GetUserSetupDataAsync(new UserIdRequest
                                                     {
                                                         UserId = Guid.NewGuid().ToString()
                                                     }, headers);
 
-                Console.WriteLine("Successfully fetched user setup data.");
+                Console.WriteLine("\rSuccessfully retrieved User Setup data.");
                 return getUserSetupDataResponse;
             }
             catch (RpcException ex) when (attempt < maxRetryAttempts)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"Attempt {attempt} failed: {ex.Message}. Retrying in {(delayMilliseconds * attempt)/1000} secs...");
-                Console.ResetColor();
+                //Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine($"Attempt {attempt} failed: {ex.Message}. Retrying in {(delayMilliseconds * attempt)/1000} secs...");
+                //Console.ResetColor();
 
                 await Task.Delay(delayMilliseconds * attempt);
             }

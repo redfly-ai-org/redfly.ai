@@ -276,7 +276,7 @@ internal class ChakraPostgresSyncServiceClient
                     Console.WriteLine("If you don't see the update log, refresh your Redis to confirm that changes are available immediately.");
 
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Please ignore the Grpc errors - these are normal.");
+                    Console.WriteLine("Please ignore ANY Grpc errors.");
                     Console.ResetColor();
                     Console.WriteLine();
 

@@ -156,10 +156,10 @@ namespace RedflyGrpcAuthServiceClient
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.Message);
-                Console.ResetColor();
-                Console.WriteLine();
+                //Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine(ex.Message);
+                //Console.ResetColor();
+                //Console.WriteLine();
 
                 cts.Cancel();
                 await progressTask;
@@ -174,7 +174,7 @@ namespace RedflyGrpcAuthServiceClient
                 else
                 {
                     Console.WriteLine($"Failed to login after {retryCount + 1} attempts.");
-                    Console.WriteLine(ex.Message);
+                    //Console.WriteLine(ex.Message);
                     throw;
                 }
             }
@@ -192,6 +192,7 @@ namespace RedflyGrpcAuthServiceClient
                 // Now you can make requests to secure endpoints
                 var request = new TestDataRequest();
                 Console.WriteLine($"Testing Secure Connectivity with Server ({retryCount + 1})...");
+                Console.WriteLine("Please be patient - these are small servers.");
 
                 var cts = new CancellationTokenSource();
                 var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
@@ -199,7 +200,10 @@ namespace RedflyGrpcAuthServiceClient
                 try
                 {
                     var response = await client.TestDataAsync(request, headers);
-                    Console.WriteLine($"Response: {response.Message}");
+
+                    Console.ForegroundColor = ConsoleColor.Cyan;
+                    Console.WriteLine($"\rSERVER|{response.Message}");
+                    Console.ResetColor();
 
                     return true;
                 }
@@ -211,10 +215,10 @@ namespace RedflyGrpcAuthServiceClient
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.Message);
-                Console.ResetColor();
-                Console.WriteLine();
+                //Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine(ex.Message);
+                //Console.ResetColor();
+                //Console.WriteLine();
 
                 if (retryCount < 3)
                 {
@@ -228,7 +232,7 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Failed to make secure request after {retryCount + 1} attempts.");
-                    Console.WriteLine(ex.Message);
+                    //Console.WriteLine(ex.Message);
                     Console.ResetColor();
 
                     return false;

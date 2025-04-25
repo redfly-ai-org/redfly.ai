@@ -285,10 +285,10 @@ namespace RedflyPerformanceTest.GrpcClient
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.Message);
-                Console.ResetColor();
-                Console.WriteLine();
+                //Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine(ex.Message);
+                //Console.ResetColor();
+                //Console.WriteLine();
 
                 TestResults.OtherErrors.Add(ex);
 
