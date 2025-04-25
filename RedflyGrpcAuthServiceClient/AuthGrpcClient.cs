@@ -19,15 +19,15 @@ namespace RedflyGrpcAuthServiceClient
             {
                 Console.WriteLine("Starting the gRPC client test");
 
-                var loggerFactory = LoggerFactory.Create(builder =>
-                {
-                    builder.AddConsole();
-                    //builder.SetMinimumLevel(LogLevel.Warning);
-                });
+                //var loggerFactory = LoggerFactory.Create(builder =>
+                //{
+                //    builder.AddConsole();
+                //    //builder.SetMinimumLevel(LogLevel.Warning);
+                //});
 
                 using var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
                 {
-                    LoggerFactory = loggerFactory,
+                    //LoggerFactory = loggerFactory,
                     HttpHandler = new SocketsHttpHandler
                     {
                         EnableMultipleHttp2Connections = true,
@@ -157,7 +157,7 @@ namespace RedflyGrpcAuthServiceClient
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.Message);
                 Console.ResetColor();
                 Console.WriteLine();
 
@@ -174,7 +174,7 @@ namespace RedflyGrpcAuthServiceClient
                 else
                 {
                     Console.WriteLine($"Failed to login after {retryCount + 1} attempts.");
-                    Console.WriteLine(ex.ToString());
+                    Console.WriteLine(ex.Message);
                     throw;
                 }
             }
@@ -212,7 +212,7 @@ namespace RedflyGrpcAuthServiceClient
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.Message);
                 Console.ResetColor();
                 Console.WriteLine();
 
@@ -228,7 +228,7 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Failed to make secure request after {retryCount + 1} attempts.");
-                    Console.WriteLine(ex.ToString());
+                    Console.WriteLine(ex.Message);
                     Console.ResetColor();
 
                     return false;

@@ -9,6 +9,8 @@ namespace RedflyCoreFramework;
 public class RedflyConsole
 {
 
+    private const int MaxProgressDisplayCount = 30;
+
     public static StringBuilder GetPasswordFromUser()
     {
         var password = new StringBuilder();
@@ -48,7 +50,7 @@ public class RedflyConsole
                 {
                     Console.Write(".");
                     dotCount++;
-                    if (dotCount == 20)
+                    if (dotCount == MaxProgressDisplayCount)
                     {
                         useDots = false;
                         dotCount = 0;
@@ -57,9 +59,9 @@ public class RedflyConsole
                 }
                 else
                 {
-                    Console.Write("_");
+                    Console.Write("*");
                     dotCount++;
-                    if (dotCount == 20)
+                    if (dotCount == MaxProgressDisplayCount)
                     {
                         useDots = true;
                         dotCount = 0;
@@ -67,10 +69,10 @@ public class RedflyConsole
                     }
                 }
 
-                await Task.Delay(700);
+                await Task.Delay(600);
             }
 
-            Console.WriteLine();
+            Console.Write("\r" + new string(' ', 20) + "\r"); // Clear the line
         }
         finally
         {

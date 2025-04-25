@@ -26,15 +26,15 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 Console.WriteLine("Starting the gRPC client test for ProductModels");
 
-                var loggerFactory = LoggerFactory.Create(builder =>
-                {
-                    _ = builder.AddConsole();
-                    //builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
-                });
+                //var loggerFactory = LoggerFactory.Create(builder =>
+                //{
+                //    _ = builder.AddConsole();
+                //    //builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
+                //});
 
                 using var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
                 {
-                    LoggerFactory = loggerFactory,
+                    //LoggerFactory = loggerFactory,
                     HttpHandler = new SocketsHttpHandler
                     {
                         EnableMultipleHttp2Connections = true,
@@ -286,7 +286,7 @@ namespace RedflyPerformanceTest.GrpcClient
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine(ex.ToString());
+                Console.WriteLine(ex.Message);
                 Console.ResetColor();
                 Console.WriteLine();
 

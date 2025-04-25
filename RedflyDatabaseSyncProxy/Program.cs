@@ -162,10 +162,10 @@ internal class Program
                 return;
             }
 
-            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
             var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
             {
-                LoggerFactory = loggerFactory,
+                //LoggerFactory = loggerFactory,
                 HttpHandler = new SocketsHttpHandler
                 {
                     EnableMultipleHttp2Connections = true,
@@ -349,7 +349,7 @@ internal class Program
         catch (Exception ex)
         {
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(ex.ToString());
+            Console.WriteLine(ex.Message);
             Console.ResetColor();
             Console.WriteLine();
 
@@ -363,7 +363,7 @@ internal class Program
             }
 
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error reading sync profiles from the server: {ex}");
+            Console.WriteLine($"Error reading sync profiles from the server: {ex.Message}");
             Console.ResetColor();
 
             throw;

@@ -26,10 +26,10 @@ internal class ChakraPostgresSyncServiceClient
     internal static async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
     {
         //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
-        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+        //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
         {
-            LoggerFactory = loggerFactory,
+            //LoggerFactory = loggerFactory,
             HttpHandler = new SocketsHttpHandler
             {
                 EnableMultipleHttp2Connections = true,
@@ -100,12 +100,15 @@ internal class ChakraPostgresSyncServiceClient
                                             };
                         }
 
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"MONITOR: Reconnecting to the server to restart bi-directional streaming. The last delay time was {delayTimeMs / 1000} secs.");
-                        Console.ResetColor();
+                        //Console.ForegroundColor = ConsoleColor.Red;
+                        //Console.WriteLine($"MONITOR: Reconnecting to the server to restart bi-directional streaming. The last delay time was {delayTimeMs / 1000} secs.");
+                        //Console.ResetColor();
 
                         _bidirStreamingRetryCount += 1;
                         (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient, grpcHeaders);
+
+                        //Get status manually
+                        await GetChakraSyncStatusWithRetryAsync(chakraClient, grpcHeaders);
 
                         // Decrease delay time when the flag is false
                         delayTimeMs = Math.Max(minDelayMs, delayTimeMs - delayStepMs);
@@ -160,6 +163,38 @@ internal class ChakraPostgresSyncServiceClient
         finally
         {
             asyncDuplexStreamingCall?.Dispose();
+        }
+    }
+
+    private static async Task GetChakraSyncStatusWithRetryAsync(
+                                NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient,
+                                Metadata grpcHeaders,
+                                int retryCount = 0)
+    {
+        try
+        {
+            var syncStatusResponse = await chakraClient
+                                        .GetChakraSyncStatusAsync(
+                                            new GetChakraSyncStatusRequest()
+                                            { ClientSessionId = _clientSessionId },
+                                            grpcHeaders);
+
+            if (syncStatusResponse.Success)
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(FormatGrpcServerMessage(syncStatusResponse.Message) + " *");
+                Console.ResetColor();
+            }
+        }
+        catch (RpcException) when (retryCount < 5)
+        {
+            await Task.Delay(retryCount * 1000 * 5);
+
+            retryCount += 1;
+            await GetChakraSyncStatusWithRetryAsync(chakraClient, grpcHeaders, retryCount);
+        }
+        catch (Exception)
+        {            
         }
     }
 
@@ -283,7 +318,7 @@ internal class ChakraPostgresSyncServiceClient
                                 Metadata headers)
     {
         _bidirectionalStreamingIsWorking = false;
-        Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Calling Server to setup bi-directional streaming...");
+        //Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Calling Server to setup bi-directional streaming...");
 
         // Bi-directional streaming for communication with the server
         var asyncDuplexStreamingCall = chakraClient.CommunicateWithClient(headers);
@@ -293,7 +328,7 @@ internal class ChakraPostgresSyncServiceClient
             try
             {
                 _bidirectionalStreamingIsWorking = true;
-                Console.WriteLine($"BI-DIR> Session #{_bidirStreamingRetryCount}: Reading from bi-directional stream...");
+                //Console.WriteLine($"BI-DIR> Session #{_bidirStreamingRetryCount}: Reading from bi-directional stream...");
 
                 await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
                 {
@@ -307,23 +342,23 @@ internal class ChakraPostgresSyncServiceClient
             {
                 _lastBidirErrors.Add(rpcex);
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"    BI-DIR> Session #{_bidirStreamingRetryCount}: gRPC error occurred: {rpcex.Status}, message: {rpcex.Message}");
-                Console.ResetColor();
+                //Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine($"    BI-DIR> Session #{_bidirStreamingRetryCount}: gRPC error occurred: {rpcex.Status}, message: {rpcex.Message}");
+                //Console.ResetColor();
                 _bidirectionalStreamingIsWorking = false;
             }
             catch (Exception ex)
             {
                 _lastBidirErrors.Add(ex);
 
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"    BI-DIR> Session #{_bidirStreamingRetryCount}: An unexpected error occurred: {ex.Message}");
-                Console.ResetColor();
+                //Console.ForegroundColor = ConsoleColor.Red;
+                //Console.WriteLine($"    BI-DIR> Session #{_bidirStreamingRetryCount}: An unexpected error occurred: {ex.Message}");
+                //Console.ResetColor();
                 _bidirectionalStreamingIsWorking = false;
             }
         });
 
-        Console.WriteLine($"INIT> Session #{_bidirStreamingRetryCount}: Sending initial message to establish the stream");
+        //Console.WriteLine($"INIT> Session #{_bidirStreamingRetryCount}: Sending initial message to establish the stream");
 
         try
         {
@@ -340,20 +375,20 @@ internal class ChakraPostgresSyncServiceClient
                             Message = $"Client Registration Message. Session {_bidirStreamingRetryCount}"
                         });
 
-            Console.WriteLine($"INIT> Session #{_bidirStreamingRetryCount}: Initial message successfully sent to server");
+            //Console.WriteLine($"INIT> Session #{_bidirStreamingRetryCount}: Initial message successfully sent to server");
         }
         catch (Exception ex)
         {
             _lastBidirErrors.Add(ex);
 
             _bidirStreamingRetryCount += 1;
-            Console.WriteLine($"INIT>Session #{_bidirStreamingRetryCount}: Error sending initial message: {ex.Message}. Waiting 10 seconds before attempt {_bidirStreamingRetryCount}...");
+            //Console.WriteLine($"INIT>Session #{_bidirStreamingRetryCount}: Error sending initial message: {ex.Message}. Waiting 10 seconds before attempt {_bidirStreamingRetryCount}...");
 
             await Task.Delay(10 * 1000);
             return await StartBidirStreamingAsync(chakraClient, headers);
         }
 
-        Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Started BI-DIR streaming.");
+        //Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Started BI-DIR streaming.");
         return (asyncDuplexStreamingCall, bidirectionalTask);
     }
 
