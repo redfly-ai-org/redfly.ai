@@ -12,6 +12,8 @@ service NativeGrpcPostgresChakraService {
   rpc StopChakraSync(StopChakraSyncRequest) returns (StopChakraSyncResponse);
   // Bi-directional stream for server to client callbacks.
   rpc CommunicateWithClient(stream ClientMessage) returns (stream ServerMessage);
+  // Regular status request from client to server
+  rpc GetChakraSyncStatus(GetChakraSyncStatusRequest) returns (GetChakraSyncStatusResponse);
 }
 
 // The request message containing the client's information.
@@ -61,6 +63,17 @@ message StopChakraSyncResponse {
 message ClientMessage {
   string client_session_id = 1;
   string message = 2;
+}
+
+// Request message to get the status of the Chakra sync process.
+message GetChakraSyncStatusRequest {
+  string client_session_id = 1;
+}
+
+message GetChakraSyncStatusResponse {
+  bool success = 1;
+  string client_session_id = 2;
+  string message = 3;
 }
 
 // The message from the server to the client.
