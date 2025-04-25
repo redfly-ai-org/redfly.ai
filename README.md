@@ -5,13 +5,16 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 
 Provide source code that:
 
-1. Let you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
-2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand
-   - Get the database ready for synchronization, by adding the functionality to prep it (Done ✔️)
+1. **RedflyPerformanceTest** Project: Lets you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
+2. **RedflyDatabaseSyncProxy** Project: Provides a way for anybody to test our Redis synchronization service on demand
+   - Get the database ready for synchronization by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - SQL Server Support (Available since day 1 ✔️)
-   - Postgres Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
-   - Support for synchronizing databases which are on your local network, without opening firewall ports (TBD ⌚)
+      - Postgres Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
+      - Please ignore the Grpc errors, which can occur due to a flaky network connection over the Public Internet to the US East region on Azure.
+        - The hosted Chakra service, once started, is running and available on our cloud.
+        - This does not affect anything but the log display on the client.
+   - Support for synchronizing databases which are on your local network without opening firewall ports (TBD ⌚)
 4. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
@@ -25,13 +28,13 @@ These applications do not require complex configuration or modifications to work
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/>
 https://transparent.azurewebsites.net/Identity/Account/Register
 
-Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
+Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder. No - there is no way to spoof this. Domain trust & reputation is earned over time (as it should be).
 
-The proof is in our pudding. All our cloud services run on our technology.  
+The proof is in the pudding. All our cloud services run on our technology.  
 
 **Compatibility**
 
-We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like Postgres) in the future. Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
+We currently support SQL Server, Postgres, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like MongoDB, Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
 
 _We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
 
