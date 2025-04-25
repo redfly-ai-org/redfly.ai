@@ -14,16 +14,17 @@ namespace RedflyDatabaseSyncProxy.SyncServices;
 internal class ChakraSqlServerSyncServiceClient
 {
 
+    private static string _clientSessionId = ClientSessionId.Generate();
+
     internal static async Task StartAsync(string grpcUrl, string grpcAuthToken)
     {
-        var clientSessionId = Guid.NewGuid().ToString(); // Unique client identifier
         var channel = GrpcChannel.ForAddress(grpcUrl);
         var chakraClient = new NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient(channel);
 
         var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {grpcAuthToken}" },
-                    { "client-session-id", clientSessionId.ToString() }
+                    { "client-session-id", _clientSessionId.ToString() }
                 };
 
         // Start Chakra Sync
@@ -31,7 +32,7 @@ internal class ChakraSqlServerSyncServiceClient
                                     .StartChakraSyncAsync(
                                         new StartChakraSyncRequest
                                         {
-                                            ClientSessionId = clientSessionId,
+                                            ClientSessionId = _clientSessionId,
                                             // If the key changed AFTER the database was saved locally with a previous key, decryption won't happen!
                                             EncryptionKey = RedflyEncryptionKeys.AesKey,
                                             EncryptedClientId = RedflyEncryption.EncryptToString(AppSession.SyncProfile!.Database.ClientId),
@@ -65,7 +66,7 @@ internal class ChakraSqlServerSyncServiceClient
         });
 
         // Send initial message to establish the stream
-        await call.RequestStream.WriteAsync(new ClientMessage { ClientSessionId = clientSessionId, Message = "Client connected" });
+        await call.RequestStream.WriteAsync(new ClientMessage { ClientSessionId = _clientSessionId, Message = "Client connected" });
 
         // Keep the client running to listen for server messages
         Console.WriteLine("Press any key to exit...");
