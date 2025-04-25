@@ -27,30 +27,36 @@ internal class Program
         {
             Console.Title = "redfly.ai - Database Sync Proxy";
 
-            Console.WriteLine("This console app is intended to allow anyone to try out our synchronization services on-demand.\r\n");
+            Console.WriteLine("This console app is intended to allow anyone to try out our Chakra Synchronization Service for Postgres & SQL Server on-demand.\r\n");
 
-            Console.WriteLine("1. We natively sync ANY database schema with Redis in the background.");
-            Console.WriteLine("2. We can generate the backend code for any database with Redis caching built-in.");
-            Console.WriteLine("3. This is hosted over Grpc.");
+            Console.WriteLine("1. We natively sync ANY database schema with Redis in the background (For Postgres & SQL Server).");
+            Console.WriteLine("2. We can generate the backend code for any database with Redis caching built-in (TBD for this project).");
+            Console.WriteLine("3. This is hosted over Grpc (Always ready 24x7).");
 
             Console.WriteLine("\r\nNow imagine you being able to do that with your database, without any manual effort! That's what our product does.");
-            Console.WriteLine("Contact us at developer@redfly.ai to directly work with us so you can do the same thing with your database (cloud/ on-premises).");
-            Console.WriteLine("No matter how large or complex your DB is, redfly.ai can do it! \r\n");
+            Console.WriteLine("Contact us at developer@redfly.ai to directly work with us so you can do the same thing with your database (cloud/ on-premises). \r\n");
 
             Console.ForegroundColor = ConsoleColor.Blue;
-            Console.WriteLine("We suggest starting with a test database as we make non-invasive changes to your database (SQL Server only) which should NOT affect well designed, modern applications. For Postgres, the database schema is NOT affected.\r\n");
+            Console.WriteLine("(1) We suggest using a test database to begin with as we make non-invasive changes to your database (SQL Server only).");
+            Console.WriteLine("This should NOT affect well-designed, modern applications. Your database schema is untouched if you are using Postgres.\r\n");
             
             Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("For sync to work, your Database should be accessible over the Internet and its firewall should allow traffic from these Azure IP addresses (US East Region). We plan to support non-public and local servers in a later release of this application.\r\n");
+            Console.WriteLine("(2) For sync to work, your Database should be accessible over the Internet and its firewall should allow traffic from these Azure IP addresses (US East Region). We plan to support non-public and local servers in a later release of this application.\r\n");
 
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("20.237.7.43, 20.237.7.49, 20.237.7.128, 20.237.7.153, 20.237.7.201, 20.237.7.221, 40.71.11.140");
             Console.WriteLine("40.121.154.115, 13.82.228.43, 40.121.158.167, 40.117.44.182, 168.61.50.107, 40.121.80.139, 40.117.44.94, 23.96.53.166, 40.121.152.91, 20.237.7.43, 20.237.7.49, 20.237.7.128, 20.237.7.153, 20.237.7.201, 20.237.7.221, 20.246.144.9, 20.246.144.108, 20.246.144.117, 20.246.144.140, 20.246.144.145, 20.246.144.213, 40.71.11.140\r\n");
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("(3) This is a 24x7 setup with multiple servers & elastic servers to handle load.");
+            Console.WriteLine("We typically update our Cloud Services only when necessary usually over the weekend, on holidays and on alternate Fridays.");
+            Console.WriteLine("The best time to test a long running sync is at the start of the working week.\r\n");
             Console.ResetColor();
 
-            Console.WriteLine("This is a demo application designed to give you a taste of our capabilities. It is NOT intended for production use.");
+            Console.WriteLine("This is a demo application designed to give you a taste of our capabilities. It is NOT intended for production use.\r\n");
             Console.WriteLine("Press any key to start the process of synchronizing your database with Redis transparently...");
             Console.ReadKey();
+            Console.WriteLine("");
 
             var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
 
