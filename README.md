@@ -5,13 +5,13 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 
 Provide source code that:
 
-1. Let you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
-2. Provide a way for anybody to test our Redis synchronization service from anywhere on-demand
+1. **RedflyPerformanceTest** project: Lets you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
+2. **RedflyDatabaseSyncProxy** project: Provides a way for anybody to test our Redis synchronization service on-demand
    - Get the database ready for synchronization, by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - SQL Server Support (Available since day 1 ✔️)
-   - Postgres Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
-   - Support for synchronizing databases which are on your local network, without opening firewall ports (TBD ⌚)
+      - Postgres Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
+   - Support for synchronizing databases which are on your local network without opening firewall ports (TBD ⌚)
 4. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
