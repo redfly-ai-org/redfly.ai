@@ -83,7 +83,7 @@ namespace RedflyGrpcAuthServiceClient
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine($"\r\nLogging in to {grpcUrl} as {userName}");
                 Console.ResetColor();
-                Console.WriteLine("Please be patient - these are small servers.");
+                Console.WriteLine("Please be patient.");
                 Console.WriteLine("Contact us at developer@redfly.ai if you need to.\r\n");
 
                 string token = await LoginWithRetryAsync(authServiceClient, loginRequest);
@@ -192,7 +192,7 @@ namespace RedflyGrpcAuthServiceClient
                 // Now you can make requests to secure endpoints
                 var request = new TestDataRequest();
                 Console.WriteLine($"Testing Secure Connectivity with Server ({retryCount + 1})...");
-                Console.WriteLine("Please be patient - these are small servers.");
+                Console.WriteLine("Please be patient.");
 
                 var cts = new CancellationTokenSource();
                 var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
