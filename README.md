@@ -11,8 +11,9 @@ Provide source code that:
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - SQL Server Support (Available since day 1 ✔️)
       - Postgres Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
-      - Please ignore the Grpc errors which can happen due to flaky networks
-        - The hosted Chakra service, once started, is running and available on our cloud. 
+      - Please ignore the Grpc errors, which can occur due to a flaky network connection over the Public Internet to the US East region on Azure.
+        - The hosted Chakra service, once started, is running and available on our cloud.
+        - This does not affect anything but the log display on the client.
    - Support for synchronizing databases which are on your local network without opening firewall ports (TBD ⌚)
 4. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
