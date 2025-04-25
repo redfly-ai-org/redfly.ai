@@ -20,22 +20,8 @@ internal class ChakraPostgresSyncServiceClient
     private static bool _bidirectionalStreamingIsWorking = false;
     private static int _bidirStreamingRetryCount = 0;
 
-    private static string _clientSessionId = GenerateUniqueClientSessionId();
+    private static string _clientSessionId = ClientSessionId.Generate();
     private static readonly FixedSizeList<Exception> _lastBidirErrors = new FixedSizeList<Exception>(5);
-
-    private static string GenerateUniqueClientSessionId()
-    {
-        // Combine the machine name and a GUID to ensure uniqueness
-        string machineName = Environment.MachineName;
-        string guid = "9052b6a0-03bf-4f36-b811-e7038ef1b692";
-
-        // Hash the combination for a consistent length (optional)
-        using (var sha256 = System.Security.Cryptography.SHA256.Create())
-        {
-            var hashBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes($"{machineName}-{guid}"));
-            return Convert.ToBase64String(hashBytes).Substring(0, 32); // Truncate for readability
-        }
-    }
 
     internal static async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
     {
