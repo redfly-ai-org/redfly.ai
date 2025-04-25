@@ -48,7 +48,7 @@ public class RedflyConsole
                 {
                     Console.Write(".");
                     dotCount++;
-                    if (dotCount == 15)
+                    if (dotCount == 20)
                     {
                         useDots = false;
                         dotCount = 0;
@@ -59,7 +59,7 @@ public class RedflyConsole
                 {
                     Console.Write("_");
                     dotCount++;
-                    if (dotCount == 15)
+                    if (dotCount == 20)
                     {
                         useDots = true;
                         dotCount = 0;
