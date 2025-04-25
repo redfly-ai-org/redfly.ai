@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RedflyDatabaseSyncProxy.Protos.SqlServer;
+using Microsoft.Extensions.Logging;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
@@ -18,7 +19,21 @@ internal class ChakraSqlServerSyncServiceClient
 
     internal static async Task StartAsync(string grpcUrl, string grpcAuthToken)
     {
-        var channel = GrpcChannel.ForAddress(grpcUrl);
+        AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+        var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+
+        var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
+        {
+            LoggerFactory = loggerFactory,
+            HttpHandler = new SocketsHttpHandler
+            {
+                EnableMultipleHttp2Connections = true,
+                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
+            }
+        });
+
         var chakraClient = new NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient(channel);
 
         var headers = new Metadata
