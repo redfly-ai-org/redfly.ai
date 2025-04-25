@@ -26,19 +26,22 @@ namespace RedflyPerformanceTest.GrpcClient
             {
                 Console.WriteLine("Starting the gRPC client test for ProductModels");
 
-                var httpHandler = new HttpClientHandler();
-                httpHandler.SslProtocols = SslProtocols.Tls12;
-
                 var loggerFactory = LoggerFactory.Create(builder =>
                 {
                     _ = builder.AddConsole();
-                    builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
+                    //builder.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Warning);
                 });
 
                 using var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
                 {
-                    HttpHandler = httpHandler,
                     LoggerFactory = loggerFactory,
+                    HttpHandler = new SocketsHttpHandler
+                    {
+                        EnableMultipleHttp2Connections = true,
+                        KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                        KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
+                        KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
+                    },
                     HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
                 });
 
@@ -282,11 +285,17 @@ namespace RedflyPerformanceTest.GrpcClient
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.ToString());
+                Console.ResetColor();
+                Console.WriteLine();
+
                 TestResults.OtherErrors.Add(ex);
 
                 if (retryCount < 3)
                 {
-                    Console.WriteLine($"    Retry {retryCount + 1}...");
+                    Console.WriteLine($"    Retrying TestGetRowCount {retryCount + 1}...");
+
                     return await TestGetRowCount(client, grpcAuthToken, retryCount + 1);
                 }
                 else
