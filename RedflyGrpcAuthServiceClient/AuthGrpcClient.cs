@@ -19,21 +19,22 @@ namespace RedflyGrpcAuthServiceClient
             {
                 Console.WriteLine("Starting the gRPC client test");
 
-                var httpHandler = new HttpClientHandler
-                {
-                    SslProtocols = SslProtocols.Tls12
-                };
-
                 var loggerFactory = LoggerFactory.Create(builder =>
                 {
                     builder.AddConsole();
-                    builder.SetMinimumLevel(LogLevel.Warning);
+                    //builder.SetMinimumLevel(LogLevel.Warning);
                 });
 
                 using var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
                 {
-                    HttpHandler = httpHandler,
                     LoggerFactory = loggerFactory,
+                    HttpHandler = new SocketsHttpHandler
+                    {
+                        EnableMultipleHttp2Connections = true,
+                        KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                        KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
+                        KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
+                    },
                     HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
                 });
 
@@ -85,11 +86,11 @@ namespace RedflyGrpcAuthServiceClient
                 Console.WriteLine("Please be patient - these are small servers.");
                 Console.WriteLine("Contact us at developer@redfly.ai if you need to.\r\n");
 
-                string token = await LoginAsync(authServiceClient, loginRequest);
+                string token = await LoginWithRetryAsync(authServiceClient, loginRequest);
 
-                if (await TestSecureGrpcCall(authServiceClient, token))
+                if (await TestSecureGrpcCallAsync(authServiceClient, token))
                 {
-                    Console.WriteLine("Authentication is successful!");
+                    Console.WriteLine("You can now make secure calls to the gRPC server.");
 
                     //Only save if auth is a success and credentials were not loaded from disk.
                     if (!credentialsLoadedFromDisk)
@@ -135,7 +136,7 @@ namespace RedflyGrpcAuthServiceClient
             credentialsLoadedFromDisk = false;
         }
 
-        private static async Task<string> LoginAsync(AuthService.AuthServiceClient authServiceClient, LoginRequest loginRequest, int retryCount = 0)
+        private static async Task<string> LoginWithRetryAsync(AuthService.AuthServiceClient authServiceClient, LoginRequest loginRequest, int retryCount = 0)
         {
             var cts = new CancellationTokenSource();
             var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
@@ -149,21 +150,26 @@ namespace RedflyGrpcAuthServiceClient
 
                 var token = loginResponse.Token;
                 Console.WriteLine($"Token is Valid: {!string.IsNullOrEmpty(token)} ({token.Length} characters)");
+                Console.WriteLine("Login is successful!");
+
                 return token;
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.ToString());
+                Console.ResetColor();
+                Console.WriteLine();
+
                 cts.Cancel();
                 await progressTask;
 
                 if (retryCount < 3)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"Retrying login {retryCount + 1}...");
-                    Console.ResetColor();
+                    Console.WriteLine($"Retrying Login {retryCount + 1}...");
 
                     await Task.Delay(1000);
-                    return await LoginAsync(authServiceClient, loginRequest, retryCount + 1);
+                    return await LoginWithRetryAsync(authServiceClient, loginRequest, retryCount + 1);
                 }
                 else
                 {
@@ -174,7 +180,7 @@ namespace RedflyGrpcAuthServiceClient
             }
         }
 
-        private static async Task<bool> TestSecureGrpcCall(AuthService.AuthServiceClient client, string token, int retryCount = 0)
+        private static async Task<bool> TestSecureGrpcCallAsync(AuthService.AuthServiceClient client, string token, int retryCount = 0)
         {
             try
             {
@@ -182,9 +188,6 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     { "Authorization", $"Bearer {token}" }
                 };
-
-                //Othwerwise, it sometimes errors out at load.
-                await Task.Delay(1000);
 
                 // Now you can make requests to secure endpoints
                 var request = new TestDataRequest();
@@ -208,15 +211,18 @@ namespace RedflyGrpcAuthServiceClient
             }
             catch (Exception ex)
             {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(ex.ToString());
+                Console.ResetColor();
+                Console.WriteLine();
+
                 if (retryCount < 3)
                 {
-                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine($"Retrying Secure Call {retryCount + 1}...");
-                    Console.ResetColor();
 
                     await Task.Delay(1000);
 
-                    return await TestSecureGrpcCall(client, token, retryCount + 1);
+                    return await TestSecureGrpcCallAsync(client, token, retryCount + 1);
                 }
                 else
                 {

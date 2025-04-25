@@ -4,6 +4,7 @@ using Grpc.Core;
 using Grpc.Net.Client;
 using LiteDB;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
 using RedflyDatabaseSyncProxy.Setup;
@@ -160,7 +161,20 @@ internal class Program
                 return;
             }
 
-            var channel = GrpcChannel.ForAddress(grpcUrl);
+            var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
+            {
+                LoggerFactory = loggerFactory,
+                HttpHandler = new SocketsHttpHandler
+                {
+                    EnableMultipleHttp2Connections = true,
+                    KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                    KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
+                    KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
+                },
+                HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
+            });
+
             var headers = new Metadata
                 {
                     { "Authorization", $"Bearer {grpcAuthToken}" }
@@ -333,11 +347,14 @@ internal class Program
         }
         catch (Exception ex)
         {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(ex.ToString());
+            Console.ResetColor();
+            Console.WriteLine();
+
             if (retryCount < 5)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"Retrying to get sync profiles {retryCount + 1}...");
-                Console.ResetColor();
 
                 await Task.Delay(1000 * retryCount);
 

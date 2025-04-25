@@ -35,15 +35,46 @@ public class RedflyConsole
 
     public static async Task ShowWaitAnimation(CancellationToken token)
     {
-        var animation = new[] { '/', '-', '\\', '|' };
-        int counter = 0;
+        int dotCount = 0;
+        bool useDots = true;
 
-        while (!token.IsCancellationRequested)
+        try
         {
-            Console.Write(animation[counter % animation.Length]);
-            Console.SetCursorPosition(Console.CursorLeft - 1, Console.CursorTop);
-            counter++;
-            await Task.Delay(100);
+            Console.CursorVisible = false; // Hide the cursor
+
+            while (!token.IsCancellationRequested)
+            {
+                if (useDots)
+                {
+                    Console.Write(".");
+                    dotCount++;
+                    if (dotCount == 15)
+                    {
+                        useDots = false;
+                        dotCount = 0;
+                        Console.Write("\r");
+                    }
+                }
+                else
+                {
+                    Console.Write("_");
+                    dotCount++;
+                    if (dotCount == 15)
+                    {
+                        useDots = true;
+                        dotCount = 0;
+                        Console.Write("\r");
+                    }
+                }
+
+                await Task.Delay(700);
+            }
+
+            Console.WriteLine();
+        }
+        finally
+        {
+            Console.CursorVisible = true; // Ensure the cursor is visible again
         }
     }
 
