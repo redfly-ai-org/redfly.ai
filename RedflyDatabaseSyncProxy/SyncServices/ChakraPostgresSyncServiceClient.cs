@@ -25,7 +25,7 @@ internal class ChakraPostgresSyncServiceClient
 
     internal static async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
     {
-        AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+        //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
         var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
         var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
         {
@@ -36,7 +36,8 @@ internal class ChakraPostgresSyncServiceClient
                 KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
                 KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
                 KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
-            }
+            },
+            HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
         });
 
         var chakraClient = new NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient(channel);
@@ -248,15 +249,7 @@ internal class ChakraPostgresSyncServiceClient
                     Console.WriteLine($"SERVER|{startResponse.Message}");
                     Console.ResetColor();
                     return true;
-                }
-                else
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Failed to start the Chakra Sync Service.");
-                    Console.WriteLine(startResponse.Message);
-                    Console.ResetColor();
-                    return false;
-                }
+                }                
             }
             catch (RpcException ex) when (attempt < maxRetryAttempts)
             {
@@ -387,6 +380,5 @@ internal class ChakraPostgresSyncServiceClient
             return logMessage; // Return the original message if an exception occurs
         }
     }
-
 
 }
