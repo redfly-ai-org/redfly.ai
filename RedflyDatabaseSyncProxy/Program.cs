@@ -51,7 +51,8 @@ internal class Program
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("(3) This is a 24x7 setup with multiple servers & elastic servers to handle load.");
             Console.WriteLine("We typically update our Cloud Services only when necessary usually over the weekend, on holidays and on alternate Fridays.");
-            Console.WriteLine("The best time to test a long running sync is at the start of the working week.\r\n");
+            Console.WriteLine("The best time to test a long running sync is at the start of the working week.");
+            Console.WriteLine("Please ignore the Grpc errors - these are normal.\r\n");
             Console.ResetColor();
 
             Console.WriteLine("This is a demo application designed to give you a taste of our capabilities. It is NOT intended for production use.\r\n");

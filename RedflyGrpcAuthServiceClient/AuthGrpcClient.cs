@@ -191,7 +191,7 @@ namespace RedflyGrpcAuthServiceClient
 
                 // Now you can make requests to secure endpoints
                 var request = new TestDataRequest();
-                Console.WriteLine($"Executing Secure Request with JWT Token (attempt {retryCount + 1})...");
+                Console.WriteLine($"Testing Secure Connectivity with Server ({retryCount + 1})...");
 
                 var cts = new CancellationTokenSource();
                 var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
