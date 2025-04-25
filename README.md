@@ -25,13 +25,13 @@ These applications do not require complex configuration or modifications to work
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/>
 https://transparent.azurewebsites.net/Identity/Account/Register
 
-Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder.
+Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder. No - there is no way to spoof this. Domain trust & reputation is earned over time (as it should be).
 
-The proof is in our pudding. All our cloud services run on our technology.  
+The proof is in the pudding. All our cloud services run on our technology.  
 
 **Compatibility**
 
-We currently support SQL Server, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like Postgres) in the future. Eventually, we plan to support all disk-based databases and other public clouds like AWS and GCP. 
+We currently support SQL Server, Postgres, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like MongoDB, Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
 
 _We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
 
