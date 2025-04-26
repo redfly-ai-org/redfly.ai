@@ -212,7 +212,7 @@ internal class ChakraPostgresSyncServiceClient
         {
             Console.WriteLine("Chakra Sync Service stopped successfully.");
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"SERVER|{stopResponse.Message}");
+            Console.WriteLine($"SRVR|{stopResponse.Message}");
             Console.ResetColor();
         }
         else
@@ -281,7 +281,7 @@ internal class ChakraPostgresSyncServiceClient
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"SERVER|{startResponse.Message}");
+                    Console.WriteLine($"SRVR|{startResponse.Message}");
                     Console.ResetColor();
                     return true;
                 }                
@@ -403,7 +403,7 @@ internal class ChakraPostgresSyncServiceClient
             {
                 var type = match.Groups["Type"].Value;
                 var operation = match.Groups["Operation"].Value;
-                return $"SERVER|{type}|{operation}";
+                return $"SRVR|{type}|{operation}";
             }
 
             return logMessage; // Return the original message if it doesn't match the expected format

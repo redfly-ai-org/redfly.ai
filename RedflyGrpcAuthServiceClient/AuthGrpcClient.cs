@@ -202,7 +202,7 @@ namespace RedflyGrpcAuthServiceClient
                     var response = await client.TestDataAsync(request, headers);
 
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"\rSERVER|{response.Message}");
+                    Console.WriteLine($"\rSRVR|{response.Message}");
                     Console.ResetColor();
 
                     return true;

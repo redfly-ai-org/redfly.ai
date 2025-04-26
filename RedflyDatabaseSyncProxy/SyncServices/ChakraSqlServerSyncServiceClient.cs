@@ -211,7 +211,7 @@ internal class ChakraSqlServerSyncServiceClient
         {
             Console.WriteLine("Chakra Sync Service stopped successfully.");
             Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine($"SERVER|{stopResponse.Message}");
+            Console.WriteLine($"SRVR|{stopResponse.Message}");
             Console.ResetColor();
         }
         else
@@ -341,7 +341,7 @@ internal class ChakraSqlServerSyncServiceClient
                     Console.WriteLine();
 
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"SERVER|{startResponse.Message}");
+                    Console.WriteLine($"SRVR|{startResponse.Message}");
                     Console.ResetColor();
                     return true;
                 }
