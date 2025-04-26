@@ -63,19 +63,19 @@ internal class ChakraPostgresSyncServiceClient
         {
             (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient);
 
-            var connMonitorCancelTokenSource = new CancellationTokenSource();
-            var connMonitorCancelToken = connMonitorCancelTokenSource.Token;
+            var bidirConnMonitorCancelTokenSource = new CancellationTokenSource();
+            var bidirConnMonitorCancelToken = bidirConnMonitorCancelTokenSource.Token;
 
-            var connMonitorTask = Task.Run(async () =>
+            var bidirConnMonitorTask = Task.Run(async () =>
             {
-                int delayTimeMs = 15 * 1000; // Start with 15 seconds
-                const int minDelayMs = 15 * 1000; // Minimum delay: 15 seconds
-                const int maxDelayMs = 5 * 60 * 1000; // Maximum delay: 5 minutes
-                const int delayStepMs = 15 * 1000; // Step to increase or decrease delay: 15 seconds
+                int delayTimeMs = 3 * 1000; // Start with 3 seconds
+                const int minDelayMs = 3 * 1000; // Minimum delay: 3 seconds
+                const int maxDelayMs = 10 * 60 * 1000; // Maximum delay: 10 minutes
+                const int delayStepMs = 3 * 1000; // Step to increase or decrease delay: 3 seconds
 
-                while (!connMonitorCancelToken.IsCancellationRequested)
+                while (!bidirConnMonitorCancelToken.IsCancellationRequested)
                 {
-                    await Task.Delay(delayTimeMs, connMonitorCancelToken);
+                    await Task.Delay(delayTimeMs, bidirConnMonitorCancelToken);
 
                     if (!_bidirectionalStreamingIsWorking)
                     {
@@ -107,7 +107,18 @@ internal class ChakraPostgresSyncServiceClient
                         //Console.ResetColor();
 
                         _bidirStreamingRetryCount += 1;
-                        (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient);
+
+                        if (_bidirStreamingRetryCount < 20)
+                        {
+                            //Not worth trying to bi-dir stream more than 20 times
+                            (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient);
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"Reverting to normal Grpc calls after {_bidirStreamingRetryCount} failed attempts because of network issues in bi-directional Grpc streaming.");
+                            Console.ResetColor();
+                        }
 
                         //Get status manually
                         await GetChakraSyncStatusWithRetryAsync(chakraClient);
@@ -117,12 +128,15 @@ internal class ChakraPostgresSyncServiceClient
                     }
                     else
                     {
+                        // Will give bi-dir streaming more chances to succeed.
+                        _bidirStreamingRetryCount -= 1;
+
                         // Increase delay time when the flag is true
                         delayTimeMs = Math.Min(maxDelayMs, delayTimeMs + delayStepMs);
                     }
                 }
 
-            }, connMonitorCancelToken);
+            }, bidirConnMonitorCancelToken);
 
             // Keep the client running to listen for server messages
             Console.ForegroundColor = ConsoleColor.Red;
@@ -140,11 +154,11 @@ internal class ChakraPostgresSyncServiceClient
             }
             finally
             {
-                connMonitorCancelTokenSource.Cancel();
+                bidirConnMonitorCancelTokenSource.Cancel();
 
                 try
                 {
-                    await connMonitorTask;
+                    await bidirConnMonitorTask;
                 }
                 catch (TaskCanceledException)
                 {
@@ -183,7 +197,7 @@ internal class ChakraPostgresSyncServiceClient
             if (syncStatusResponse.Success)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine(FormatGrpcServerMessage(syncStatusResponse.Message) + " *");
+                Console.WriteLine(FormatGrpcServerMessage(syncStatusResponse.Message) + " (*)");
                 Console.ResetColor();
             }
         }
@@ -370,7 +384,7 @@ internal class ChakraPostgresSyncServiceClient
                         new ClientMessage
                         {
                             ClientSessionId = _clientSessionId,
-                            Message = $"Client Registration Message. Session {_bidirStreamingRetryCount}"
+                            Message = $"Client Registration Message. Session #{_bidirStreamingRetryCount}"
                         });
 
             //Console.WriteLine($"INIT> Session #{_bidirStreamingRetryCount}: Initial message successfully sent to server");
