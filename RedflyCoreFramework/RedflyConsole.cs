@@ -9,7 +9,7 @@ namespace RedflyCoreFramework;
 public class RedflyConsole
 {
 
-    private const int MaxProgressDisplayCount = 30;
+    private const int MaxProgressDisplayCount = 45;
 
     public static StringBuilder GetPasswordFromUser()
     {
