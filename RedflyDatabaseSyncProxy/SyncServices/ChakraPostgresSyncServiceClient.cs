@@ -197,7 +197,7 @@ internal class ChakraPostgresSyncServiceClient
             if (syncStatusResponse.Success)
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine(FormatGrpcServerMessage(syncStatusResponse.Message) + " (*)");
+                Console.WriteLine(FormatGrpcServerMessage(syncStatusResponse.Message) + " -><-");
                 Console.ResetColor();
             }
         }
@@ -345,7 +345,7 @@ internal class ChakraPostgresSyncServiceClient
                 await foreach (var message in asyncDuplexStreamingCall.ResponseStream.ReadAllAsync())
                 {
                     Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine(FormatGrpcServerMessage(message.Message));
+                    Console.WriteLine(FormatGrpcServerMessage(message.Message) + " <->");
                     Console.ResetColor();
                     _bidirectionalStreamingIsWorking = true;
                 }
