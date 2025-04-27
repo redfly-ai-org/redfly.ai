@@ -112,7 +112,7 @@ internal class ChakraSqlServerSyncServiceClient
                             //Not worth trying to bi-dir stream more than 20 times
                             (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient);
                         }
-                        else
+                        else if (_bidirStreamingRetryCount == 20)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine($"Reverting to normal Grpc calls after {_bidirStreamingRetryCount} failed attempts because of network issues in bi-directional Grpc streaming.");
