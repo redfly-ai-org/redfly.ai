@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RedflyDatabaseSyncProxy.Protos.SqlServer;
 using Microsoft.Extensions.Logging;
+using RedflyDatabaseSyncProxy.Config;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
@@ -107,12 +108,12 @@ internal class ChakraSqlServerSyncServiceClient
 
                         _bidirStreamingRetryCount += 1;
 
-                        if (_bidirStreamingRetryCount < 20)
+                        if (_bidirStreamingRetryCount < GrpcConfig.MaxBiDirRetryAttempts)
                         {
                             //Not worth trying to bi-dir stream more than 20 times
                             (asyncDuplexStreamingCall, bidirectionalTask) = await StartBidirStreamingAsync(chakraClient);
                         }
-                        else if (_bidirStreamingRetryCount == 20)
+                        else if (_bidirStreamingRetryCount == GrpcConfig.MaxBiDirRetryAttempts)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine($"Reverting to normal Grpc calls after {_bidirStreamingRetryCount} failed attempts because of network issues in bi-directional Grpc streaming.");
