@@ -13,14 +13,17 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 Provide source code that:
 
 1. **RedflyPerformanceTest** Project: Lets you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
+
 2. **RedflyDatabaseSyncProxy** Project: Provides a way for anybody to test our Redis synchronization service on demand
    - Get the database ready for synchronization by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
-      - SQL Server Support (Available since day 1 ✔️)
-      - Postgres Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
+      - **SQL Server** Support (Available since day 1 ✔️)
+      - **Postgres** Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
       - Please ignore the Grpc errors, which can occur due to a flaky network connection over the Public Internet to the US East region on Azure.
         - The hosted Chakra service, once started, is running and available on our cloud.
         - This does not affect anything but the log display on the client.
+      - **MongoDB** Support (Internal Testing ongoing ⌚) 
+      
 3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
