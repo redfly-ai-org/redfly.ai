@@ -1,4 +1,11 @@
 # redfly.ai
+
+Our team has been building data-driven apps for 20+ years. Tired of fighting database performance, scalability, and cost, we realized that it's possible to bypass most of the issues with disk-based databases if we could effectively cache all our reads, using the database mainly as a data store. This is not a new idea.
+
+Some of the largest companies in the world synchronize their database directly with the cache so that they can seamlessly access their data without worrying about optimizing SQL queries or scaling up their disk-based databases. Now, for the first time in history, we have made it possible for anybody to implement this without spending several million dollars and years in R&D costs. 
+
+redfly.ai is the world's first schema-agnostic caching system. No other company has done or will do this. Why build a data-agnostic system when you could _more_ easily (still non-trivial) make something that works solely with your database?
+
 redfly.ai lets you synchronize your database with Redis <i>transparently</i> and <i>generate</i> a data access layer that <i>integrates</i> data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out our system.
 
 **Goals**
@@ -14,8 +21,7 @@ Provide source code that:
       - Please ignore the Grpc errors, which can occur due to a flaky network connection over the Public Internet to the US East region on Azure.
         - The hosted Chakra service, once started, is running and available on our cloud.
         - This does not affect anything but the log display on the client.
-   - Support for synchronizing databases which are on your local network without opening firewall ports (TBD ⌚)
-4. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
+3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
