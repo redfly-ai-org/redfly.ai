@@ -21,8 +21,7 @@ Provide source code that:
       - Please ignore the Grpc errors, which can occur due to a flaky network connection over the Public Internet to the US East region on Azure.
         - The hosted Chakra service, once started, is running and available on our cloud.
         - This does not affect anything but the log display on the client.
-   - Support for synchronizing databases which are on your local network without opening firewall ports (TBD ⌚)
-4. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
+3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
