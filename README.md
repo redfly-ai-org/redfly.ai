@@ -22,7 +22,7 @@ Provide source code that:
       - Please ignore the Grpc errors, which can occur due to a flaky network connection over the Public Internet to the US East region on Azure.
         - The hosted Chakra service, once started, is running and available on our cloud.
         - This does not affect anything but the log display on the client.
-      - **MongoDB** Support (Internal Testing ongoing ⌚) 
+      - **MongoDB** Support (Internal Testing ongoing ⌚, OSS Hosting support TBD ⏳, OSS release TBD ⏳, Dog food Mongo Cache for Infra TBD ⏳) 
       
 3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
