@@ -124,7 +124,8 @@ internal class Program
             Console.WriteLine("Are you trying to sync a MongoDB database? (y/n)");
             response = Console.ReadLine();
 
-            if (response != null &&
+            if (!isPostgresSync &&
+                response != null &&
                 response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
             {
                 isMongoSync = true;
@@ -142,7 +143,8 @@ internal class Program
 
             bool isSqlServerSync = false;
 
-            if (!isPostgresSync)
+            if (!isPostgresSync &&
+                !isMongoSync)
             {
                 Console.WriteLine("Are you trying to sync a Sql Server database? (y/n)");
                 response = Console.ReadLine();
