@@ -20,14 +20,17 @@ namespace RedflyDatabaseSyncProxy.SyncServices;
 internal class ChakraPostgresSyncServiceClient : ChakraDatabaseSyncServiceClientBase
 {
 
-    internal ChakraPostgresSyncServiceClient(IGrpcDatabaseChakraServiceClient grpcClient) : base(grpcClient)
+    private readonly bool _runInitialSync;
+
+    internal ChakraPostgresSyncServiceClient(IGrpcDatabaseChakraServiceClient grpcClient, bool runInitialSync) : base(grpcClient)
     {
+        _runInitialSync = runInitialSync;
     }
 
-    internal async Task StartAsync(bool runInitialSync)
+    internal async Task StartAsync()
     {
         // Start Chakra Sync
-        if (!await StartChakraSyncAsyncWithRetry(runInitialSync))
+        if (!await StartChakraSyncAsyncWithRetry())
         { 
             return; 
         }
@@ -210,8 +213,7 @@ internal class ChakraPostgresSyncServiceClient : ChakraDatabaseSyncServiceClient
         }
     }
 
-    private async Task<bool> StartChakraSyncAsyncWithRetry(
-                                        bool runInitialSync)
+    private async Task<bool> StartChakraSyncAsyncWithRetry()
     {
         int maxRetryAttempts = 5; // Maximum number of retry attempts
         int delayMilliseconds = 1000; // Initial delay in milliseconds
@@ -247,7 +249,7 @@ internal class ChakraPostgresSyncServiceClient : ChakraDatabaseSyncServiceClient
                                                             RedisConnectTimeout = AppSession.RedisServer!.ConnectTimeout,
                                                             RedisSyncTimeout = AppSession.RedisServer!.SyncTimeout,
                                                             RedisAsyncTimeout = AppSession.RedisServer!.AsyncTimeout,
-                                                            RunInitialSync = runInitialSync,
+                                                            RunInitialSync = _runInitialSync,
                                                             EnableDataReconciliation = true
                                                         });
 

@@ -292,7 +292,8 @@ internal class Program
                             new GrpcPostgresChakraServiceClient(
                                     grpcUrl, 
                                     grpcAuthToken, 
-                                    ClientSessionId.Generate())).StartAsync(runInitialSync);
+                                    ClientSessionId.Generate()),
+                            runInitialSync).StartAsync();
             }
             else
             {
