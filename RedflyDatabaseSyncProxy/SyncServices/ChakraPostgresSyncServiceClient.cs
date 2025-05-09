@@ -60,7 +60,8 @@ internal class ChakraPostgresSyncServiceClient : ChakraDatabaseSyncServiceClient
                                                     RedisAsyncTimeout = AppSession.RedisServer!.AsyncTimeout,
                                                     RunInitialSync = _runInitialSync,
                                                     EnableDataReconciliation = true
-                                                });
+                                                }, 
+                                                _grpcClient.GrpcHeaders);
     }
 
 }
