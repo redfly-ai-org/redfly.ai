@@ -5,16 +5,19 @@ namespace RedflyCoreFramework
 {
     public class RedflyMongo
     {
-        public static bool VerifyConnectivity(string? connectionString, string? databaseName)
+        public static bool VerifyConnectivity(string? serverName, string? databaseName, string? userName, string password)
         {
             // Return false if any of the parameters are null
-            if (connectionString == null || databaseName == null)
+            if (serverName == null || databaseName == null || userName == null)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine("One or more of the required parameters are null.");
                 Console.ResetColor();
                 return false;
             }
+
+            // Construct the MongoDB connection string
+            var connectionString = $"mongodb://{userName}:{password}@{serverName}/{databaseName}";
 
             try
             {
