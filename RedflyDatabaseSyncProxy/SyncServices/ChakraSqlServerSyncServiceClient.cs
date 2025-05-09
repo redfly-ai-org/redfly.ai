@@ -22,18 +22,9 @@ internal class ChakraSqlServerSyncServiceClient : ChakraDatabaseSyncServiceClien
     {
     }
 
-    protected override async Task<bool> StartChakraSyncAsyncWithRetry()
+    protected override async Task<StartChakraSyncResponse> StartChakraSyncOnServerAsync()
     {
-        int maxRetryAttempts = 5; // Maximum number of retry attempts
-        int delayMilliseconds = 1000; // Initial delay in milliseconds
-
-        for (int attempt = 1; attempt <= maxRetryAttempts; attempt++)
-        {
-            try
-            {
-                Console.WriteLine($"Attempt #{attempt}: StartChakraSyncAsync");
-
-                var startResponse = await ((GrpcSqlServerChakraServiceClient) _grpcClient)
+        return await ((GrpcSqlServerChakraServiceClient)_grpcClient)
                                             .SqlServerChakraServiceClient
                                             .StartChakraSyncAsync(
                                                 new StartChakraSyncRequest
@@ -48,51 +39,6 @@ internal class ChakraSqlServerSyncServiceClient : ChakraDatabaseSyncServiceClien
                                                     EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.HostName),
                                                     EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppSession.SqlServerDatabase!.DecryptedUserName};Password={AppSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;")
                                                 });
-
-                if (startResponse.Success)
-                {
-                    Console.WriteLine();
-                    Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine("Chakra Sync Service started successfully.");
-                    Console.WriteLine("After a few seconds, you can modify your database and see changes sync to Redis immediately.");
-                    Console.WriteLine("If you don't see the update log, refresh your Redis to confirm that changes are available immediately.");
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("Please ignore ANY Grpc errors.");
-                    Console.ResetColor();
-                    Console.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.Cyan;
-                    Console.WriteLine($"SRVR|{startResponse.Message}");
-                    Console.ResetColor();
-                    return true;
-                }
-            }
-            catch (RpcException ex) when (attempt < maxRetryAttempts)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"gRPC error occurred: {ex.Status}. Retrying in {delayMilliseconds / 1000} seconds... (Attempt {attempt}/{maxRetryAttempts})");
-                Console.ResetColor();
-
-                await Task.Delay(delayMilliseconds);
-
-                // Exponential backoff
-                delayMilliseconds *= 2;
-            }
-            catch (Exception ex)
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
-                Console.ResetColor();
-
-                throw; // Re-throw the exception if it's not a gRPC error
-            }
-        }
-
-        Console.ForegroundColor = ConsoleColor.Red;
-        Console.WriteLine("Max retry attempts reached. Failed to start the Chakra Sync Service.");
-        Console.ResetColor();
-        return false;
     }
 
 }
