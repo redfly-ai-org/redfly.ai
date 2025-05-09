@@ -1,12 +1,12 @@
 syntax = "proto3";
 import "protos/changemanagement.proto";
 
-option csharp_namespace = "RedflyDatabaseSyncProxy.Protos.Postgres";
+option csharp_namespace = "RedflyDatabaseSyncProxy.Protos.Mongo";
 
 package changemanagement;
 
-// The NativeGrpcPostgresChakraService service definition.
-service NativeGrpcPostgresChakraService {
+// The NativeGrpcMongoChakraService service definition.
+service NativeGrpcMongoChakraService {
   // Starts the change management process for a client.
   rpc StartChakraSync(StartChakraSyncRequest) returns (StartChakraSyncResponse);
   // Stops the change management process for a client.
@@ -23,13 +23,10 @@ message StartChakraSyncRequest {
   string encryptedClientId = 2;
   string encryptedClientName = 3;
   string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encryptedPostgresTestDecodingSlotName = 9;
-  string encryptedPostgresPgOutputSlotName = 10;
-  string encryptedPostgresPublicationName = 11;
+  string encryptedMongoServerName = 5;
+  string encryptedMongoDatabaseName = 6;
+  string encryptedMongoUserName = 7;
+  string encryptedMongoPassword = 8;
   string encryptedRedisServerName = 12;
   int32 redisPortNo = 13;
   string encryptedRedisPassword = 14;

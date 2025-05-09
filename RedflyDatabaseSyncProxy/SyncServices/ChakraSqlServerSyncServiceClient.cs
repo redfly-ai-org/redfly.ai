@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using RedflyDatabaseSyncProxy.Protos.SqlServer;
 using Microsoft.Extensions.Logging;
 using RedflyDatabaseSyncProxy.Config;
+using RedflyDatabaseSyncProxy.Protos.Common;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 

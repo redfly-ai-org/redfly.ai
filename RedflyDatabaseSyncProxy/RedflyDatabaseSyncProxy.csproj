@@ -27,6 +27,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Protobuf Include="protos\changemanagement.proto" GrpcServices="None" />
 		<Protobuf Include="protos\sqlserver-changemanagement.proto" GrpcServices="Client" />
 		<Protobuf Include="protos\postgres-changemanagement.proto" GrpcServices="Client" />
 		<Protobuf Include="protos\user-setup.proto" GrpcServices="Client" />

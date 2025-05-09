@@ -12,6 +12,7 @@ using Azure.Core;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using RedflyDatabaseSyncProxy.Config;
+using RedflyDatabaseSyncProxy.Protos.Common;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 

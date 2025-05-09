@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option csharp_namespace = "RedflyDatabaseSyncProxy.Protos.Common";
+
+package changemanagement;
+
+// The response message containing the result of the start request.
+message StartChakraSyncResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// The request message to stop the change management process.
+message StopChakraSyncRequest {
+  string client_session_id = 1;
+}
+
+// The response message containing the result of the stop request.
+message StopChakraSyncResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// The message from the client to the server.
+message ClientMessage {
+  string client_session_id = 1;
+  string message = 2;
+}
+
+// Request message to get the status of the Chakra sync process.
+message GetChakraSyncStatusRequest {
+  string client_session_id = 1;
+}
+
+message GetChakraSyncStatusResponse {
+  bool success = 1;
+  string client_session_id = 2;
+  string message = 3;
+}
+
+// The message from the server to the client.
+message ServerMessage {
+  string message = 1;
+}
+
