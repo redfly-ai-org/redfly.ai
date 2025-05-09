@@ -18,8 +18,8 @@ Provide source code that:
    - Get the database ready for synchronization by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - **SQL Server** Support (Available since day 1 ✔️)
-      - **Postgres** Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
-      - **MongoDB** Support (Internal Testing ongoing ⌚, OSS Hosting support TBD ⏳, OSS release TBD ⏳, Dog food Mongo Cache for Infra TBD ⏳) 
+      - **Postgres** Support (Done ✔️)
+      - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our core Infrastructure TBD ⏳) 
       
 3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
@@ -40,7 +40,7 @@ The proof is in the pudding. All our cloud services run on our technology.
 
 **Compatibility**
 
-We currently support SQL Server, Postgres, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like MongoDB, Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
+We currently support Postgres, MongoDB & SQL Server sync with Redis. We intend to support other relational databases (like Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
 
 _We have a list of customers in our queue. If interested, please let us know at developer at redfly dot ai_.
 
