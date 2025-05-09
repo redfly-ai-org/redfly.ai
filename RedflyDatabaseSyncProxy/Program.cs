@@ -53,7 +53,7 @@ internal class Program
                 response = Console.ReadLine();
 
                 if (response != null &&
-                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+                    response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
                 {
                     grpcUrl = "http://localhost:5053";
                 }
