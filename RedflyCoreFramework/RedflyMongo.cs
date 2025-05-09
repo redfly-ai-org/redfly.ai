@@ -1,0 +1,36 @@
+﻿using MongoDB.Driver;
+using System;
+
+namespace RedflyCoreFramework
+{
+    public class RedflyMongo
+    {
+        public static bool VerifyConnectivity(string? connectionString, string? databaseName)
+        {
+            // Return false if any of the parameters are null
+            if (connectionString == null || databaseName == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("One or more of the required parameters are null.");
+                Console.ResetColor();
+                return false;
+            }
+
+            try
+            {
+                var client = new MongoClient(connectionString);
+                var database = client.GetDatabase(databaseName);
+
+                // Perform a simple operation to verify connectivity
+                database.ListCollectionNames();
+                Console.WriteLine("Successfully connected to the MongoDB database.");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to connect to the MongoDB database: {ex.Message}");
+                return false;
+            }
+        }
+    }
+}

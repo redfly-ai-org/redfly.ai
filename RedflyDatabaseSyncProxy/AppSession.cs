@@ -14,6 +14,8 @@ namespace RedflyDatabaseSyncProxy
 
         internal static LitePostgresDatabaseDocument? PostgresDatabase { get; set; }
 
+        internal static LiteMongoDatabaseDocument? MongoDatabase { get; set; }
+
         internal static LiteRedisServerDocument? RedisServer { get; set; }
 
         internal static SyncProfileViewModel? SyncProfile { get; set; }
