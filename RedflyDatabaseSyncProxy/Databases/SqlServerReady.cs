@@ -19,9 +19,9 @@ namespace RedflyDatabaseSyncProxy
 
         internal static bool ForChakraSync()
         {
-            if (!SqlServerDatabasePicker.SelectFromLocalStorage())
+            if (!SqlServerDbPicker.SelectFromLocalStorage())
             {
-                if (!SqlServerDatabasePicker.GetFromUser())
+                if (!SqlServerDbPicker.GetFromUser())
                 {
                     return false;
                 }
