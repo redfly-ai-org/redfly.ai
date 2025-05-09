@@ -16,18 +16,10 @@ using RedflyDatabaseSyncProxy.Protos.Common;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
-internal class ChakraPostgresSyncServiceClient
+internal class ChakraPostgresSyncServiceClient : ChakraDatabaseSyncServiceClientBase
 {
 
-    private static bool _bidirectionalStreamingIsWorking = false;
-    private static int _bidirStreamingRetryCount = 0;
-
-    private static string _clientSessionId = ClientSessionId.Generate();
-    private static readonly FixedSizeList<Exception> _lastBidirErrors = new FixedSizeList<Exception>(5);
-
-    private static Metadata? _grpcHeaders;
-
-    internal static async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
+    internal async Task StartAsync(string grpcUrl, string grpcAuthToken, bool runInitialSync)
     {
         //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
         //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
@@ -184,7 +176,7 @@ internal class ChakraPostgresSyncServiceClient
         }
     }
 
-    private static async Task GetChakraSyncStatusWithRetryAsync(
+    private async Task GetChakraSyncStatusWithRetryAsync(
                                 NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient,
                                 int retryCount = 0)
     {
@@ -215,7 +207,7 @@ internal class ChakraPostgresSyncServiceClient
         }
     }
 
-    private static async Task StopChakraSyncAsync(
+    private async Task StopChakraSyncAsync(
                                 NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient)
     {
         var stopResponse = await chakraClient
@@ -240,7 +232,7 @@ internal class ChakraPostgresSyncServiceClient
         }
     }
 
-    private static async Task<bool> StartChakraSyncAsyncWithRetry(
+    private async Task<bool> StartChakraSyncAsyncWithRetry(
                                         bool runInitialSync,
                                         NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient)
     {
@@ -328,7 +320,7 @@ internal class ChakraPostgresSyncServiceClient
         return false;
     }
 
-    private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task bidirectionalTask)> StartBidirStreamingAsync(
+    private async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> asyncDuplexStreamingCall, Task bidirectionalTask)> StartBidirStreamingAsync(
                                 NativeGrpcPostgresChakraService.NativeGrpcPostgresChakraServiceClient chakraClient)
     {
         _bidirectionalStreamingIsWorking = false;
@@ -406,7 +398,7 @@ internal class ChakraPostgresSyncServiceClient
         return (asyncDuplexStreamingCall, bidirectionalTask);
     }
 
-    private static string FormatGrpcServerMessage(string logMessage)
+    private string FormatGrpcServerMessage(string logMessage)
     {
         try
         {

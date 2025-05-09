@@ -272,7 +272,7 @@ internal class Program
                 Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
 
                 // Start Chakra Sync
-                await ChakraSqlServerSyncServiceClient.StartAsync(grpcUrl, grpcAuthToken);
+                await new ChakraSqlServerSyncServiceClient().StartAsync(grpcUrl, grpcAuthToken);
             }
             else if (isPostgresSync)
             {
@@ -283,7 +283,7 @@ internal class Program
                 var runInitialSync = (response != null &&
                                       response.Equals("y", StringComparison.CurrentCultureIgnoreCase));
 
-                await ChakraPostgresSyncServiceClient.StartAsync(grpcUrl, grpcAuthToken, runInitialSync);
+                await new ChakraPostgresSyncServiceClient().StartAsync(grpcUrl, grpcAuthToken, runInitialSync);
             }
             else
             {

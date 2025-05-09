@@ -14,18 +14,10 @@ using RedflyDatabaseSyncProxy.Protos.Common;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
-internal class ChakraSqlServerSyncServiceClient
+internal class ChakraSqlServerSyncServiceClient : ChakraDatabaseSyncServiceClientBase
 {
 
-    private static bool _bidirectionalStreamingIsWorking = false;
-    private static int _bidirStreamingRetryCount = 0;
-
-    private static string _clientSessionId = ClientSessionId.Generate();
-    private static readonly FixedSizeList<Exception> _lastBidirErrors = new FixedSizeList<Exception>(5);
-
-    private static Metadata? _grpcHeaders;
-
-    internal static async Task StartAsync(string grpcUrl, string grpcAuthToken)
+    internal async Task StartAsync(string grpcUrl, string grpcAuthToken)
     {
         //AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
         //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
@@ -183,7 +175,7 @@ internal class ChakraSqlServerSyncServiceClient
         }
     }
 
-    private static async Task GetChakraSyncStatusWithRetryAsync(
+    private async Task GetChakraSyncStatusWithRetryAsync(
                                 NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient chakraClient,
                                 int retryCount = 0)
     {
@@ -214,7 +206,7 @@ internal class ChakraSqlServerSyncServiceClient
         }
     }
 
-    private static async Task StopChakraSyncAsync(
+    private async Task StopChakraSyncAsync(
                                 NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient chakraClient)
     {
         var stopResponse = await chakraClient
@@ -239,7 +231,7 @@ internal class ChakraSqlServerSyncServiceClient
         }
     }
 
-    private static async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> call, Task responseTask)> StartBidirStreamingAsync(NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient chakraClient)
+    private async Task<(AsyncDuplexStreamingCall<ClientMessage, ServerMessage> call, Task responseTask)> StartBidirStreamingAsync(NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient chakraClient)
     {
         _bidirectionalStreamingIsWorking = false;
         //Console.WriteLine($"Session #{_bidirStreamingRetryCount}: Calling Server to setup bi-directional streaming...");
@@ -316,7 +308,7 @@ internal class ChakraSqlServerSyncServiceClient
         return (asyncDuplexStreamingCall, bidirectionalTask);
     }
 
-    private static async Task<bool> StartChakraSyncAsyncWithRetry(NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient chakraClient)
+    private async Task<bool> StartChakraSyncAsyncWithRetry(NativeGrpcSqlServerChakraService.NativeGrpcSqlServerChakraServiceClient chakraClient)
     {
         int maxRetryAttempts = 5; // Maximum number of retry attempts
         int delayMilliseconds = 1000; // Initial delay in milliseconds
@@ -389,7 +381,7 @@ internal class ChakraSqlServerSyncServiceClient
         return false;
     }
 
-    private static string FormatGrpcServerMessage(string logMessage)
+    private string FormatGrpcServerMessage(string logMessage)
     {
         try
         {
