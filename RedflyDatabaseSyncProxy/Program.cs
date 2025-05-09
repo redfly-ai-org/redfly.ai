@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
+using RedflyDatabaseSyncProxy.GrpcClients;
 using RedflyDatabaseSyncProxy.Setup;
 using RedflyDatabaseSyncProxy.SyncProfiles;
 using RedflyDatabaseSyncProxy.SyncRelationships;
@@ -272,7 +273,11 @@ internal class Program
                 Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
 
                 // Start Chakra Sync
-                await new ChakraSqlServerSyncServiceClient().StartAsync(grpcUrl, grpcAuthToken);
+                await new ChakraSqlServerSyncServiceClient(
+                            new GrpcSqlServerChakraServiceClient(
+                                    grpcUrl, 
+                                    grpcAuthToken, 
+                                    ClientSessionId.Generate())).StartAsync();
             }
             else if (isPostgresSync)
             {
@@ -283,7 +288,11 @@ internal class Program
                 var runInitialSync = (response != null &&
                                       response.Equals("y", StringComparison.CurrentCultureIgnoreCase));
 
-                await new ChakraPostgresSyncServiceClient().StartAsync(grpcUrl, grpcAuthToken, runInitialSync);
+                await new ChakraPostgresSyncServiceClient(
+                            new GrpcPostgresChakraServiceClient(
+                                    grpcUrl, 
+                                    grpcAuthToken, 
+                                    ClientSessionId.Generate())).StartAsync(runInitialSync);
             }
             else
             {
