@@ -24,6 +24,11 @@ namespace RedflyDatabaseSyncProxy
 
             do
             {
+                serverName = "";
+                databaseName = "";
+                userName = "";
+                password = "";
+
                 while (string.IsNullOrWhiteSpace(serverName))
                 {
                     Console.WriteLine("Please enter the Mongo server name:");

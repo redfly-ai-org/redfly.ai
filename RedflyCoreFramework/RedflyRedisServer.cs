@@ -40,6 +40,8 @@ namespace RedflyCoreFramework
                     AbortOnConnectFail = false
                 };
 
+                Console.WriteLine("Connecting to Redis Host...");
+
                 using (var connection = ConnectionMultiplexer.Connect(configurationOptions))
                 {
                     if (connection.IsConnected)

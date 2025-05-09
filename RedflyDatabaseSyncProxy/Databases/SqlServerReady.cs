@@ -43,6 +43,8 @@ namespace RedflyDatabaseSyncProxy
                 }
             }
 
+            Console.WriteLine();
+
             if (!EnableDatabaseChangeTracking())
             {
                 Console.ForegroundColor = ConsoleColor.Red;

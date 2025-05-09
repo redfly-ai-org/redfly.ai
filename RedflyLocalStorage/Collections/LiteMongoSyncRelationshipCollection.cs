@@ -9,39 +9,39 @@ using System.Threading.Tasks;
 
 namespace RedflyLocalStorage.Collections;
 
-public class LitePostgresSyncRelationshipCollection : RedflyLocalCollection<LitePostgresSyncRelationshipDocument>
+public class LiteMongoSyncRelationshipCollection : RedflyLocalCollection<LiteMongoSyncRelationshipDocument>
 {
 
-    public LitePostgresSyncRelationshipCollection() : base("postgressyncrelationships")
+    public LiteMongoSyncRelationshipCollection() : base("mongosyncrelationships")
     {
         _lazyCollection.Value.EnsureIndex(
             name: "sqlsrvridrdsid",
             x => new
             {
-                x.PostgresDatabaseId,
+                x.MongoDatabaseId,
                 x.RedisServerId
             },
             unique: true);
     }
 
-    public IEnumerable<LitePostgresSyncRelationshipDocument> FindByDatabase(string postgresDatabaseId)
+    public IEnumerable<LiteMongoSyncRelationshipDocument> FindByDatabase(string mongoDatabaseId)
     {
         return _lazyCollection.Value
-                    .Find(x => x.PostgresDatabaseId == postgresDatabaseId);
+                    .Find(x => x.MongoDatabaseId == mongoDatabaseId);
     }
 
-    public IEnumerable<LitePostgresSyncRelationshipDocument> FindByRedisServer(string redisServerId)
+    public IEnumerable<LiteMongoSyncRelationshipDocument> FindByRedisServer(string redisServerId)
     {
         return _lazyCollection.Value
                     .Find(x =>
                             x.RedisServerId == redisServerId);
     }
 
-    public LitePostgresSyncRelationshipDocument Find(string postgresDatabaseId, string redisServerId)
+    public LiteMongoSyncRelationshipDocument Find(string mongoDatabaseId, string redisServerId)
     {
         return _lazyCollection.Value
                     .FindOne(x =>
-                                x.PostgresDatabaseId == postgresDatabaseId &&
+                                x.MongoDatabaseId == mongoDatabaseId &&
                                 x.RedisServerId == redisServerId);
     }
 

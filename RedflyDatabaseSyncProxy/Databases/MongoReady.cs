@@ -45,12 +45,12 @@ namespace RedflyDatabaseSyncProxy
                 }
             }
 
-            Console.WriteLine("Please ensure the following setup for your MongoDB Instance.");
+            Console.WriteLine("\r\nPlease ensure the following setup for your MongoDB Instance.");
             Console.WriteLine("These are necessary for MongoDB Change Streams to work properly.\r\n");
 
             do
             {
-                Console.WriteLine("1. Deploy a Replica Set");
+                Console.WriteLine("1. Deploy a Replica Set\r\n");
                 Console.WriteLine("   MongoDB should be running as a replica set or in a sharded cluster");
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("   Stop the MongoDB server.");
@@ -69,7 +69,7 @@ namespace RedflyDatabaseSyncProxy
 
             do
             {
-                Console.WriteLine("2. Set Database User Permissions");
+                Console.WriteLine("\r\n2. Set Database User Permissions\r\n");
                 Console.WriteLine("   Assign the readWrite role to the user for the database you want to monitor.");
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("   db.createUser({");
@@ -91,7 +91,7 @@ namespace RedflyDatabaseSyncProxy
 
             do
             {
-                Console.WriteLine("3. Enable Change Streams on the Database");
+                Console.WriteLine("\r\n3. Enable Change Streams on the Database\r\n");
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("   Change streams are supported starting from MongoDB 3.6.");
                 Console.WriteLine("   Change streams are enabled by default for replica sets and sharded clusters.");
@@ -108,7 +108,7 @@ namespace RedflyDatabaseSyncProxy
 
             do
             {
-                Console.WriteLine("4. Increase Oplog Size (If Necessary)");
+                Console.WriteLine("\r\n4. Increase Oplog Size (If Necessary)\r\n");
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("   Increase the oplog size to ensure that the oplog doesn't roll over before your application processes changes.");
                 Console.ResetColor();

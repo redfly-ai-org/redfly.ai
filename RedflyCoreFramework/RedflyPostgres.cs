@@ -22,6 +22,7 @@ namespace RedflyCoreFramework
             {
                 using (var connection = new NpgsqlConnection(connectionString))
                 {
+                    Console.WriteLine("Connecting to Postgres database...");
                     connection.Open();
                     Console.WriteLine("Successfully connected to the Postgres database.");
                     return true;

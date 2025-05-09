@@ -119,6 +119,27 @@ internal class Program
                 }
             }
 
+            bool isMongoSync = false;
+
+            Console.WriteLine("Are you trying to sync a MongoDB database? (y/n)");
+            response = Console.ReadLine();
+
+            if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                isMongoSync = true;
+
+                if (!MongoReady.ForChakraSync())
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("Chakra Sync cannot be started without prepping the MongoDB database.");
+                    Console.WriteLine("Please prep the MongoDB database and try again.");
+                    Console.ResetColor();
+
+                    return;
+                }
+            }
+
             bool isSqlServerSync = false;
 
             if (!isPostgresSync)
@@ -153,10 +174,14 @@ internal class Program
             {
                 PostgresSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
             }
+            else if (isMongoSync)
+            {
+                MongoSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
+            }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("We only support Sql Server and Postgres at present.");
+                Console.WriteLine("We only support Postgres, MongoDB and SQL Server at present.");
                 Console.ResetColor();
 
                 return;
@@ -320,10 +345,26 @@ internal class Program
                                     ClientSessionId.Generate()),
                             runInitialSync).StartAsync();
             }
+            else if (isMongoSync)
+            {
+                Console.WriteLine("Do you want to do an initial sync? (y/n)");
+                Console.WriteLine("This only makes sense if you are syncing the database for the first time and Redis is empty");
+                response = Console.ReadLine();
+
+                var runInitialSync = (response != null &&
+                                      response.Equals("y", StringComparison.CurrentCultureIgnoreCase));
+
+                await new ChakraMongoSyncServiceClient(
+                            new GrpcMongoChakraServiceClient(
+                                    grpcUrl,
+                                    grpcAuthToken,
+                                    ClientSessionId.Generate()),
+                            runInitialSync).StartAsync();
+            }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("We only support Sql Server and Postgres at present.");
+                Console.WriteLine("We only support Postgres, MongoDB and SQL Server at present.");
                 Console.ResetColor();
 
                 return;

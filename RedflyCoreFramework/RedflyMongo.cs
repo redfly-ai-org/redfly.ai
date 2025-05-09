@@ -17,11 +17,13 @@ namespace RedflyCoreFramework
             }
 
             // Construct the MongoDB connection string
-            var connectionString = $"mongodb://{userName}:{password}@{serverName}/{databaseName}";
+            var connectionString = $"mongodb+srv://{userName}:{password}@{serverName}/{databaseName}?retryWrites=true&w=majority";
 
             try
             {
                 var client = new MongoClient(connectionString);
+
+                Console.WriteLine("Connecting to MongoDB database...");
                 var database = client.GetDatabase(databaseName);
 
                 // Perform a simple operation to verify connectivity

@@ -27,6 +27,7 @@ namespace RedflyCoreFramework
             {
                 using (var connection = new SqlConnection(connectionString))
                 {
+                    Console.WriteLine("Connecting to SQL Server database...");
                     connection.Open();
                     Console.WriteLine("Successfully connected to the Sql Server database.");
                     return true;

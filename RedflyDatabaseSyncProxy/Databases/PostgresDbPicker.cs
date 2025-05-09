@@ -26,6 +26,13 @@ namespace RedflyDatabaseSyncProxy
 
             do
             {
+                serverName = "";
+                databaseName = "";
+                userName = "";
+                password = "";
+                pgOutputSlotName = "";
+                publicationName = "";
+
                 while (string.IsNullOrWhiteSpace(serverName))
                 {
                     Console.WriteLine("Please enter the Postgres server name:");

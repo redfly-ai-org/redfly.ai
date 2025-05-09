@@ -45,6 +45,8 @@ namespace RedflyDatabaseSyncProxy
                 }
             }
 
+            Console.WriteLine();
+
             do
             {
                 Console.WriteLine("Please ensure the following configuration is enabled in your PostgreSQL configuration (postgresql.conf):");
