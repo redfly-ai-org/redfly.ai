@@ -13,19 +13,19 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 Provide source code that:
 
 1. **RedflyPerformanceTest** Project: Lets you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
+
 2. **RedflyDatabaseSyncProxy** Project: Provides a way for anybody to test our Redis synchronization service on demand
    - Get the database ready for synchronization by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
-      - SQL Server Support (Available since day 1 ✔️)
-      - Postgres Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
-      - Please ignore the Grpc errors, which can occur due to a flaky network connection over the Public Internet to the US East region on Azure.
-        - The hosted Chakra service, once started, is running and available on our cloud.
-        - This does not affect anything but the log display on the client.
+      - **SQL Server** Support (Available since day 1 ✔️)
+      - **Postgres** Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
+      - **MongoDB** Support (Internal Testing ongoing ⌚, OSS Hosting support TBD ⏳, OSS release TBD ⏳, Dog food Mongo Cache for Infra TBD ⏳) 
+      
 3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
-Even though these are intended as fully functional demos, items 2 and 3 are ambitious and complex to implement. We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
+We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
 
 These applications do not require complex configuration or modifications to work. They will be simple console applications written in C# and using the latest version of .NET Core. 
 
@@ -42,7 +42,7 @@ The proof is in the pudding. All our cloud services run on our technology.
 
 We currently support SQL Server, Postgres, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like MongoDB, Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
 
-_We have a list of customers who are waiting for Postgres support. If interested, please let us know at developer at redfly dot ai_.
+_We have a list of customers in our queue. If interested, please let us know at developer at redfly dot ai_.
 
 **Caveats**
 
