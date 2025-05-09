@@ -57,6 +57,31 @@ internal class Program
                 {
                     grpcUrl = "http://localhost:5053";
                 }
+                else
+                {
+                    Console.WriteLine("Connect to a custom URL? (y/n)");
+                    Console.WriteLine("This option is only relevant to redfly employees.");
+                    response = Console.ReadLine();
+
+                    if (response != null &&
+                        response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        Console.WriteLine("Please enter the URL:");
+                        response = Console.ReadLine();                        
+            
+                        while (!Uri.TryCreate(response, UriKind.Absolute, out var uriResult) ||
+                               (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("The provided input is not a valid URL. Please enter a valid URL here:");
+                            Console.ResetColor();
+
+                            response = Console.ReadLine();
+                        }
+
+                        grpcUrl = response;
+                    }
+                }
             }
 
             Console.ForegroundColor = ConsoleColor.Green;
