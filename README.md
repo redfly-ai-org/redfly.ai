@@ -25,7 +25,7 @@ Provide source code that:
       - **Postgres** Support (Done ✔️)
       - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our core Infrastructure TBD ⏳) 
       
-3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
+3. Generate strongly typed code that can talk to our backend to seamlessly retrieve data from the cache, using the database only as a failback mechanism (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
 
