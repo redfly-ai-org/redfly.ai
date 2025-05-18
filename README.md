@@ -25,8 +25,7 @@ Provide source code that:
       - **Postgres** Support (Done ✔️)
       - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our core Infrastructure TBD ⏳) 
       
-3. Generate strongly typed code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (Concept/ Design - WIP🏃🏽‍♀️‍➡️, Implementation TBD ⌚).
-   - Calls will be routed through our cloud services to provide an easy-to-use, fully automated, on-demand SaaS service that protects our IP. 
+3. **RedflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (Concept/ Design - WIP🏃🏽‍♀️‍➡️, Implementation TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time. 
 
