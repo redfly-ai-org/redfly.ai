@@ -25,9 +25,10 @@ Provide source code that:
       - **Postgres** Support (Done ✔️)
       - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our core Infrastructure TBD ⏳) 
       
-3. Generate strongly typed code that can talk to our backend to seamlessly retrieve data from the cache, using the database only as a failback mechanism (TBD ⌚).
+3. Generate strongly typed code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (TBD ⌚).
+   - Calls will be routed through our cloud services to provide an easy-to-use, fully automated, on-demand SaaS service that protects our IP. 
 
-This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
+This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time. 
 
 We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
 
@@ -54,9 +55,9 @@ Relational Databases perform well for a small number of rows without a lot of us
 
 A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
 
-**Solution**
+**Insurance**
 
-We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Most secure applications make many database calls to render anything within an application. Think about it: why should everything in your app run slowly because a few users are running some expensive queries? We have taken this for granted too long. Why should security implementation slow down an app? That is what we are good at solving.
+Under an NDA, customers can get more source code than what is available in our public repo. However, we do not expect the complete source code to be useful to the vast majority of developers who lack the specialized knowledge or experience in synchronization and other technologies underlying our core platform. 
 
 **Documentation**
 
