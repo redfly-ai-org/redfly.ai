@@ -55,7 +55,9 @@ Relational Databases perform well for a small number of rows without a lot of us
 
 A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
 
-**Insurance**
+**Trust**
+
+We are funded by the <a href="https://www.alchemistaccelerator.com/">Alchemist Accelerator</a> - the #1 accelerator for Enterprise Startups.
 
 Under an NDA, customers can get more source code than what is available in our public repo. However, we do not expect the complete source code to be useful to the vast majority of developers who lack the specialized knowledge or experience in synchronization and other technologies underlying our core platform. 
 
