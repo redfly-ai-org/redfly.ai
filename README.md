@@ -1,12 +1,16 @@
 # redfly.ai
 
-Our team has been building data-driven apps for 20+ years. Tired of fighting database performance, scalability, and cost, we realized that it's possible to bypass most of the issues with disk-based databases if we could effectively cache all our reads, using the database mainly as a data store. This is not a new idea.
+_Never lose a customer to the database again._
 
-Some of the largest companies in the world synchronize their database directly with the cache so that they can seamlessly access their data without worrying about optimizing SQL queries or scaling up their disk-based databases. Now, for the first time in history, we have made it possible for anybody to implement this without spending several million dollars and years in R&D costs. 
+Our team has been building data-driven apps for 20+ years. Tired of fighting database performance, scalability, and cost, we realized that it's possible to bypass most of the issues with disk-based databases if we could effectively cache all our reads, using the database mainly as a data store with Redis as the front end. 
 
-redfly.ai is the world's first schema-agnostic caching system. No other company has done or will do this. Why build a data-agnostic system when you could _more_ easily (still non-trivial) make something that works solely with your database?
+This enables interacting with data using strongly typed, object-oriented paradigms, enabling a grab-and-go coding style more intuitive to application developers than SQL queries. This has never been possible before. We did not believe it would work for an application before extensive R&D and solving numerous problems along the way. 
 
-redfly.ai lets you synchronize your database with Redis <i>transparently</i> and <i>generate</i> a data access layer that <i>integrates</i> data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out our system.
+Some of the largest companies in the world synchronize their database directly with the cache so that they can seamlessly access their data without worrying about optimizing SQL queries or scaling up their disk-based databases. Now, for the first time in history, we have made it possible for anybody to implement the same thing without spending several million dollars and years in R&D costs. 
+
+redfly.ai is the world's first schema-agnostic caching system. No other company has done or will do this. Why build a data-agnostic system when you could _more_ easily (still non-trivial) make something that works solely with your database? This made it possible to cache any database. The second step was to build on that foundation a new way of interacting with the database, which we could only imagine for many years.
+
+redfly.ai lets you synchronize your database with Redis <i>transparently</i> and <i>generate</i> a data access layer that <i>integrates</i> data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out a novel system that is sure to fire all their neurons when they see what is truly possible.
 
 **Goals**
 
@@ -18,12 +22,12 @@ Provide source code that:
    - Get the database ready for synchronization by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - **SQL Server** Support (Available since day 1 ✔️)
-      - **Postgres** Support (Done ✔️, Stabilized ✔️, long term testing ongoing ⌚)
-      - **MongoDB** Support (Internal Testing ongoing ⌚, OSS Hosting support TBD ⏳, OSS release TBD ⏳, Dog food Mongo Cache for Infra TBD ⏳) 
+      - **Postgres** Support (Done ✔️)
+      - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our core Infrastructure TBD ⏳) 
       
-3. Provide a way for anybody to generate their data access backend services on our cloud on-demand (TBD ⌚).
+3. **RedflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (Concept/ Design - WIP🏃🏽‍♀️‍➡️, Implementation TBD ⌚).
 
-This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time.
+This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time. 
 
 We do all this setup work for our customers within our environment. This should let anyone get a taste of our technology without manual work on our part.
 
@@ -40,7 +44,7 @@ The proof is in the pudding. All our cloud services run on our technology.
 
 **Compatibility**
 
-We currently support SQL Server, Postgres, Redis, Azure Search, and Azure Cloud. We intend to support other relational databases (like MongoDB, Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
+We currently support Postgres, MongoDB & SQL Server sync with Redis. We intend to support other relational databases (like Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
 
 _We have a list of customers in our queue. If interested, please let us know at developer at redfly dot ai_.
 
@@ -50,9 +54,11 @@ Relational Databases perform well for a small number of rows without a lot of us
 
 A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
 
-**Solution**
+**Trust**
 
-We are very good at handling all the basic calls to a database, which adds up under load and prevents your customers from running more complex queries. Most secure applications make many database calls to render anything within an application. Think about it: why should everything in your app run slowly because a few users are running some expensive queries? We have taken this for granted too long. Why should security implementation slow down an app? That is what we are good at solving.
+We are funded by the <a href="https://www.alchemistaccelerator.com/">Alchemist Accelerator</a> - the #1 accelerator for Enterprise Startups.
+
+Under an NDA, customers can get more source code than what is available in our public repo. However, we do not expect the complete source code to be useful to the vast majority of developers who lack the specialized knowledge or experience in synchronization and other technologies underlying our core platform. 
 
 **Documentation**
 
