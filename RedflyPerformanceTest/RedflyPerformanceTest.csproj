@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClientDatabaseAPI.Common.Library\ClientDatabaseAPI.Common.Library.csproj" />
-    <ProjectReference Include="..\RedflyGrpcAuthServiceClient\RedflyGrpcAuthServiceClient.csproj" />
+    <ProjectReference Include="..\RedflyGrpcAuthServiceClient\redflyGrpcAuthServiceClient.csproj" />
   </ItemGroup>
 
 	<ItemGroup>

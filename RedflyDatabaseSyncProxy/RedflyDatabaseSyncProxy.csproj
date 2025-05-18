@@ -21,9 +21,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\RedflyCoreFramework\RedflyCoreFramework.csproj" />
-	  <ProjectReference Include="..\RedflyGrpcAuthServiceClient\RedflyGrpcAuthServiceClient.csproj" />
-	  <ProjectReference Include="..\RedflyLocalStorage\RedflyLocalStorage.csproj" />
+	  <ProjectReference Include="..\RedflyCoreFramework\redflyCoreFramework.csproj" />
+	  <ProjectReference Include="..\RedflyGrpcAuthServiceClient\redflyGrpcAuthServiceClient.csproj" />
+	  <ProjectReference Include="..\RedflyLocalStorage\redflyLocalStorage.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

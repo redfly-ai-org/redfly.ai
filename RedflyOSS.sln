@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.13.35825.156
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyPerformanceTest", "RedflyPerformanceTest\RedflyPerformanceTest.csproj", "{C9B53831-D62B-450E-9EE6-6ECEB468EBE6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redflyPerformanceTest", "RedflyPerformanceTest\redflyPerformanceTest.csproj", "{C9B53831-D62B-450E-9EE6-6ECEB468EBE6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientDatabaseAPI.Common.Library", "ClientDatabaseAPI.Common.Library\ClientDatabaseAPI.Common.Library.csproj", "{6CC05BB1-74A0-4916-83D4-0BBFC1EB5733}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyGrpcAuthServiceClient", "RedflyGrpcAuthServiceClient\RedflyGrpcAuthServiceClient.csproj", "{3DE0989C-2272-4E23-975F-96AE128DD858}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redflyGrpcAuthServiceClient", "RedflyGrpcAuthServiceClient\redflyGrpcAuthServiceClient.csproj", "{3DE0989C-2272-4E23-975F-96AE128DD858}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyDatabaseSyncProxy", "RedflyDatabaseSyncProxy\RedflyDatabaseSyncProxy.csproj", "{649BCD48-E6DF-4CEF-A986-2A2B55FC07E2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redflyDatabaseSyncProxy", "RedflyDatabaseSyncProxy\redflyDatabaseSyncProxy.csproj", "{649BCD48-E6DF-4CEF-A986-2A2B55FC07E2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyCoreFramework", "RedflyCoreFramework\RedflyCoreFramework.csproj", "{1CF58650-F231-427C-ADFC-FC1044AAB254}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redflyCoreFramework", "RedflyCoreFramework\redflyCoreFramework.csproj", "{1CF58650-F231-427C-ADFC-FC1044AAB254}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RedflyLocalStorage", "RedflyLocalStorage\RedflyLocalStorage.csproj", "{F5B39656-D84A-4749-936B-588B27B70C3B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "redflyLocalStorage", "RedflyLocalStorage\redflyLocalStorage.csproj", "{F5B39656-D84A-4749-936B-588B27B70C3B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
