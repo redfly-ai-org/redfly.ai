@@ -7,11 +7,22 @@ namespace redflyDataAccessClient;
 public class QueryBuilder
 {
     // Encrypted connection properties
-    public string EncryptedHost { get; set; } = string.Empty;
+    public string EncryptedDatabaseHost { get; set; } = string.Empty;
     public string EncryptedDatabase { get; set; } = string.Empty;
-    public string EncryptedUser { get; set; } = string.Empty;
-    public string EncryptedPassword { get; set; } = string.Empty;
+    public string EncryptedDatabaseUser { get; set; } = string.Empty;
+    public string EncryptedDatabasePassword { get; set; } = string.Empty;
     public string EncryptedKey { get; set; } = string.Empty;
+
+    // Redis connection properties
+    public string EncryptedRedisServerName { get; set; } = string.Empty;
+    public int RedisPortNo { get; set; }
+    public string EncryptedRedisPassword { get; set; } = string.Empty;
+    public bool RedisUsesSsl { get; set; }
+    public string RedisSslProtocol { get; set; } = string.Empty;
+    public bool RedisAbortConnect { get; set; }
+    public int RedisConnectTimeout { get; set; }
+    public int RedisSyncTimeout { get; set; }
+    public int RedisAsyncTimeout { get; set; }
 
     // Query structure
     public string TableName { get; set; } = string.Empty;
@@ -23,11 +34,34 @@ public class QueryBuilder
     // Fluent API
     public QueryBuilder From(string encHost, string encDb, string encUser, string encPwd, string encKey)
     {
-        EncryptedHost = encHost;
+        EncryptedDatabaseHost = encHost;
         EncryptedDatabase = encDb;
-        EncryptedUser = encUser;
-        EncryptedPassword = encPwd;
+        EncryptedDatabaseUser = encUser;
+        EncryptedDatabasePassword = encPwd;
         EncryptedKey = encKey;
+        return this;
+    }
+
+    public QueryBuilder Cached(
+        string encryptedRedisServerName,
+        int redisPortNo,
+        string encryptedRedisPassword,
+        bool redisUsesSsl,
+        string redisSslProtocol,
+        bool redisAbortConnect,
+        int redisConnectTimeout,
+        int redisSyncTimeout,
+        int redisAsyncTimeout)
+    {
+        EncryptedRedisServerName = encryptedRedisServerName;
+        RedisPortNo = redisPortNo;
+        EncryptedRedisPassword = encryptedRedisPassword;
+        RedisUsesSsl = redisUsesSsl;
+        RedisSslProtocol = redisSslProtocol;
+        RedisAbortConnect = redisAbortConnect;
+        RedisConnectTimeout = redisConnectTimeout;
+        RedisSyncTimeout = redisSyncTimeout;
+        RedisAsyncTimeout = redisAsyncTimeout;
         return this;
     }
 
