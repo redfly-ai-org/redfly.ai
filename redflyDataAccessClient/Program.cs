@@ -202,7 +202,7 @@ internal class Program
                 string? tableSchemaName = null;
                 var tableName = "";
 
-                while (tableSchemaName != null)
+                while (tableSchemaName == null)
                 {
                     Console.WriteLine("Please enter the table schema name");
                     Console.WriteLine("This could be an empty string.");
@@ -219,7 +219,7 @@ internal class Program
                 var sqlServerClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
 
                 // Prepare the request
-                var request = new GetTotalRowCountRequest
+                var getTotalRowCountRequest = new GetTotalRowCountRequest
                 {
                     EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
                     EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
@@ -232,7 +232,7 @@ internal class Program
                 };
 
                 // Make the call
-                var apiResponse = await sqlServerClient.GetTotalRowCountAsync(request, headers);
+                var apiResponse = await sqlServerClient.GetTotalRowCountAsync(getTotalRowCountRequest, headers);
 
                 // Use the result
                 Console.WriteLine(JsonConvert.SerializeObject(apiResponse, Formatting.Indented));

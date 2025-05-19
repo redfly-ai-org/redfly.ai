@@ -76,13 +76,17 @@ message GetRowsRequest {
   string encryption_key = 8;
   int32 page_no = 9;
   int32 page_size = 10;
-  bool use_cache = 11;
+  string orderby_column_name = 11;
+  string orderby_column_sort = 12; // "asc" or "desc"
+  string orderby_expression = 13; // e.g. "column1, column2"
+  bool use_cache = 14;
 }
 
 message GetRowsResponse {
-  repeated Row rows = 1;
-  bool fromCache = 2;
-  string message = 3;
+  bool success = 1;
+  repeated Row rows = 2;
+  bool fromCache = 3;
+  string message = 4;
 }
 
 // Request for Insert.
@@ -100,9 +104,10 @@ message InsertRequest {
 }
 
 message InsertResponse {
-  Row inserted_row = 1;
-  bool cacheUpdated = 2;
-  string message = 3;
+  bool success = 1;
+  Row inserted_row = 2;
+  bool cacheUpdated = 3;
+  string message = 4;
 }
 
 // Request for Get.
@@ -120,9 +125,10 @@ message GetRequest {
 }
 
 message GetResponse {
-  Row row = 1;
-  bool fromCache = 2;
-  string message = 3;
+  bool success = 1;
+  Row row = 2;
+  bool fromCache = 3;
+  string message = 4;
 }
 
 // Request for Update.
@@ -140,9 +146,10 @@ message UpdateRequest {
 }
 
 message UpdateResponse {
-  int32 updated_count = 1;
-  bool cacheUpdated = 2;
-  string message = 3;
+  bool success = 1;
+  int32 updated_count = 2;
+  bool cacheUpdated = 3;
+  string message = 4;
 }
 
 // The generic SQL Server API service.
