@@ -226,8 +226,14 @@ internal class Program
                 var apiResponse = await sqlServerClient.GetTotalRowCountAsync(request, headers);
 
                 // Use the result
-                Console.WriteLine($"Total row count: {apiResponse.Total}");
+                Console.WriteLine(JsonConvert.SerializeObject(apiResponse, Formatting.Indented));
+
+                // TODO: All the other API calls
+
+                // TODO: Generate the strongly typed client code for the tables.
             }
+
+            Console.WriteLine("All API calls are completed!");
         }
         catch (Exception ex)
         {
