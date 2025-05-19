@@ -78,8 +78,7 @@ message GetRowsRequest {
   int32 page_size = 10;
   string orderby_column_name = 11;
   string orderby_column_sort = 12; // "asc" or "desc"
-  string orderby_expression = 13; // e.g. "column1, column2"
-  bool use_cache = 14;
+  bool use_cache = 13;
 }
 
 message GetRowsResponse {
