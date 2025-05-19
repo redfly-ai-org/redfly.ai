@@ -266,6 +266,44 @@ internal class Program
 
                 ShowResults(watch, getRowsResponse);
 
+                var primaryKeyColumnName = "";
+                var primaryKeyColumnValue = "";
+
+                while (string.IsNullOrEmpty(primaryKeyColumnName)) 
+                {
+                    Console.WriteLine("Please enter the primary key column name:");
+                    primaryKeyColumnName = Console.ReadLine();
+                }
+
+                while (string.IsNullOrEmpty(primaryKeyColumnValue)) 
+                {
+                    Console.WriteLine("Please enter the primary key column value:");
+                    primaryKeyColumnValue = Console.ReadLine();
+                }
+
+                var getRequest = new GetRequest()
+                {
+                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+                    EncryptionKey = RedflyEncryptionKeys.AesKey
+                };
+
+                getRequest.PrimaryKeyValues.Add(primaryKeyColumnName, primaryKeyColumnValue);
+
+                watch.Restart();
+                var getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
+                watch.Stop();
+
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine(JsonConvert.SerializeObject(getResponse, Formatting.Indented));
+                Console.ResetColor();
+                Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+
                 // TODO: All the other API calls
 
                 // TODO: Generate the strongly typed client code for the tables.
