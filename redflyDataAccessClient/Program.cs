@@ -220,26 +220,15 @@ internal class Program
                 var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
 
                 // Prepare the request
-                var getTotalRowCountRequest = new GetTotalRowCountRequest
-                {
-                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-                    EncryptionKey = RedflyEncryptionKeys.AesKey
-                };
+                var getTotalRowCountRequest = CreateGetTotalRowCountRequest(tableSchemaName, tableName);
 
                 var watch = new Stopwatch();
-                
+
                 watch.Start();
                 var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, headers);
                 watch.Stop();
 
-                Console.WriteLine(JsonConvert.SerializeObject(getTotalRowCountResponse, Formatting.Indented));
-                Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+                ShowResults(watch, getTotalRowCountResponse);
 
                 var orderByColumnName = "";
                 var orderByColumnSort = "asc";
@@ -252,55 +241,54 @@ internal class Program
 
                 Console.WriteLine();
 
-                var getRowsRequest = new GetRowsRequest
-                {
-                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-                    EncryptionKey = RedflyEncryptionKeys.AesKey,
-                    OrderbyColumnName = orderByColumnName,
-                    OrderbyColumnSort = orderByColumnSort,
-                    PageNo = 1,
-                    PageSize = 5,
-                    UseCache = true
-                };
+                var getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
 
                 watch.Restart();
                 var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
                 watch.Stop();
 
-                Console.WriteLine(JsonConvert.SerializeObject(getRowsResponse, Formatting.Indented));
-                Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+                ShowResults(watch, getRowsResponse);
 
                 Console.WriteLine("Press ANY key to make the same call without caching:");
                 Console.ReadKey();
                 Console.WriteLine();
 
-                getRowsRequest = new GetRowsRequest
-                {
-                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-                    EncryptionKey = RedflyEncryptionKeys.AesKey,
-                    PageNo = 1,
-                    PageSize = 5,
-                    UseCache = false
-                };
+                getRowsRequest = CreateGetRowsUncachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
 
                 watch.Restart();
                 getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
                 watch.Stop();
 
-                Console.WriteLine(JsonConvert.SerializeObject(getRowsResponse, Formatting.Indented));
-                Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+                ShowResults(watch, getRowsResponse);
+
+                orderByColumnName = "";
+                while (string.IsNullOrEmpty(orderByColumnName))
+                {
+                    Console.WriteLine("Please enter ANOTHER column by which you want the records ordered:");
+                    orderByColumnName = Console.ReadLine();
+                }
+
+                Console.WriteLine();
+
+                getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
+
+                watch.Restart();
+                getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
+                watch.Stop();
+
+                ShowResults(watch, getRowsResponse);
+
+                Console.WriteLine("Press ANY key to make the same call without caching:");
+                Console.ReadKey();
+                Console.WriteLine();
+
+                getRowsRequest = CreateGetRowsUncachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
+
+                watch.Restart();
+                getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
+                watch.Stop();
+
+                ShowResults(watch, getRowsResponse);
 
                 // TODO: All the other API calls
 
@@ -323,6 +311,77 @@ internal class Program
 
             RedflyLocalDatabase.Dispose();
         }
+    }
+
+    private static void ShowResults(Stopwatch watch, GetRowsResponse getRowsResponse)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(JsonConvert.SerializeObject(getRowsResponse, Formatting.Indented));
+        Console.ResetColor();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+    }
+
+    private static void ShowResults(Stopwatch watch, GetTotalRowCountResponse getTotalRowCountResponse)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(JsonConvert.SerializeObject(getTotalRowCountResponse, Formatting.Indented));
+        Console.ResetColor();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+    }
+
+    private static GetRowsRequest CreateGetRowsUncachedRequest(string tableSchemaName, string tableName, string orderByColumnName, string orderByColumnSort)
+    {
+        return new GetRowsRequest
+        {
+            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+            EncryptionKey = RedflyEncryptionKeys.AesKey,
+            OrderbyColumnName = orderByColumnName,
+            OrderbyColumnSort = orderByColumnSort,
+            PageNo = 1,
+            PageSize = 5,
+            UseCache = false
+        };
+    }
+
+    private static GetRowsRequest CreateGetRowsCachedRequest(string tableSchemaName, string tableName, string orderByColumnName, string orderByColumnSort)
+    {
+        return new GetRowsRequest
+        {
+            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+            EncryptionKey = RedflyEncryptionKeys.AesKey,
+            OrderbyColumnName = orderByColumnName,
+            OrderbyColumnSort = orderByColumnSort,
+            PageNo = 1,
+            PageSize = 5,
+            UseCache = true
+        };
+    }
+
+    private static GetTotalRowCountRequest CreateGetTotalRowCountRequest(string tableSchemaName, string tableName)
+    {
+        return new GetTotalRowCountRequest
+        {
+            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+            EncryptionKey = RedflyEncryptionKeys.AesKey
+        };
     }
 
     private static void DisplayWelcomeMessage()
