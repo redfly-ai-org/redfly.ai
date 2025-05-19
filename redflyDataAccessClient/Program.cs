@@ -269,40 +269,41 @@ internal class Program
                 var primaryKeyColumnName = "";
                 var primaryKeyColumnValue = "";
 
-                while (string.IsNullOrEmpty(primaryKeyColumnName)) 
+                while (string.IsNullOrEmpty(primaryKeyColumnName))
                 {
                     Console.WriteLine("Please enter the primary key column name:");
                     primaryKeyColumnName = Console.ReadLine();
                 }
 
-                while (string.IsNullOrEmpty(primaryKeyColumnValue)) 
+                while (string.IsNullOrEmpty(primaryKeyColumnValue))
                 {
                     Console.WriteLine("Please enter the primary key column value:");
                     primaryKeyColumnValue = Console.ReadLine();
                 }
 
-                var getRequest = new GetRequest()
-                {
-                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-                    EncryptionKey = RedflyEncryptionKeys.AesKey
-                };
-
-                getRequest.PrimaryKeyValues.Add(primaryKeyColumnName, primaryKeyColumnValue);
+                GetRequest getRequest = CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
 
                 watch.Restart();
                 var getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
                 watch.Stop();
 
-                Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine(JsonConvert.SerializeObject(getResponse, Formatting.Indented));
-                Console.ResetColor();
-                Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+                ShowResults(watch, getResponse);
+
+                primaryKeyColumnValue = "";
+
+                while (string.IsNullOrEmpty(primaryKeyColumnValue))
+                {
+                    Console.WriteLine("Please enter another primary key column value:");
+                    primaryKeyColumnValue = Console.ReadLine();
+                }
+
+                getRequest = CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
+
+                watch.Restart();
+                getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
+                watch.Stop();
+
+                ShowResults(watch, getResponse);
 
                 // TODO: All the other API calls
 
@@ -325,6 +326,32 @@ internal class Program
 
             RedflyLocalDatabase.Dispose();
         }
+    }
+
+    private static void ShowResults(Stopwatch watch, GetResponse getResponse)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(JsonConvert.SerializeObject(getResponse, Formatting.Indented));
+        Console.ResetColor();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+    }
+
+    private static GetRequest CreateGetRequest(string tableSchemaName, string tableName, string primaryKeyColumnName, string primaryKeyColumnValue)
+    {
+        var getRequest = new GetRequest()
+        {
+            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+            EncryptionKey = RedflyEncryptionKeys.AesKey
+        };
+
+        getRequest.PrimaryKeyValues.Add(primaryKeyColumnName, primaryKeyColumnValue);
+        return getRequest;
     }
 
     private static void ShowResults(Stopwatch watch, GetRowsResponse getRowsResponse)
