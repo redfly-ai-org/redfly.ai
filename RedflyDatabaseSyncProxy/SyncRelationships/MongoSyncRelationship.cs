@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using redflyDatabaseAdapters;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage.Entities;
 using System;
@@ -16,7 +17,7 @@ internal class MongoSyncRelationship
         var mongoSyncRelationshipCollection = new LiteMongoSyncRelationshipCollection();
 
         var mongoSyncRelationship = mongoSyncRelationshipCollection
-                                    .FindByDatabase(AppSession.MongoDatabase!.Id.ToString()).FirstOrDefault();
+                                    .FindByDatabase(AppDbSession.MongoDatabase!.Id.ToString()).FirstOrDefault();
 
         if (mongoSyncRelationship == null)
         {
@@ -35,18 +36,18 @@ internal class MongoSyncRelationship
             mongoSyncRelationship = CreateSyncRelationship(mongoSyncRelationshipCollection);
         }
 
-        AppSession.RedisServer = redisServerCollection
+        AppDbSession.RedisServer = redisServerCollection
                                       .FindById(new BsonValue(new ObjectId(mongoSyncRelationship.RedisServerId)));
 
-        Console.WriteLine($"This Mongo database has a sync relationship with {AppSession.RedisServer.DecryptedServerName}:{AppSession.RedisServer.Port}");
+        Console.WriteLine($"This Mongo database has a sync relationship with {AppDbSession.RedisServer.DecryptedServerName}:{AppDbSession.RedisServer.Port}");
     }
 
     private static LiteMongoSyncRelationshipDocument CreateSyncRelationship(LiteMongoSyncRelationshipCollection mongoSyncRelationshipCollection)
     {
         LiteMongoSyncRelationshipDocument syncRelationship = new()
         {
-            MongoDatabaseId = AppSession.MongoDatabase!.Id.ToString(),
-            RedisServerId = AppSession.RedisServer!.Id.ToString()
+            MongoDatabaseId = AppDbSession.MongoDatabase!.Id.ToString(),
+            RedisServerId = AppDbSession.RedisServer!.Id.ToString()
         };
         mongoSyncRelationshipCollection.Add(syncRelationship);
 

@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using redflyDatabaseAdapters;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage.Entities;
 using System;
@@ -16,7 +17,7 @@ internal class PostgresSyncRelationship
         var postgresSyncRelationshipCollection = new LitePostgresSyncRelationshipCollection();
 
         var postgresSyncRelationship = postgresSyncRelationshipCollection
-                                    .FindByDatabase(AppSession.PostgresDatabase!.Id.ToString()).FirstOrDefault();
+                                    .FindByDatabase(AppDbSession.PostgresDatabase!.Id.ToString()).FirstOrDefault();
 
         if (postgresSyncRelationship == null)
         {
@@ -35,18 +36,18 @@ internal class PostgresSyncRelationship
             postgresSyncRelationship = CreateSyncRelationship(postgresSyncRelationshipCollection);
         }
 
-        AppSession.RedisServer = redisServerCollection
+        AppDbSession.RedisServer = redisServerCollection
                                       .FindById(new BsonValue(new ObjectId(postgresSyncRelationship.RedisServerId)));
 
-        Console.WriteLine($"This Postgres database has a sync relationship with {AppSession.RedisServer.DecryptedServerName}:{AppSession.RedisServer.Port}");
+        Console.WriteLine($"This Postgres database has a sync relationship with {AppDbSession.RedisServer.DecryptedServerName}:{AppDbSession.RedisServer.Port}");
     }
 
     private static LitePostgresSyncRelationshipDocument CreateSyncRelationship(LitePostgresSyncRelationshipCollection postgresSyncRelationshipCollection)
     {
         LitePostgresSyncRelationshipDocument syncRelationship = new()
         {
-            PostgresDatabaseId = AppSession.PostgresDatabase!.Id.ToString(),
-            RedisServerId = AppSession.RedisServer!.Id.ToString()
+            PostgresDatabaseId = AppDbSession.PostgresDatabase!.Id.ToString(),
+            RedisServerId = AppDbSession.RedisServer!.Id.ToString()
         };
         postgresSyncRelationshipCollection.Add(syncRelationship);
 

@@ -1,6 +1,7 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
 using RedflyCoreFramework;
+using redflyDatabaseSyncProxy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -75,7 +76,7 @@ internal class RedflyUserOrOrg
 
         if (getUserSetupDataResponse.Result != null)
         {
-            AppSession.ClientAndUserProfileViewModel = getUserSetupDataResponse.Result;
+            AppGrpcSession.ClientAndUserProfileViewModel = getUserSetupDataResponse.Result;
         }
 
         return true;

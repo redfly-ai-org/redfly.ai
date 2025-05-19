@@ -12,6 +12,8 @@ using Microsoft.Extensions.Logging;
 using RedflyDatabaseSyncProxy.Config;
 using RedflyDatabaseSyncProxy.Protos.Common;
 using RedflyDatabaseSyncProxy.GrpcClients;
+using redflyDatabaseSyncProxy;
+using redflyDatabaseAdapters;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
@@ -32,12 +34,12 @@ internal class ChakraSqlServerSyncServiceClient : ChakraDatabaseSyncServiceClien
                                                     ClientSessionId = _clientSessionId,
                                                     // If the key changed AFTER the database was saved locally with a previous key, decryption won't happen!
                                                     EncryptionKey = RedflyEncryptionKeys.AesKey,
-                                                    EncryptedClientId = RedflyEncryption.EncryptToString(AppSession.SyncProfile!.Database.ClientId),
-                                                    EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.ClientName),
-                                                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Id),
-                                                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.Name),
-                                                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppSession.SyncProfile.Database.HostName),
-                                                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppSession.SqlServerDatabase!.DecryptedUserName};Password={AppSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;")
+                                                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+                                                    EncryptedClientName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.ClientName),
+                                                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+                                                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+                                                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+                                                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;")
                                                 },
                                                 _grpcClient.GrpcHeaders);
     }

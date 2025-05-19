@@ -7,6 +7,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
+using redflyDatabaseAdapters;
+using redflyDatabaseSyncProxy;
 using RedflyDatabaseSyncProxy.GrpcClients;
 using RedflyDatabaseSyncProxy.Setup;
 using RedflyDatabaseSyncProxy.SyncProfiles;
@@ -233,9 +235,9 @@ internal class Program
                 if (SqlServerSyncProfile.Exists(getSyncProfilesResponse))
                 {
                     syncProfile = (from p in getSyncProfilesResponse.Profiles
-                                   where p.Database.HostName == AppSession.SqlServerDatabase!.DecryptedServerName &&
-                                         p.Database.Name == AppSession.SqlServerDatabase!.DecryptedDatabaseName &&
-                                         p.RedisServer.HostName == AppSession.RedisServer!.DecryptedServerName
+                                   where p.Database.HostName == AppDbSession.SqlServerDatabase!.DecryptedServerName &&
+                                         p.Database.Name == AppDbSession.SqlServerDatabase!.DecryptedDatabaseName &&
+                                         p.RedisServer.HostName == AppDbSession.RedisServer!.DecryptedServerName
                                    select p).FirstOrDefault();
                 }
 
@@ -251,12 +253,12 @@ internal class Program
                             EncryptionKey = RedflyEncryptionKeys.AesKey,
                             Database = new AddOrUpdateSyncedDatabaseViewModel()
                             {
-                                EncryptedHostName = AppSession.SqlServerDatabase!.EncryptedServerName,
-                                EncryptedName = AppSession.SqlServerDatabase!.EncryptedDatabaseName
+                                EncryptedHostName = AppDbSession.SqlServerDatabase!.EncryptedServerName,
+                                EncryptedName = AppDbSession.SqlServerDatabase!.EncryptedDatabaseName
                             },
                             RedisServer = new AddOrUpdateSyncedRedisServerViewModel()
                             {
-                                EncryptedHostName = AppSession.RedisServer!.EncryptedServerName,
+                                EncryptedHostName = AppDbSession.RedisServer!.EncryptedServerName,
                                 MaxAllowedConcurrentOperations = 256
                             },
                             SetupConfig = new AddOrUpdateSyncSetupConfigViewModel()
@@ -264,12 +266,12 @@ internal class Program
                                 CtAndSnapshotIsolationEnabled = true,
                                 CtAndSnapshotIsolationEnabledValidated = true,
                                 CtEnabledOnTables = true,
-                                RedisPort = AppSession.RedisServer!.Port,
+                                RedisPort = AppDbSession.RedisServer!.Port,
                                 TimestampColumnAdded = true,
                                 TimestampColumnAddedValidated = true,
-                                EncryptedClientDatabasePassword = AppSession.SqlServerDatabase!.EncryptedPassword,
-                                EncryptedClientDatabaseUserName = AppSession.SqlServerDatabase!.EncryptedUserName,
-                                EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
+                                EncryptedClientDatabasePassword = AppDbSession.SqlServerDatabase!.EncryptedPassword,
+                                EncryptedClientDatabaseUserName = AppDbSession.SqlServerDatabase!.EncryptedUserName,
+                                EncryptedRedisPassword = AppDbSession.RedisServer!.EncryptedPassword,
                             }
                         }
                     };
@@ -315,13 +317,13 @@ internal class Program
                     }
 
                     syncProfile = (from p in getSyncProfilesResponse.Profiles
-                                   where p.Database.HostName == AppSession.SqlServerDatabase!.DecryptedServerName &&
-                                         p.Database.Name == AppSession.SqlServerDatabase!.DecryptedDatabaseName &&
-                                         p.RedisServer.HostName == AppSession.RedisServer!.DecryptedServerName
+                                   where p.Database.HostName == AppDbSession.SqlServerDatabase!.DecryptedServerName &&
+                                         p.Database.Name == AppDbSession.SqlServerDatabase!.DecryptedDatabaseName &&
+                                         p.RedisServer.HostName == AppDbSession.RedisServer!.DecryptedServerName
                                    select p).FirstOrDefault();
                 }
 
-                AppSession.SyncProfile = syncProfile;
+                AppGrpcSession.SyncProfile = syncProfile;
                 Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
 
                 // Start Chakra Sync
@@ -390,7 +392,7 @@ internal class Program
 
     private static void DisplayWelcomeMessage()
     {
-        Console.WriteLine("This console app is intended to allow anyone to try out our Chakra Synchronization Service for Postgres & SQL Server on-demand.\r\n");
+        Console.WriteLine("This console app is intended to allow anyone to try out our Chakra Synchronization Service for Postgres, MongoDB & SQL Server on-demand.\r\n");
 
         Console.WriteLine("1. We natively sync ANY database schema with Redis in the background (For Postgres & SQL Server).");
         Console.WriteLine("2. We can generate the backend code for any database with Redis caching built-in (TBD for this project).");

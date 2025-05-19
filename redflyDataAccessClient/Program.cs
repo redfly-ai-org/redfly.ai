@@ -4,33 +4,109 @@ namespace redflyDataAccessClient;
 
 internal class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         Console.Title = "redfly.ai - Data Access Client";
 
-        var query = new QueryBuilder()
-                        .From("enc_hostname", "enc_dbname", "enc_uid", "enc_pwd", "enc_key")
-                        .Cached("enc_redis_host", 6380, "enc_redis_pwd",
-                            redisUsesSsl: true,
-                            redisSslProtocol: "TLS12",
-                            redisAbortConnect: false,
-                            redisConnectTimeout: 5000,
-                            redisSyncTimeout: 10000,
-                            redisAsyncTimeout: 15000
-                        )
-                        .Table("Orders")
-                        .Select("Id", "Total", "CustomerId")
-                        .Where("Status", "=", "Pending")
-                        .And("CreatedAt", ">", DateTime.UtcNow)
-                        .OrderByDesc("Total")
-                        .Join("INNER", "Customers", "Orders.CustomerId", "Customers.Id");
+        DisplayWelcomeMessage();
 
-        string json = JsonConvert.SerializeObject(query, Formatting.Indented);
-        Console.WriteLine("Generated Query JSON:");
-        Console.WriteLine(json);
+        Console.WriteLine("Press any key to start the process of making a data access call through redfly APIs...");
+        Console.ReadKey();
+        Console.WriteLine("");
 
-        // Next steps - TBD
+        var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
+
+        Console.WriteLine("Connect to the LOCAL WIN DEV environment? (y/n)");
+        Console.WriteLine("This option is only relevant to redfly employees.");
+        var response = Console.ReadLine();
+
+        if (response != null &&
+            response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+        {
+            grpcUrl = "https://localhost:7176";
+        }
+        else
+        {
+            Console.WriteLine("Connect to the LOCAL LINUX/ WSL DEV environment? (y/n)");
+            Console.WriteLine("This option is only relevant to redfly employees.");
+            response = Console.ReadLine();
+
+            if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                grpcUrl = "http://localhost:5053";
+            }
+            else
+            {
+                Console.WriteLine("Connect to a custom URL? (y/n)");
+                Console.WriteLine("This option is only relevant to redfly employees.");
+                response = Console.ReadLine();
+
+                if (response != null &&
+                    response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+                {
+                    Console.WriteLine("Please enter the URL:");
+                    response = Console.ReadLine();
+
+                    while (!Uri.TryCreate(response, UriKind.Absolute, out var uriResult) ||
+                           (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("The provided input is not a valid URL. Please enter a valid URL here:");
+                        Console.ResetColor();
+
+                        response = Console.ReadLine();
+                    }
+
+                    grpcUrl = response;
+                }
+            }
+        }
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"Will connect to: {grpcUrl}");
+        Console.ResetColor();
+
+        var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
+
+        if (grpcAuthToken == null ||
+            grpcAuthToken.Length == 0)
+        {
+            Console.WriteLine("Failed to authenticate with the gRPC server.");
+            Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
+            return;
+        }
 
         Console.ReadLine();
     }
+
+    private static void DisplayWelcomeMessage()
+    {
+        Console.WriteLine("This console app is intended to allow anyone to try out our transparent data access APIs for Postgres, MongoDB & SQL Server on-demand.\r\n");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("(1) Run this app AFTER running the redflyDatabaseSyncProxy and starting database sync.\r\n");
+
+        Console.WriteLine("(2) For the APIs to work, your Database should be accessible over the Internet and its firewall should allow traffic");
+        Console.WriteLine("    from these Azure IP addresses (US East Region). We plan to support non-public and local servers in a later");
+        Console.WriteLine("    release of this application.\r\n");
+
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("    20.237.7.43, 20.237.7.49, 20.237.7.128, 20.237.7.153, 20.237.7.201, 20.237.7.221, 40.71.11.140");
+        Console.WriteLine("    40.121.154.115, 13.82.228.43, 40.121.158.167, 40.117.44.182, 168.61.50.107, 40.121.80.139");
+        Console.WriteLine("    40.117.44.94, 23.96.53.166, 40.121.152.91, 20.237.7.43, 20.237.7.49, 20.237.7.128");
+        Console.WriteLine("    20.237.7.153, 20.237.7.201, 20.237.7.221, 20.246.144.9, 20.246.144.108, 20.246.144.117");
+        Console.WriteLine("    20.246.144.140, 20.246.144.145, 20.246.144.213, 40.71.11.140\r\n");
+
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("(3) This is a 24x7 setup with multiple servers & elastic servers to handle load.");
+        Console.WriteLine("    We typically update our Cloud Services only when necessary usually over the");
+        Console.WriteLine("    weekend, on holidays and on alternate Fridays.");
+        Console.WriteLine("    The best time to test a long running sync is at the start of the working week.");
+        Console.WriteLine("    Please ignore ANY Grpc errors.\r\n");
+        Console.ResetColor();
+
+        Console.WriteLine("This is a demo application designed to give you a taste of our capabilities. It is NOT intended for production use.\r\n");
+    }
+
 }

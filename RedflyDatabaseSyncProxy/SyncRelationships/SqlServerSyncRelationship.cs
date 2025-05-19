@@ -1,4 +1,5 @@
 ﻿using LiteDB;
+using redflyDatabaseAdapters;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage.Entities;
 using System;
@@ -16,7 +17,7 @@ internal class SqlServerSyncRelationship
         var sqlServerSyncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
 
         var sqlServerSyncRelationship = sqlServerSyncRelationshipCollection
-                                    .FindByDatabase(AppSession.SqlServerDatabase!.Id.ToString()).FirstOrDefault();
+                                    .FindByDatabase(AppDbSession.SqlServerDatabase!.Id.ToString()).FirstOrDefault();
 
         if (sqlServerSyncRelationship == null)
         {
@@ -35,18 +36,18 @@ internal class SqlServerSyncRelationship
             sqlServerSyncRelationship = CreateSyncRelationship(sqlServerSyncRelationshipCollection);
         }
 
-        AppSession.RedisServer = redisServerCollection
+        AppDbSession.RedisServer = redisServerCollection
                                       .FindById(new BsonValue(new ObjectId(sqlServerSyncRelationship.RedisServerId)));
 
-        Console.WriteLine($"This Sql Server database has a sync relationship with {AppSession.RedisServer.DecryptedServerName}:{AppSession.RedisServer.Port}");
+        Console.WriteLine($"This Sql Server database has a sync relationship with {AppDbSession.RedisServer.DecryptedServerName}:{AppDbSession.RedisServer.Port}");
     }
 
     private static LiteSqlServerSyncRelationshipDocument CreateSyncRelationship(LiteSqlServerSyncRelationshipCollection sqlServerSyncRelationshipCollection)
     {
         LiteSqlServerSyncRelationshipDocument syncRelationship = new()
         {
-            SqlServerDatabaseId = AppSession.SqlServerDatabase!.Id.ToString(),
-            RedisServerId = AppSession.RedisServer!.Id.ToString()
+            SqlServerDatabaseId = AppDbSession.SqlServerDatabase!.Id.ToString(),
+            RedisServerId = AppDbSession.RedisServer!.Id.ToString()
         };
         sqlServerSyncRelationshipCollection.Add(syncRelationship);
 

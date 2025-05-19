@@ -12,12 +12,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyDatabaseSyncProxy
+namespace redflyDatabaseAdapters
 {
-    internal class PostgresReady
+    public class PostgresReady
     {
 
-        internal static bool ForChakraSync()
+        public static bool ForChakraSync()
         {
             if (!PostgresDbPicker.SelectFromLocalStorage())
             {
@@ -29,8 +29,8 @@ namespace RedflyDatabaseSyncProxy
 
             string? response;
 
-            if (AppSession.PostgresDatabase != null &&
-                AppSession.PostgresDatabase.DatabasePrepped)
+            if (AppDbSession.PostgresDatabase != null &&
+                AppDbSession.PostgresDatabase.DatabasePrepped)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("This Postgres database has already been prepped for redfly.");
@@ -102,18 +102,18 @@ namespace RedflyDatabaseSyncProxy
             while (response == null ||
                    !response.Equals("y", StringComparison.CurrentCultureIgnoreCase));
 
-            if (AppSession.PostgresDatabase != null)
+            if (AppDbSession.PostgresDatabase != null)
             {
                 var collection = new LitePostgresDatabaseCollection();
 
-                var row = collection.Find(AppSession.PostgresDatabase.EncryptedServerName,
-                                          AppSession.PostgresDatabase.EncryptedDatabaseName,
-                                          AppSession.PostgresDatabase.EncryptedUserName);
+                var row = collection.Find(AppDbSession.PostgresDatabase.EncryptedServerName,
+                                          AppDbSession.PostgresDatabase.EncryptedDatabaseName,
+                                          AppDbSession.PostgresDatabase.EncryptedUserName);
 
                 row.DatabasePrepped = true;
                 collection.Update(row);
 
-                AppSession.PostgresDatabase = row;
+                AppDbSession.PostgresDatabase = row;
             }
 
             return true;

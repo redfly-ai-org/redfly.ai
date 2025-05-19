@@ -12,12 +12,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyDatabaseSyncProxy
+namespace redflyDatabaseAdapters
 {
-    internal class SqlServerReady
+    public class SqlServerReady
     {
 
-        internal static bool ForChakraSync()
+        public static bool ForChakraSync()
         {
             if (!SqlServerDbPicker.SelectFromLocalStorage())
             {
@@ -27,8 +27,8 @@ namespace RedflyDatabaseSyncProxy
                 }
             }
 
-            if (AppSession.SqlServerDatabase != null &&
-                AppSession.SqlServerDatabase.DatabasePrepped)
+            if (AppDbSession.SqlServerDatabase != null &&
+                AppDbSession.SqlServerDatabase.DatabasePrepped)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("This Sql Server database has already been prepped for redfly.");
@@ -72,18 +72,18 @@ namespace RedflyDatabaseSyncProxy
                 return false;
             }
 
-           if (AppSession.SqlServerDatabase != null)
+           if (AppDbSession.SqlServerDatabase != null)
            {
                 var collection = new LiteSqlServerDatabaseCollection();
 
-                var row = collection.Find(AppSession.SqlServerDatabase.EncryptedServerName, 
-                                          AppSession.SqlServerDatabase.EncryptedDatabaseName, 
-                                          AppSession.SqlServerDatabase.EncryptedUserName);
+                var row = collection.Find(AppDbSession.SqlServerDatabase.EncryptedServerName, 
+                                          AppDbSession.SqlServerDatabase.EncryptedDatabaseName, 
+                                          AppDbSession.SqlServerDatabase.EncryptedUserName);
 
                 row.DatabasePrepped = true;
                 collection.Update(row);
 
-                AppSession.SqlServerDatabase = row;
+                AppDbSession.SqlServerDatabase = row;
             }
             
             return true;
@@ -91,7 +91,7 @@ namespace RedflyDatabaseSyncProxy
 
         private static bool EnableDatabaseChangeTracking()
         {
-            var selectedDatabase = AppSession.SqlServerDatabase;
+            var selectedDatabase = AppDbSession.SqlServerDatabase;
 
             if (selectedDatabase == null)
             {
@@ -126,7 +126,7 @@ namespace RedflyDatabaseSyncProxy
 
         private static bool AllowDatabaseSnapshotIsolation()
         {
-            var selectedDatabase = AppSession.SqlServerDatabase;
+            var selectedDatabase = AppDbSession.SqlServerDatabase;
 
             if (selectedDatabase == null)
             {
@@ -164,7 +164,7 @@ namespace RedflyDatabaseSyncProxy
         /// </summary>
         private static bool AddVersionColumnAndEnableChangeTracking_ForAllSupportedTables()
         {
-            var selectedDatabase = AppSession.SqlServerDatabase;
+            var selectedDatabase = AppDbSession.SqlServerDatabase;
 
             if (selectedDatabase == null)
             {

@@ -14,6 +14,8 @@ using System.Threading;
 using RedflyDatabaseSyncProxy.Config;
 using RedflyDatabaseSyncProxy.Protos.Common;
 using RedflyDatabaseSyncProxy.GrpcClients;
+using redflyDatabaseAdapters;
+using redflyDatabaseSyncProxy;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
@@ -40,21 +42,21 @@ internal class ChakraMongoSyncServiceClient : ChakraDatabaseSyncServiceClientBas
                                                 {
                                                     ClientSessionId = _clientSessionId,
                                                     EncryptedClientId = RedflyEncryption.EncryptToString(Guid.Empty.ToString()),
-                                                    EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.ClientAndUserProfileViewModel!.ClientName),
+                                                    EncryptedClientName = RedflyEncryption.EncryptToString(AppGrpcSession.ClientAndUserProfileViewModel!.ClientName),
                                                     EncryptionKey = RedflyEncryptionKeys.AesKey,
-                                                    EncryptedMongoServerName = AppSession.MongoDatabase!.EncryptedServerName,
-                                                    EncryptedMongoDatabaseName = AppSession.MongoDatabase!.EncryptedDatabaseName,
-                                                    EncryptedMongoUserName = AppSession.MongoDatabase!.EncryptedUserName,
-                                                    EncryptedMongoPassword = AppSession.MongoDatabase!.EncryptedPassword,
-                                                    EncryptedRedisServerName = AppSession.RedisServer!.EncryptedServerName,
-                                                    RedisPortNo = AppSession.RedisServer!.Port,
-                                                    EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
-                                                    RedisUsesSsl = AppSession.RedisServer!.UsesSsl,
-                                                    RedisSslProtocol = AppSession.RedisServer!.SslProtocol,
-                                                    RedisAbortConnect = AppSession.RedisServer!.AbortConnect,
-                                                    RedisConnectTimeout = AppSession.RedisServer!.ConnectTimeout,
-                                                    RedisSyncTimeout = AppSession.RedisServer!.SyncTimeout,
-                                                    RedisAsyncTimeout = AppSession.RedisServer!.AsyncTimeout,
+                                                    EncryptedMongoServerName = AppDbSession.MongoDatabase!.EncryptedServerName,
+                                                    EncryptedMongoDatabaseName = AppDbSession.MongoDatabase!.EncryptedDatabaseName,
+                                                    EncryptedMongoUserName = AppDbSession.MongoDatabase!.EncryptedUserName,
+                                                    EncryptedMongoPassword = AppDbSession.MongoDatabase!.EncryptedPassword,
+                                                    EncryptedRedisServerName = AppDbSession.RedisServer!.EncryptedServerName,
+                                                    RedisPortNo = AppDbSession.RedisServer!.Port,
+                                                    EncryptedRedisPassword = AppDbSession.RedisServer!.EncryptedPassword,
+                                                    RedisUsesSsl = AppDbSession.RedisServer!.UsesSsl,
+                                                    RedisSslProtocol = AppDbSession.RedisServer!.SslProtocol,
+                                                    RedisAbortConnect = AppDbSession.RedisServer!.AbortConnect,
+                                                    RedisConnectTimeout = AppDbSession.RedisServer!.ConnectTimeout,
+                                                    RedisSyncTimeout = AppDbSession.RedisServer!.SyncTimeout,
+                                                    RedisAsyncTimeout = AppDbSession.RedisServer!.AsyncTimeout,
                                                     RunInitialSync = _runInitialSync,
                                                     EnableDataReconciliation = true
                                                 },

@@ -22,6 +22,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\RedflyCoreFramework\redflyCoreFramework.csproj" />
+	  <ProjectReference Include="..\redflyDatabaseAdapters\redflyDatabaseAdapters.csproj" />
 	  <ProjectReference Include="..\RedflyGrpcAuthServiceClient\redflyGrpcAuthServiceClient.csproj" />
 	  <ProjectReference Include="..\RedflyLocalStorage\redflyLocalStorage.csproj" />
 	</ItemGroup>
@@ -33,6 +34,10 @@
 		<Protobuf Include="protos\postgres-changemanagement.proto" GrpcServices="Client" />
 		<Protobuf Include="protos\user-setup.proto" GrpcServices="Client" />
 		<Protobuf Include="protos\sync-api-service.proto" GrpcServices="Client" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Databases\" />
 	</ItemGroup>
 
 </Project>

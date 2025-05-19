@@ -14,6 +14,8 @@ using System.Threading;
 using RedflyDatabaseSyncProxy.Config;
 using RedflyDatabaseSyncProxy.Protos.Common;
 using RedflyDatabaseSyncProxy.GrpcClients;
+using redflyDatabaseSyncProxy;
+using redflyDatabaseAdapters;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 
@@ -40,24 +42,24 @@ internal class ChakraPostgresSyncServiceClient : ChakraDatabaseSyncServiceClient
                                                 {
                                                     ClientSessionId = _clientSessionId,
                                                     EncryptedClientId = RedflyEncryption.EncryptToString(Guid.Empty.ToString()),
-                                                    EncryptedClientName = RedflyEncryption.EncryptToString(AppSession.ClientAndUserProfileViewModel!.ClientName),
+                                                    EncryptedClientName = RedflyEncryption.EncryptToString(AppGrpcSession.ClientAndUserProfileViewModel!.ClientName),
                                                     EncryptionKey = RedflyEncryptionKeys.AesKey,
-                                                    EncryptedPostgresServerName = AppSession.PostgresDatabase!.EncryptedServerName,
-                                                    EncryptedPostgresDatabaseName = AppSession.PostgresDatabase!.EncryptedDatabaseName,
-                                                    EncryptedPostgresUserName = AppSession.PostgresDatabase!.EncryptedUserName,
-                                                    EncryptedPostgresPassword = AppSession.PostgresDatabase!.EncryptedPassword,
-                                                    EncryptedPostgresTestDecodingSlotName = AppSession.PostgresDatabase!.EncryptedTestDecodingSlotName,
-                                                    EncryptedPostgresPgOutputSlotName = AppSession.PostgresDatabase!.EncryptedPgOutputSlotName,
-                                                    EncryptedPostgresPublicationName = AppSession.PostgresDatabase!.EncryptedPublicationName,
-                                                    EncryptedRedisServerName = AppSession.RedisServer!.EncryptedServerName,
-                                                    RedisPortNo = AppSession.RedisServer!.Port,
-                                                    EncryptedRedisPassword = AppSession.RedisServer!.EncryptedPassword,
-                                                    RedisUsesSsl = AppSession.RedisServer!.UsesSsl,
-                                                    RedisSslProtocol = AppSession.RedisServer!.SslProtocol,
-                                                    RedisAbortConnect = AppSession.RedisServer!.AbortConnect,
-                                                    RedisConnectTimeout = AppSession.RedisServer!.ConnectTimeout,
-                                                    RedisSyncTimeout = AppSession.RedisServer!.SyncTimeout,
-                                                    RedisAsyncTimeout = AppSession.RedisServer!.AsyncTimeout,
+                                                    EncryptedPostgresServerName = AppDbSession.PostgresDatabase!.EncryptedServerName,
+                                                    EncryptedPostgresDatabaseName = AppDbSession.PostgresDatabase!.EncryptedDatabaseName,
+                                                    EncryptedPostgresUserName = AppDbSession.PostgresDatabase!.EncryptedUserName,
+                                                    EncryptedPostgresPassword = AppDbSession.PostgresDatabase!.EncryptedPassword,
+                                                    EncryptedPostgresTestDecodingSlotName = AppDbSession.PostgresDatabase!.EncryptedTestDecodingSlotName,
+                                                    EncryptedPostgresPgOutputSlotName = AppDbSession.PostgresDatabase!.EncryptedPgOutputSlotName,
+                                                    EncryptedPostgresPublicationName = AppDbSession.PostgresDatabase!.EncryptedPublicationName,
+                                                    EncryptedRedisServerName = AppDbSession.RedisServer!.EncryptedServerName,
+                                                    RedisPortNo = AppDbSession.RedisServer!.Port,
+                                                    EncryptedRedisPassword = AppDbSession.RedisServer!.EncryptedPassword,
+                                                    RedisUsesSsl = AppDbSession.RedisServer!.UsesSsl,
+                                                    RedisSslProtocol = AppDbSession.RedisServer!.SslProtocol,
+                                                    RedisAbortConnect = AppDbSession.RedisServer!.AbortConnect,
+                                                    RedisConnectTimeout = AppDbSession.RedisServer!.ConnectTimeout,
+                                                    RedisSyncTimeout = AppDbSession.RedisServer!.SyncTimeout,
+                                                    RedisAsyncTimeout = AppDbSession.RedisServer!.AsyncTimeout,
                                                     RunInitialSync = _runInitialSync,
                                                     EnableDataReconciliation = true
                                                 }, 

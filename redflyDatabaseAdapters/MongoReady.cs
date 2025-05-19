@@ -12,12 +12,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyDatabaseSyncProxy
+namespace redflyDatabaseAdapters
 {
-    internal class MongoReady
+    public class MongoReady
     {
 
-        internal static bool ForChakraSync()
+        public static bool ForChakraSync()
         {
             if (!MongoDbPicker.SelectFromLocalStorage())
             {
@@ -29,8 +29,8 @@ namespace RedflyDatabaseSyncProxy
 
             string? response;
 
-            if (AppSession.MongoDatabase != null &&
-                AppSession.MongoDatabase.DatabasePrepped)
+            if (AppDbSession.MongoDatabase != null &&
+                AppDbSession.MongoDatabase.DatabasePrepped)
             {
                 Console.ForegroundColor = ConsoleColor.DarkGreen;
                 Console.WriteLine("This Mongo database has already been prepped for redfly.");
@@ -121,18 +121,18 @@ namespace RedflyDatabaseSyncProxy
             while (response == null ||
                    !response.Equals("y", StringComparison.CurrentCultureIgnoreCase));
 
-            if (AppSession.MongoDatabase != null)
+            if (AppDbSession.MongoDatabase != null)
             {
                 var collection = new LiteMongoDatabaseCollection();
 
-                var row = collection.Find(AppSession.MongoDatabase.EncryptedServerName,
-                                          AppSession.MongoDatabase.EncryptedDatabaseName,
-                                          AppSession.MongoDatabase.EncryptedUserName);
+                var row = collection.Find(AppDbSession.MongoDatabase.EncryptedServerName,
+                                          AppDbSession.MongoDatabase.EncryptedDatabaseName,
+                                          AppDbSession.MongoDatabase.EncryptedUserName);
 
                 row.DatabasePrepped = true;
                 collection.Update(row);
 
-                AppSession.MongoDatabase = row;
+                AppDbSession.MongoDatabase = row;
             }
 
             return true;

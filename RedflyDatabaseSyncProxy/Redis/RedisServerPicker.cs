@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using redflyDatabaseAdapters;
 
 namespace RedflyDatabaseSyncProxy
 {
@@ -45,9 +46,9 @@ namespace RedflyDatabaseSyncProxy
             // Verify that we can connect to the database
             while (!RedflyRedisServer.VerifyConnectivity(serverName, password, port));
 
-            AppSession.RedisServer = SaveDatabaseDetailsToLocalStorage(serverName, password, port);
+            AppDbSession.RedisServer = SaveDatabaseDetailsToLocalStorage(serverName, password, port);
 
-            return (AppSession.RedisServer != null);
+            return (AppDbSession.RedisServer != null);
         }
 
         internal static bool SelectFromLocalStorage()
@@ -92,7 +93,7 @@ namespace RedflyDatabaseSyncProxy
                        selectedIndex <= 0 ||
                        selectedIndex > all.Count());
 
-                AppSession.RedisServer = all.ElementAt(selectedIndex - 1);
+                AppDbSession.RedisServer = all.ElementAt(selectedIndex - 1);
                 return true;
             }
         }
