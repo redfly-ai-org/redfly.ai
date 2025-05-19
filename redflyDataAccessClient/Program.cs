@@ -5,6 +5,7 @@ using RedflyCoreFramework;
 using redflyDataAccessClient.Protos.SqlServer;
 using redflyDatabaseAdapters;
 using redflyDatabaseAdapters.Setup;
+using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
 
 namespace redflyDataAccessClient;
@@ -13,220 +14,235 @@ internal class Program
 {
     static async Task Main(string[] args)
     {
-        Console.Title = "redfly.ai - Data Access Client";
-
-        DisplayWelcomeMessage();
-
-        Console.WriteLine("Press any key to start the process of making a data access call through redfly APIs...");
-        Console.ReadKey();
-        Console.WriteLine("");
-
-        var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
-
-        Console.WriteLine("Connect to the LOCAL WIN DEV environment? (y/n)");
-        Console.WriteLine("This option is only relevant to redfly employees.");
-        var response = Console.ReadLine();
-
-        if (response != null &&
-            response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+        try
         {
-            grpcUrl = "https://localhost:7176";
-        }
-        else
-        {
-            Console.WriteLine("Connect to the LOCAL LINUX/ WSL DEV environment? (y/n)");
+            Console.Title = "redfly.ai - Data Access Client";
+
+            DisplayWelcomeMessage();
+
+            Console.WriteLine("Press any key to start the process of making a data access call through redfly APIs...");
+            Console.ReadKey();
+            Console.WriteLine("");
+
+            var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
+
+            Console.WriteLine("Connect to the LOCAL WIN DEV environment? (y/n)");
             Console.WriteLine("This option is only relevant to redfly employees.");
-            response = Console.ReadLine();
+            var response = Console.ReadLine();
 
             if (response != null &&
                 response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
             {
-                grpcUrl = "http://localhost:5053";
+                grpcUrl = "https://localhost:7176";
             }
             else
             {
-                Console.WriteLine("Connect to a custom URL? (y/n)");
+                Console.WriteLine("Connect to the LOCAL LINUX/ WSL DEV environment? (y/n)");
                 Console.WriteLine("This option is only relevant to redfly employees.");
                 response = Console.ReadLine();
 
                 if (response != null &&
                     response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    Console.WriteLine("Please enter the URL:");
+                    grpcUrl = "http://localhost:5053";
+                }
+                else
+                {
+                    Console.WriteLine("Connect to a custom URL? (y/n)");
+                    Console.WriteLine("This option is only relevant to redfly employees.");
                     response = Console.ReadLine();
 
-                    while (!Uri.TryCreate(response, UriKind.Absolute, out var uriResult) ||
-                           (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+                    if (response != null &&
+                        response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("The provided input is not a valid URL. Please enter a valid URL here:");
-                        Console.ResetColor();
-
+                        Console.WriteLine("Please enter the URL:");
                         response = Console.ReadLine();
+
+                        while (!Uri.TryCreate(response, UriKind.Absolute, out var uriResult) ||
+                               (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps))
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("The provided input is not a valid URL. Please enter a valid URL here:");
+                            Console.ResetColor();
+
+                            response = Console.ReadLine();
+                        }
+
+                        grpcUrl = response;
                     }
-
-                    grpcUrl = response;
                 }
             }
-        }
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"Will connect to: {grpcUrl}");
-        Console.ResetColor();
-
-        var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
-
-        if (grpcAuthToken == null ||
-            grpcAuthToken.Length == 0)
-        {
-            Console.WriteLine("Failed to authenticate with the gRPC server.");
-            Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
-            return;
-        }
-
-        bool isPostgresSync = false;
-        bool isMongoSync = false;
-        bool isSqlServerSync = false;
-
-        if (!isPostgresSync &&
-            !isMongoSync)
-        {
-            Console.WriteLine("Are you trying to read data from a Sql Server database? (y/n)");
-            response = Console.ReadLine();
-
-            if (response != null &&
-                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
-            {
-                isSqlServerSync = true;
-
-                if (!SqlServerReady.ForChakraSync(offerToPrepAgain: false))
-                {
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine("redfly SQL Server Data APIs cannot be used without syncing the Sql Server database.");
-                    Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
-                    Console.ResetColor();
-
-                    return;
-                }
-            }
-        }
-
-        var redisServerCollection = new LiteRedisServerCollection();
-
-        if (isSqlServerSync)
-        {
-            SqlServerSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
-        }
-        else
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("We only support SQL Server APIs at present.");
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine($"Will connect to: {grpcUrl}");
             Console.ResetColor();
 
-            return;
-        }
+            var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
 
-        //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-        var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
-        {
-            //LoggerFactory = loggerFactory,
-            HttpHandler = new SocketsHttpHandler
+            if (grpcAuthToken == null ||
+                grpcAuthToken.Length == 0)
             {
-                EnableMultipleHttp2Connections = true,
-                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
-                KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
-                KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
-            },
-            HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
-        });
+                Console.WriteLine("Failed to authenticate with the gRPC server.");
+                Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
+                return;
+            }
 
-        var headers = new Metadata
+            bool isPostgresSync = false;
+            bool isMongoSync = false;
+            bool isSqlServerSync = false;
+
+            if (!isPostgresSync &&
+                !isMongoSync)
+            {
+                Console.WriteLine("Are you trying to read data from a Sql Server database? (y/n)");
+                response = Console.ReadLine();
+
+                if (response != null &&
+                    response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    { "Authorization", $"Bearer {grpcAuthToken}" }
-                };
+                    isSqlServerSync = true;
 
+                    if (!SqlServerReady.ForChakraSync(offerToPrepAgain: false))
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("redfly SQL Server Data APIs cannot be used without syncing the Sql Server database.");
+                        Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
+                        Console.ResetColor();
 
-        if (!await RedflyUserOrOrg.Setup(channel, headers)) { return; }
-
-        if (isSqlServerSync)
-        {
-            GetSyncProfilesResponse? getSyncProfilesResponse = null;
-            var syncApiClient = new SyncApiService.SyncApiServiceClient(channel);
-
-            var cts = new CancellationTokenSource();
-            var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
-
-            try
-            {
-                getSyncProfilesResponse = await SqlServerSyncProfile.GetAllAsync(syncApiClient, channel, headers);
-            }
-            finally
-            {
-                cts.Cancel();
-                await progressTask;
+                        return;
+                    }
+                }
             }
 
-            SyncProfileViewModel? syncProfile = null;
+            var redisServerCollection = new LiteRedisServerCollection();
 
-            if (getSyncProfilesResponse != null &&
-                SqlServerSyncProfile.Exists(getSyncProfilesResponse))
+            if (isSqlServerSync)
             {
-                syncProfile = (from p in getSyncProfilesResponse.Profiles
-                               where p.Database.HostName == AppDbSession.SqlServerDatabase!.DecryptedServerName &&
-                                     p.Database.Name == AppDbSession.SqlServerDatabase!.DecryptedDatabaseName &&
-                                     p.RedisServer.HostName == AppDbSession.RedisServer!.DecryptedServerName
-                               select p).FirstOrDefault();
+                SqlServerSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
             }
-
-            if (syncProfile == null)
+            else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("No matching Sync Profiles found.");
-                Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
+                Console.WriteLine("We only support SQL Server APIs at present.");
                 Console.ResetColor();
 
                 return;
             }
 
-            AppGrpcSession.SyncProfile = syncProfile;
-            Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
-
-            // Make calls to the SQL Server APIs from here!.
-            Console.ForegroundColor = ConsoleColor.Cyan;
-            Console.WriteLine("The API calls can be made now!");
-            Console.ResetColor();
-
-            var tableName = "";
-
-            while (string.IsNullOrEmpty(tableName))
+            //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+            var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
             {
-                Console.WriteLine("Please enter the table name for the GetTotalRowCountRequest");
-                tableName = Console.ReadLine();
+                //LoggerFactory = loggerFactory,
+                HttpHandler = new SocketsHttpHandler
+                {
+                    EnableMultipleHttp2Connections = true,
+                    KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                    KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
+                    KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
+                },
+                HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
+            });
+
+            var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
+                };
+
+
+            if (!await RedflyUserOrOrg.Setup(channel, headers)) { return; }
+
+            if (isSqlServerSync)
+            {
+                GetSyncProfilesResponse? getSyncProfilesResponse = null;
+                var syncApiClient = new SyncApiService.SyncApiServiceClient(channel);
+
+                var cts = new CancellationTokenSource();
+                var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+                try
+                {
+                    getSyncProfilesResponse = await SqlServerSyncProfile.GetAllAsync(syncApiClient, channel, headers);
+                }
+                finally
+                {
+                    cts.Cancel();
+                    await progressTask;
+                }
+
+                SyncProfileViewModel? syncProfile = null;
+
+                if (getSyncProfilesResponse != null &&
+                    SqlServerSyncProfile.Exists(getSyncProfilesResponse))
+                {
+                    syncProfile = (from p in getSyncProfilesResponse.Profiles
+                                   where p.Database.HostName == AppDbSession.SqlServerDatabase!.DecryptedServerName &&
+                                         p.Database.Name == AppDbSession.SqlServerDatabase!.DecryptedDatabaseName &&
+                                         p.RedisServer.HostName == AppDbSession.RedisServer!.DecryptedServerName
+                                   select p).FirstOrDefault();
+                }
+
+                if (syncProfile == null)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("No matching Sync Profiles found.");
+                    Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
+                    Console.ResetColor();
+
+                    return;
+                }
+
+                AppGrpcSession.SyncProfile = syncProfile;
+                Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
+
+                // Make calls to the SQL Server APIs from here!.
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("The API calls can be made now!");
+                Console.ResetColor();
+
+                var tableName = "";
+
+                while (string.IsNullOrEmpty(tableName))
+                {
+                    Console.WriteLine("Please enter the table name for the GetTotalRowCountRequest");
+                    tableName = Console.ReadLine();
+                }
+
+                // Create the client
+                var sqlServerClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
+
+                // Prepare the request
+                var request = new GetTotalRowCountRequest
+                {
+                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+                    EncryptionKey = RedflyEncryptionKeys.AesKey
+                };
+
+                // Make the call
+                var apiResponse = await sqlServerClient.GetTotalRowCountAsync(request, headers);
+
+                // Use the result
+                Console.WriteLine($"Total row count: {apiResponse.Total}");
             }
-
-            // Create the client
-            var sqlServerClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
-
-            // Prepare the request
-            var request = new GetTotalRowCountRequest
-            {
-                EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-                EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-                EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-                EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-                EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-                EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-                EncryptionKey = RedflyEncryptionKeys.AesKey
-            };
-
-            // Make the call
-            var apiResponse = await sqlServerClient.GetTotalRowCountAsync(request, headers);
-
-            // Use the result
-            Console.WriteLine($"Total row count: {apiResponse.Total}");
         }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(ex.ToString());
+            Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
+            Console.ResetColor();
+        }
+        finally
+        {
+            Console.WriteLine("Press any key to exit...");
+            Console.ReadKey();
 
-        Console.ReadLine();
+            RedflyLocalDatabase.Dispose();
+        }
     }
 
     private static void DisplayWelcomeMessage()
