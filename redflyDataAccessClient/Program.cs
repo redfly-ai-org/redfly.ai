@@ -249,18 +249,6 @@ internal class Program
 
                 ShowResults(watch, getRowsResponse);
 
-                Console.WriteLine("Press ANY key to make the same call without caching:");
-                Console.ReadKey();
-                Console.WriteLine();
-
-                getRowsRequest = CreateGetRowsUncachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
-
-                watch.Restart();
-                getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
-                watch.Stop();
-
-                ShowResults(watch, getRowsResponse);
-
                 orderByColumnName = "";
                 while (string.IsNullOrEmpty(orderByColumnName))
                 {
@@ -271,18 +259,6 @@ internal class Program
                 Console.WriteLine();
 
                 getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
-
-                watch.Restart();
-                getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
-                watch.Stop();
-
-                ShowResults(watch, getRowsResponse);
-
-                Console.WriteLine("Press ANY key to make the same call without caching:");
-                Console.ReadKey();
-                Console.WriteLine();
-
-                getRowsRequest = CreateGetRowsUncachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
 
                 watch.Restart();
                 getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
@@ -327,26 +303,6 @@ internal class Program
         Console.WriteLine(JsonConvert.SerializeObject(getTotalRowCountResponse, Formatting.Indented));
         Console.ResetColor();
         Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
-    }
-
-    private static GetRowsRequest CreateGetRowsUncachedRequest(string tableSchemaName, string tableName, string orderByColumnName, string orderByColumnSort)
-    {
-        return new GetRowsRequest
-        {
-            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-            EncryptionKey = RedflyEncryptionKeys.AesKey,
-            OrderbyColumnName = orderByColumnName,
-            OrderbyColumnSort = orderByColumnSort,
-            PageNo = 1,
-            PageSize = 5,
-            UseCache = false
-        };
     }
 
     private static GetRowsRequest CreateGetRowsCachedRequest(string tableSchemaName, string tableName, string orderByColumnName, string orderByColumnSort)
