@@ -199,11 +199,19 @@ internal class Program
                 Console.WriteLine("The API calls can be made now!");
                 Console.ResetColor();
 
+                string? tableSchemaName = null;
                 var tableName = "";
+
+                while (tableSchemaName != null)
+                {
+                    Console.WriteLine("Please enter the table schema name");
+                    Console.WriteLine("This could be an empty string.");
+                    tableSchemaName = Console.ReadLine();
+                }
 
                 while (string.IsNullOrEmpty(tableName))
                 {
-                    Console.WriteLine("Please enter the table name for the GetTotalRowCountRequest");
+                    Console.WriteLine("Please enter the table name");
                     tableName = Console.ReadLine();
                 }
 
@@ -215,6 +223,7 @@ internal class Program
                 {
                     EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
                     EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
                     EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
                     EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
                     EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
