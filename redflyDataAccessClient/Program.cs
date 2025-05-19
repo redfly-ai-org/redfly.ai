@@ -1,5 +1,6 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using RedflyCoreFramework;
 using redflyDataAccessClient.Protos.SqlServer;
@@ -200,6 +201,8 @@ internal class Program
                 Console.WriteLine("The API calls can be made now!");
                 Console.ResetColor();
 
+                Console.WriteLine("First we will retrieve the row count for a table...");
+
                 string? tableSchemaName = null;
                 var tableName = "";
 
@@ -249,22 +252,7 @@ internal class Program
 
                 ShowResults(watch, getRowsResponse);
 
-                orderByColumnName = "";
-                while (string.IsNullOrEmpty(orderByColumnName))
-                {
-                    Console.WriteLine("Please enter ANOTHER column by which you want the records ordered:");
-                    orderByColumnName = Console.ReadLine();
-                }
-
-                Console.WriteLine();
-
-                getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
-
-                watch.Restart();
-                getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
-                watch.Stop();
-
-                ShowResults(watch, getRowsResponse);
+                Console.WriteLine("Next, we will retrieve a row by its primary key...");
 
                 var primaryKeyColumnName = "";
                 var primaryKeyColumnValue = "";
@@ -289,21 +277,54 @@ internal class Program
 
                 ShowResults(watch, getResponse);
 
-                primaryKeyColumnValue = "";
+                Console.WriteLine("Next, we will insert a record. First enter the row details to be inserted:");
 
-                while (string.IsNullOrEmpty(primaryKeyColumnValue))
+                var insertedData = new Dictionary<string, string>();
+                
+                while (true)
                 {
-                    Console.WriteLine("Please enter another primary key column value:");
-                    primaryKeyColumnValue = Console.ReadLine();
+                    Console.WriteLine("Enter column name (leave empty to finish):");
+                    var columnName = Console.ReadLine();
+
+                    if (string.IsNullOrWhiteSpace(columnName))
+                        break;
+
+                    Console.WriteLine($"Enter value for column '{columnName}':");
+                    var columnValue = Console.ReadLine() ?? string.Empty;
+
+                    insertedData[columnName] = columnValue;
                 }
 
-                getRequest = CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
+                Console.WriteLine("Collected columns and values for insertion:");
+                foreach (var kvp in insertedData)
+                {
+                    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+                }
+
+                var insertRequest = new InsertRequest
+                {
+                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+                    EncryptionKey = RedflyEncryptionKeys.AesKey
+                };
+
+                insertRequest.Row = new Row();
+
+                foreach (var kvp in insertedData)
+                {
+                    insertRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
+                }
 
                 watch.Restart();
-                getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
+                var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, headers);
                 watch.Stop();
 
-                ShowResults(watch, getResponse);
+                ShowResults(watch, insertResponse);
 
                 // TODO: All the other API calls
 
@@ -326,6 +347,14 @@ internal class Program
 
             RedflyLocalDatabase.Dispose();
         }
+    }
+
+    private static void ShowResults(Stopwatch watch, InsertResponse insertResponse)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(JsonConvert.SerializeObject(insertResponse, Formatting.Indented));
+        Console.ResetColor();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
     }
 
     private static void ShowResults(Stopwatch watch, GetResponse getResponse)

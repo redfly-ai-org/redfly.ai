@@ -98,8 +98,6 @@ message InsertRequest {
   string encryptedServerOnlyConnectionString = 7;
   string encryption_key = 8;
   Row row = 9;
-  repeated string primary_key_columns = 10; // List of PK column names for the table
-  bool modify_cache = 11;
 }
 
 message InsertResponse {
