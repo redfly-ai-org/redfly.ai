@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyDatabaseSyncProxy.SyncRelationships;
-internal class SqlServerSyncRelationship
+namespace redflyDatabaseAdapters;
+public class SqlServerSyncRelationship
 {
 
-    internal static void FindExistingRelationshipWithRedis(LiteRedisServerCollection redisServerCollection)
+    public static void FindExistingRelationshipWithRedis(LiteRedisServerCollection redisServerCollection)
     {
         var sqlServerSyncRelationshipCollection = new LiteSqlServerSyncRelationshipCollection();
 

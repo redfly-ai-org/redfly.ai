@@ -8,14 +8,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using redflyDatabaseAdapters;
 
-namespace RedflyDatabaseSyncProxy
+namespace redflyDatabaseAdapters
 {
-    internal class RedisServerPicker
+    public class RedisServerPicker
     {
 
-        internal static bool GetFromUser()
+        public static bool GetFromUser()
         {
             string serverName = "";
             string password = "";
@@ -51,7 +50,7 @@ namespace RedflyDatabaseSyncProxy
             return (AppDbSession.RedisServer != null);
         }
 
-        internal static bool SelectFromLocalStorage()
+        public static bool SelectFromLocalStorage()
         {
             var collection = new LiteRedisServerCollection();
             var all = collection.All();

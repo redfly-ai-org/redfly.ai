@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\redflyDatabaseAdapters\redflyDatabaseAdapters.csproj" />
     <ProjectReference Include="..\RedflyGrpcAuthServiceClient\redflyGrpcAuthServiceClient.csproj" />
   </ItemGroup>
 

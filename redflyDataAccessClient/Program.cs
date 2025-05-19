@@ -1,4 +1,6 @@
 ﻿using Newtonsoft.Json;
+using redflyDatabaseAdapters;
+using RedflyLocalStorage.Collections;
 
 namespace redflyDataAccessClient;
 
@@ -76,6 +78,42 @@ internal class Program
             Console.WriteLine("Contact us at developer@redfly.ai if you need to.");
             return;
         }
+
+        bool isPostgresSync = false;
+        bool isMongoSync = false;
+        bool isSqlServerSync = false;
+
+        if (!isPostgresSync &&
+            !isMongoSync)
+        {
+            Console.WriteLine("Are you trying to read data from a Sql Server database? (y/n)");
+            response = Console.ReadLine();
+
+            if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                isSqlServerSync = true;
+
+                if (!SqlServerReady.ForChakraSync())
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("redfly SQL Server Data APIs cannot be used without syncing the Sql Server database.");
+                    Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
+                    Console.ResetColor();
+
+                    return;
+                }
+            }
+        }
+
+        var redisServerCollection = new LiteRedisServerCollection();
+
+        if (isSqlServerSync)
+        {
+            SqlServerSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
+        }
+
+
 
         Console.ReadLine();
     }

@@ -12,7 +12,6 @@ using redflyDatabaseSyncProxy;
 using RedflyDatabaseSyncProxy.GrpcClients;
 using RedflyDatabaseSyncProxy.Setup;
 using RedflyDatabaseSyncProxy.SyncProfiles;
-using RedflyDatabaseSyncProxy.SyncRelationships;
 using RedflyDatabaseSyncProxy.SyncServices;
 using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;

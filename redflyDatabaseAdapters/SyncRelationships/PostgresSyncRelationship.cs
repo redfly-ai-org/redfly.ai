@@ -8,11 +8,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyDatabaseSyncProxy.SyncRelationships;
-internal class PostgresSyncRelationship
+namespace redflyDatabaseAdapters;
+public class PostgresSyncRelationship
 {
 
-    internal static void FindExistingRelationshipWithRedis(LiteRedisServerCollection redisServerCollection)
+    public static void FindExistingRelationshipWithRedis(LiteRedisServerCollection redisServerCollection)
     {
         var postgresSyncRelationshipCollection = new LitePostgresSyncRelationshipCollection();
 
