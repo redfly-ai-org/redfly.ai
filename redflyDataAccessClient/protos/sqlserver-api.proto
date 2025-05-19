@@ -78,7 +78,6 @@ message GetRowsRequest {
   int32 page_size = 10;
   string orderby_column_name = 11;
   string orderby_column_sort = 12; // "asc" or "desc"
-  bool use_cache = 13;
 }
 
 message GetRowsResponse {
@@ -120,7 +119,6 @@ message GetRequest {
   string encryptedServerOnlyConnectionString = 7;
   string encryption_key = 8;
   map<string, string> primary_key_values = 9; // key: PK column name, value: PK value
-  bool use_cache = 10;
 }
 
 message GetResponse {

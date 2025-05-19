@@ -320,8 +320,7 @@ internal class Program
             OrderbyColumnName = orderByColumnName,
             OrderbyColumnSort = orderByColumnSort,
             PageNo = 1,
-            PageSize = 5,
-            UseCache = true
+            PageSize = 5
         };
     }
 
