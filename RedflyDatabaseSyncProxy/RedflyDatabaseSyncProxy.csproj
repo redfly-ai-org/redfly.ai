@@ -32,8 +32,6 @@
 		<Protobuf Include="protos\mongo-changemanagement.proto" GrpcServices="Client" />
 		<Protobuf Include="protos\sqlserver-changemanagement.proto" GrpcServices="Client" />
 		<Protobuf Include="protos\postgres-changemanagement.proto" GrpcServices="Client" />
-		<Protobuf Include="protos\user-setup.proto" GrpcServices="Client" />
-		<Protobuf Include="protos\sync-api-service.proto" GrpcServices="Client" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,5 +1,9 @@
-﻿using Newtonsoft.Json;
+﻿using Grpc.Core;
+using Grpc.Net.Client;
+using Newtonsoft.Json;
+using RedflyCoreFramework;
 using redflyDatabaseAdapters;
+using redflyDatabaseAdapters.Setup;
 using RedflyLocalStorage.Collections;
 
 namespace redflyDataAccessClient;
@@ -112,8 +116,82 @@ internal class Program
         {
             SqlServerSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
         }
+        else
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("We only support SQL Server APIs at present.");
+            Console.ResetColor();
+
+            return;
+        }
+
+        //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
+        var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
+        {
+            //LoggerFactory = loggerFactory,
+            HttpHandler = new SocketsHttpHandler
+            {
+                EnableMultipleHttp2Connections = true,
+                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
+                KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
+                KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
+            },
+            HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
+        });
+
+        var headers = new Metadata
+                {
+                    { "Authorization", $"Bearer {grpcAuthToken}" }
+                };
 
 
+        if (!await RedflyUserOrOrg.Setup(channel, headers)) { return; }
+
+        if (isSqlServerSync)
+        {
+            GetSyncProfilesResponse? getSyncProfilesResponse = null;
+            var syncApiClient = new SyncApiService.SyncApiServiceClient(channel);
+
+            var cts = new CancellationTokenSource();
+            var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+            try
+            {
+                getSyncProfilesResponse = await SqlServerSyncProfile.GetAllAsync(syncApiClient, channel, headers);
+            }
+            finally
+            {
+                cts.Cancel();
+                await progressTask;
+            }
+
+            SyncProfileViewModel? syncProfile = null;
+
+            if (getSyncProfilesResponse != null &&
+                SqlServerSyncProfile.Exists(getSyncProfilesResponse))
+            {
+                syncProfile = (from p in getSyncProfilesResponse.Profiles
+                               where p.Database.HostName == AppDbSession.SqlServerDatabase!.DecryptedServerName &&
+                                     p.Database.Name == AppDbSession.SqlServerDatabase!.DecryptedDatabaseName &&
+                                     p.RedisServer.HostName == AppDbSession.RedisServer!.DecryptedServerName
+                               select p).FirstOrDefault();
+            }
+
+            if (syncProfile == null)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("No matching Sync Profiles found.");
+                Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
+                Console.ResetColor();
+
+                return;
+            }
+
+            AppGrpcSession.SyncProfile = syncProfile;
+            Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
+
+
+        }
 
         Console.ReadLine();
     }

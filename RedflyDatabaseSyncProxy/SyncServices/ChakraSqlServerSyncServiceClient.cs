@@ -12,7 +12,6 @@ using Microsoft.Extensions.Logging;
 using RedflyDatabaseSyncProxy.Config;
 using RedflyDatabaseSyncProxy.Protos.Common;
 using RedflyDatabaseSyncProxy.GrpcClients;
-using redflyDatabaseSyncProxy;
 using redflyDatabaseAdapters;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;

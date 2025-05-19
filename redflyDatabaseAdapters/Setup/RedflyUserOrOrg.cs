@@ -1,19 +1,19 @@
 ﻿using Grpc.Core;
 using Grpc.Net.Client;
 using RedflyCoreFramework;
-using redflyDatabaseSyncProxy;
+using redflyDatabaseAdapters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace RedflyDatabaseSyncProxy.Setup;
+namespace redflyDatabaseAdapters.Setup;
 
-internal class RedflyUserOrOrg
+public class RedflyUserOrOrg
 {
 
-    internal static async Task<bool> Setup(GrpcChannel channel, Metadata headers)
+    public static async Task<bool> Setup(GrpcChannel channel, Metadata headers)
     {
         CancellationTokenSource cts;
         Task progressTask;

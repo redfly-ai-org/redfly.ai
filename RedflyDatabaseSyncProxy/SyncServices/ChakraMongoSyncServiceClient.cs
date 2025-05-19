@@ -15,7 +15,6 @@ using RedflyDatabaseSyncProxy.Config;
 using RedflyDatabaseSyncProxy.Protos.Common;
 using RedflyDatabaseSyncProxy.GrpcClients;
 using redflyDatabaseAdapters;
-using redflyDatabaseSyncProxy;
 
 namespace RedflyDatabaseSyncProxy.SyncServices;
 

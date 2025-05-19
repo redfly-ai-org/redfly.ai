@@ -8,10 +8,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
 using redflyDatabaseAdapters;
-using redflyDatabaseSyncProxy;
+using redflyDatabaseAdapters.Setup;
 using RedflyDatabaseSyncProxy.GrpcClients;
-using RedflyDatabaseSyncProxy.Setup;
-using RedflyDatabaseSyncProxy.SyncProfiles;
 using RedflyDatabaseSyncProxy.SyncServices;
 using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
@@ -221,7 +219,7 @@ internal class Program
 
                 try
                 {
-                    getSyncProfilesResponse = await GetSyncProfilesAsync(syncApiClient, channel, headers);
+                    getSyncProfilesResponse = await SqlServerSyncProfile.GetAllAsync(syncApiClient, channel, headers);
                 }
                 finally
                 {
@@ -231,7 +229,8 @@ internal class Program
 
                 SyncProfileViewModel? syncProfile = null;
 
-                if (SqlServerSyncProfile.Exists(getSyncProfilesResponse))
+                if (getSyncProfilesResponse != null &&
+                    SqlServerSyncProfile.Exists(getSyncProfilesResponse))
                 {
                     syncProfile = (from p in getSyncProfilesResponse.Profiles
                                    where p.Database.HostName == AppDbSession.SqlServerDatabase!.DecryptedServerName &&
@@ -429,37 +428,4 @@ internal class Program
         Console.WriteLine("This is a demo application designed to give you a taste of our capabilities. It is NOT intended for production use.\r\n");
     }
 
-    private static async Task<GetSyncProfilesResponse?> GetSyncProfilesAsync(
-        SyncApiService.SyncApiServiceClient syncApiClient,
-        GrpcChannel channel, 
-        Metadata headers, 
-        int retryCount = 0)
-    {
-        try
-        {
-            return await syncApiClient.GetSyncProfilesAsync(new GetSyncProfilesRequest() { PageNo = 1, PageSize = 10 }, headers);
-        }
-        catch (Exception ex)
-        {
-            //Console.ForegroundColor = ConsoleColor.Red;
-            //Console.WriteLine(ex.Message);
-            //Console.ResetColor();
-            //Console.WriteLine();
-
-            if (retryCount < 5)
-            {
-                Console.WriteLine($"Retrying to get sync profiles {retryCount + 1}...");
-
-                await Task.Delay(1000 * retryCount);
-
-                return await GetSyncProfilesAsync(syncApiClient, channel, headers, retryCount + 1);
-            }
-
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine($"Error reading sync profiles from the server.");
-            Console.ResetColor();
-
-            throw;
-        }
-    }
 }
