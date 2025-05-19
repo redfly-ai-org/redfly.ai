@@ -17,7 +17,7 @@ namespace redflyDatabaseAdapters
     public class SqlServerReady
     {
 
-        public static bool ForChakraSync()
+        public static bool ForChakraSync(bool offerToPrepAgain = true)
         {
             if (!SqlServerDbPicker.SelectFromLocalStorage())
             {
@@ -28,7 +28,8 @@ namespace redflyDatabaseAdapters
             }
 
             if (AppDbSession.SqlServerDatabase != null &&
-                AppDbSession.SqlServerDatabase.DatabasePrepped)
+                AppDbSession.SqlServerDatabase.DatabasePrepped &&
+                offerToPrepAgain == true)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine("This Sql Server database has already been prepped for redfly.");

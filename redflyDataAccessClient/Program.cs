@@ -2,6 +2,7 @@
 using Grpc.Net.Client;
 using Newtonsoft.Json;
 using RedflyCoreFramework;
+using redflyDataAccessClient.Protos.SqlServer;
 using redflyDatabaseAdapters;
 using redflyDatabaseAdapters.Setup;
 using RedflyLocalStorage.Collections;
@@ -98,7 +99,7 @@ internal class Program
             {
                 isSqlServerSync = true;
 
-                if (!SqlServerReady.ForChakraSync())
+                if (!SqlServerReady.ForChakraSync(offerToPrepAgain: false))
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine("redfly SQL Server Data APIs cannot be used without syncing the Sql Server database.");
@@ -190,7 +191,39 @@ internal class Program
             AppGrpcSession.SyncProfile = syncProfile;
             Console.WriteLine("The Sync Profile was successfully retrieved from the server.");
 
+            // Make calls to the SQL Server APIs from here!.
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine("The API calls can be made now!");
+            Console.ResetColor();
 
+            var tableName = "";
+
+            while (string.IsNullOrEmpty(tableName))
+            {
+                Console.WriteLine("Please enter the table name for the GetTotalRowCountRequest");
+                tableName = Console.ReadLine();
+            }
+
+            // Create the client
+            var sqlServerClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
+
+            // Prepare the request
+            var request = new GetTotalRowCountRequest
+            {
+                EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+                EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+                EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+                EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+                EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+                EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+                EncryptionKey = RedflyEncryptionKeys.AesKey
+            };
+
+            // Make the call
+            var apiResponse = await sqlServerClient.GetTotalRowCountAsync(request, headers);
+
+            // Use the result
+            Console.WriteLine($"Total row count: {apiResponse.Total}");
         }
 
         Console.ReadLine();

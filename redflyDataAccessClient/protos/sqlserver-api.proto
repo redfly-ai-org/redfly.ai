@@ -39,6 +39,7 @@ message GetTotalRowCountRequest {
 
 message GetTotalRowCountResponse {
   int64 total = 1;
+  bool fromCache = 2;
 }
 
 // Request for Delete.
