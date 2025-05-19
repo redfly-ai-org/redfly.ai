@@ -16,16 +16,26 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 
 Provide source code that:
 
-1. **RedflyPerformanceTest** Project: Lets you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
+1. **redflyPerformanceTest** Project: Lets you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
 
-2. **RedflyDatabaseSyncProxy** Project: Provides a way for anybody to test our Redis synchronization service on demand
+2. **redflyDatabaseSyncProxy** Project: Provides a way for anybody to test our Redis synchronization service on demand
    - Get the database ready for synchronization by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - **SQL Server** Support (Available since day 1 ✔️)
       - **Postgres** Support (Done ✔️)
       - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our core Infrastructure TBD ⏳) 
       
-3. **RedflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (Concept/ Design - WIP🏃🏽‍♀️‍➡️, Implementation TBD ⌚).
+3. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (WIP🏃🏽‍♀️‍➡️).
+   - Generic API implementation (this is what the generated code will call under the scenes) (WIP🏃🏽‍♀️‍➡️)
+     - GetTotalRowCount (Done ✔️)
+     - Delete (Server Done ✔️, Client TBD ⌚)
+     - GetRows (Done ✔️)
+     - Insert (TBD ⌚)
+     - Get (TBD ⌚)
+     - Update (TBD ⌚)
+   - Grpc Client Code Generation (TBD ⌚)
+     - Template (TBD ⌚)
+     - Code Generation (TBD ⌚)
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time. 
 
