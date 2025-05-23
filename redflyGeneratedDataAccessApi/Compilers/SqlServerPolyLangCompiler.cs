@@ -30,7 +30,7 @@ public class SqlServerPolyLangCompiler
 
             Console.WriteLine($"Generating code for {table.Schema}.{table.Name}...");
             var code = GenerateCodeForTable(table, columns);
-            var fileName = Path.Combine(outputFolder, $"{table.Schema}{table.Name}DataSource.cs");
+            var fileName = Path.Combine(outputFolder, $"{RemoveSpaces(table.Schema)}{RemoveSpaces(table.Name)}DataSource.cs");
             
             File.WriteAllText(fileName, code);
         }
@@ -58,7 +58,13 @@ public class SqlServerPolyLangCompiler
         {
             "sys", "db_owner", "db_accessadmin", "db_securityadmin", "db_ddladmin", "db_backupoperator", "db_datareader", "db_datawriter", "db_denydatareader", "db_denydatawriter"
         };
+        var systemTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "MSchange_tracking_history"
+        };
         if (systemSchemas.Contains(schema))
+            return true;
+        if (systemTables.Contains(tableName))
             return true;
         if (tableName.StartsWith("sys", StringComparison.OrdinalIgnoreCase) ||
             tableName.StartsWith("msdb", StringComparison.OrdinalIgnoreCase) ||
@@ -90,10 +96,15 @@ public class SqlServerPolyLangCompiler
         return columns;
     }
 
+    private string RemoveSpaces(string input)
+    {
+        return input.Replace(" ", "");
+    }
+
     private string GenerateCodeForTable((string Schema, string Name) table, List<(string Name, string Type, bool IsNullable)> columns)
     {
         var sb = new StringBuilder();
-        var entityName = $"{table.Schema}{table.Name}";
+        var entityName = $"{RemoveSpaces(table.Schema)}{RemoveSpaces(table.Name)}";
         var dataSourceName = $"{entityName}DataSource";
         // Usings
         sb.AppendLine("using redflyDatabaseAdapters;");
@@ -107,7 +118,7 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine("{");
         foreach (var col in columns)
         {
-            sb.AppendLine($"    public {MapSqlTypeToCSharp(col.Type, col.IsNullable)} {col.Name} {{ get; set; }}");
+            sb.AppendLine($"    public {MapSqlTypeToCSharp(col.Type, col.IsNullable)} {RemoveSpaces(col.Name)} {{ get; set; }}");
         }
         sb.AppendLine("}");
         sb.AppendLine();
@@ -143,7 +154,7 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine("        {");
         foreach (var col in columns)
         {
-            sb.AppendLine($"            {col.Name} = /* parse from dict[\"{col.Name}\"] as {MapSqlTypeToCSharp(col.Type, col.IsNullable)} */ default,");
+            sb.AppendLine($"            {RemoveSpaces(col.Name)} = /* parse from dict[\"{col.Name}\"] as {MapSqlTypeToCSharp(col.Type, col.IsNullable)} */ default,");
         }
         sb.AppendLine("        };");
         sb.AppendLine("    }");
@@ -151,10 +162,25 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine($"    protected override Row MapTableEntityToRow({entityName} entity, DbOperationType dbOperationType)");
         sb.AppendLine("    {");
         sb.AppendLine("        var row = new Row();");
-        sb.AppendLine("        // TODO: Add logic to handle primary key and special columns as in the template");
         foreach (var col in columns)
         {
-            sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{col.Name}.ToString() }} }});");
+            var colName = RemoveSpaces(col.Name);
+            if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase))
+            {
+                // Do not set Version column
+                continue;
+            }
+            if (col.Type.ToLower().Contains("date"))
+            {
+                sb.AppendLine($"        if (entity.{colName} != DateTime.MinValue)");
+                sb.AppendLine("        {");
+                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{colName}.ToString(\"yyyy-MM-dd HH:mm:ss.fff\") }} }});");
+                sb.AppendLine("        }");
+            }
+            else
+            {
+                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{colName}?.ToString() }} }});");
+            }
         }
         sb.AppendLine("        return row;");
         sb.AppendLine("    }");
