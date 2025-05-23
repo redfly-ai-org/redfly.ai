@@ -280,7 +280,7 @@ internal class Program
                 Console.WriteLine("Next, we will insert a record. First enter the row details to be inserted:");
 
                 var insertedData = new Dictionary<string, string>();
-                
+
                 while (true)
                 {
                     Console.WriteLine("Enter column name (leave empty to finish):");
@@ -301,24 +301,7 @@ internal class Program
                     Console.WriteLine($"{kvp.Key}: {kvp.Value}");
                 }
 
-                var insertRequest = new InsertRequest
-                {
-                    EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-                    EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-                    EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-                    EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-                    EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-                    EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-                    EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-                    EncryptionKey = RedflyEncryptionKeys.AesKey
-                };
-
-                insertRequest.Row = new Row();
-
-                foreach (var kvp in insertedData)
-                {
-                    insertRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
-                }
+                var insertRequest = CreateInsertRequest(tableSchemaName, tableName, insertedData);
 
                 watch.Restart();
                 var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, headers);
@@ -347,6 +330,31 @@ internal class Program
 
             RedflyLocalDatabase.Dispose();
         }
+    }
+
+    private static InsertRequest CreateInsertRequest(string tableSchemaName, string tableName, Dictionary<string, string> insertedData)
+    {
+        var insertRequest = new InsertRequest
+        {
+            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+            EncryptionKey = RedflyEncryptionKeys.AesKey,
+            ModifyCache = true
+        };
+
+        insertRequest.Row = new Row();
+
+        foreach (var kvp in insertedData)
+        {
+            insertRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
+        }
+
+        return insertRequest;
     }
 
     private static void ShowResults(Stopwatch watch, InsertResponse insertResponse)

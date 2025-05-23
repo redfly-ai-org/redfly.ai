@@ -92,7 +92,7 @@ namespace redflyDatabaseAdapters
                     var index = 1;
                     foreach (var item in all)
                     {
-                        Console.WriteLine($"({index}) {RedflyEncryption.Decrypt(item.EncryptedServerName)} -> {RedflyEncryption.Decrypt(item.EncryptedDatabaseName)}, @{RedflyEncryption.Decrypt(item.EncryptedUserName)}");
+                        Console.WriteLine($"({index}) Host:  {RedflyEncryption.Decrypt(item.EncryptedServerName)}, Database:  {RedflyEncryption.Decrypt(item.EncryptedDatabaseName)}, User Name: @{RedflyEncryption.Decrypt(item.EncryptedUserName)}");
                         index++;
                     }
 
