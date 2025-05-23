@@ -202,8 +202,20 @@ internal class Program
                 Console.WriteLine("The API calls can be made now!");
                 Console.ResetColor();
                 Console.WriteLine();
-                
-                await ShowClientApiUsage();
+
+                Console.WriteLine("Are you using the AdventureWorks database for testing? (y/n)");
+                response = Console.ReadLine();
+
+                if (response != null && 
+                    response.ToLower() == "y") 
+                {
+                    await ShowClientApiUsage();
+                }
+                else
+                {
+                    Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
+                }
+
                 await TestGrpcAPIsDirectly(channel);
             }
 
