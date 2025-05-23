@@ -16,11 +16,22 @@ public class SqlServerPolyLangCompiler
     public void GenerateForDatabase(string connectionString, string outputFolder)
     {
         var tables = GetTables(connectionString);
+
         foreach (var table in tables)
         {
+            // Skip system tables (names starting with sys or msdb, or schema is sys, db_owner, db_accessadmin, etc.)
+            if (IsSystemTable(table.Schema, table.Name))
+            {
+                Console.WriteLine($"Skipping System table: {table.Schema}.{table.Name}...");
+                continue;
+            }
+
             var columns = GetColumns(connectionString, table.Schema, table.Name);
+
+            Console.WriteLine($"Generating code for {table.Schema}.{table.Name}...");
             var code = GenerateCodeForTable(table, columns);
             var fileName = Path.Combine(outputFolder, $"{table.Schema}{table.Name}DataSource.cs");
+            
             File.WriteAllText(fileName, code);
         }
     }
@@ -38,6 +49,28 @@ public class SqlServerPolyLangCompiler
             tables.Add((reader.GetString(0), reader.GetString(1)));
         }
         return tables;
+    }
+
+    private bool IsSystemTable(string schema, string tableName)
+    {
+        // Common system schemas and table name patterns
+        var systemSchemas = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "sys", "db_owner", "db_accessadmin", "db_securityadmin", "db_ddladmin", "db_backupoperator", "db_datareader", "db_datawriter", "db_denydatareader", "db_denydatawriter"
+        };
+        if (systemSchemas.Contains(schema))
+            return true;
+        if (tableName.StartsWith("sys", StringComparison.OrdinalIgnoreCase) ||
+            tableName.StartsWith("msdb", StringComparison.OrdinalIgnoreCase) ||
+            tableName.StartsWith("dbosys", StringComparison.OrdinalIgnoreCase) ||
+            tableName.StartsWith("MSreplication", StringComparison.OrdinalIgnoreCase) ||
+            tableName.StartsWith("queue_", StringComparison.OrdinalIgnoreCase) ||
+            tableName.StartsWith("filestream_", StringComparison.OrdinalIgnoreCase) ||
+            tableName.StartsWith("cdc_", StringComparison.OrdinalIgnoreCase) ||
+            tableName.StartsWith("sysdac_", StringComparison.OrdinalIgnoreCase) ||
+            tableName.Contains("sysdac", StringComparison.OrdinalIgnoreCase))
+            return true;
+        return false;
     }
 
     private List<(string Name, string Type, bool IsNullable)> GetColumns(string connectionString, string schema, string table)

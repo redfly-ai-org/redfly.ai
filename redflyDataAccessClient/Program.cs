@@ -213,8 +213,8 @@ internal class Program
                 {
                     (new SqlServerPolyLangCompiler())
                         .GenerateForDatabase(
-                            $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;",
-                            "C:\\Code\\redfly-oss\\redflyDataAccessClient\\APIs\\SqlServer\\");
+                            $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;Initial Catalog={AppDbSession.SqlServerDatabase!.DecryptedDatabaseName};",
+                            "C:\\Code\\redfly-oss\\redflyGeneratedDataAccessApi\\SqlServer\\");
                 }
 
                 Console.WriteLine("Are you using the AdventureWorks database for testing? (y/n)");
