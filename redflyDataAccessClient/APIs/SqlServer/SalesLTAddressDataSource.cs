@@ -30,48 +30,28 @@ namespace redflyDataAccessClient.APIs.SqlServer
         public byte[] Version { get; set; } = Array.Empty<byte>();
     }
 
-    // Response wrappers
-    public class TotalRowCount
-    {
-        public long Total { get; set; }
-        public bool FromCache { get; set; }
-        public string? Message { get; set; }
-    }
-    public class DeletedData
-    {
-        public bool Success { get; set; }
-        public bool CacheUpdated { get; set; }
-        public string? Message { get; set; }
-    }
-    public class RowsData
+    public class SalesLTAddressRowsData
     {
         public bool Success { get; set; }
         public List<SalesLTAddress> Rows { get; set; } = new();
         public bool FromCache { get; set; }
         public string? Message { get; set; }
     }
-    public class InsertedData
+    public class SalesLTAddressInsertedData
     {
         public bool Success { get; set; }
         public SalesLTAddress? InsertedRow { get; set; }
         public bool CacheUpdated { get; set; }
         public string? Message { get; set; }
     }
-    public class RowData
+    public class SalesLTAddressRowData
     {
         public bool Success { get; set; }
         public SalesLTAddress? Row { get; set; }
         public bool FromCache { get; set; }
         public string? Message { get; set; }
     }
-    public class UpdatedData
-    {
-        public bool Success { get; set; }
-        public int UpdatedCount { get; set; }
-        public bool CacheUpdated { get; set; }
-        public string? Message { get; set; }
-    }
-
+    
     public class SalesLTAddressDataSource
     {
         private readonly NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient _client;
@@ -153,7 +133,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
             };
         }
 
-        public async Task<RowsData> GetRowsAsync(int pageNo = 1, int pageSize = 50, bool useCache = true)
+        public async Task<SalesLTAddressRowsData> GetRowsAsync(int pageNo = 1, int pageSize = 50, bool useCache = true)
         {
             var req = new GetRowsRequest
             {
@@ -176,7 +156,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
             {
                 rows.Add(MapRowToAddress(row));
             }
-            return new RowsData
+            return new SalesLTAddressRowsData
             {
                 Success = resp.Success,
                 Rows = rows,
@@ -185,7 +165,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
             };
         }
 
-        public async Task<InsertedData> InsertAsync(SalesLTAddress address, bool modifyCache = true)
+        public async Task<SalesLTAddressInsertedData> InsertAsync(SalesLTAddress address, bool modifyCache = true)
         {
             var req = new InsertRequest
             {
@@ -201,7 +181,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
                 Row = MapAddressToRow(address, DbOperationType.Insert)
             };
             var resp = await _client.InsertAsync(req, AppGrpcSession.Headers!);
-            return new InsertedData
+            return new SalesLTAddressInsertedData
             {
                 Success = resp.Success,
                 InsertedRow = resp.InsertedRow != null ? MapRowToAddress(resp.InsertedRow) : null,
@@ -210,7 +190,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
             };
         }
 
-        public async Task<RowData> GetAsync(int addressId, bool useCache = true)
+        public async Task<SalesLTAddressRowData> GetAsync(int addressId, bool useCache = true)
         {
             var req = new GetRequest
             {
@@ -225,7 +205,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
             };
             req.PrimaryKeyValues.Add("AddressID", addressId.ToString());
             var resp = await _client.GetAsync(req, AppGrpcSession.Headers!);
-            return new RowData
+            return new SalesLTAddressRowData
             {
                 Success = resp.Success,
                 Row = resp.Row != null ? MapRowToAddress(resp.Row) : null,

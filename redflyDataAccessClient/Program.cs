@@ -295,7 +295,7 @@ internal class Program
         Console.WriteLine("Nothing else to demo.");
     }
 
-    private static async Task ShowDeleteApiUsage(SalesLTAddressDataSource addressClient, InsertedData inserted)
+    private static async Task ShowDeleteApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddressInsertedData inserted)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine($"// Delete the record");
@@ -329,7 +329,7 @@ internal class Program
         }
     }
 
-    private static async Task ShowUpdateApiUsage(SalesLTAddressDataSource addressClient, InsertedData inserted)
+    private static async Task ShowUpdateApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddressInsertedData inserted)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine($"// Update the city from '{inserted.InsertedRow.City}' to 'Redmond'");
@@ -367,7 +367,7 @@ internal class Program
         }
     }
 
-    private static async Task<InsertedData?> ShowInsertApiUsage(SalesLTAddressDataSource addressClient)
+    private static async Task<SalesLTAddressInsertedData?> ShowInsertApiUsage(SalesLTAddressDataSource addressClient)
     {
         var newAddress = new SalesLTAddress
         {
@@ -401,7 +401,7 @@ internal class Program
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
         var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
-        InsertedData? inserted = null;
+        SalesLTAddressInsertedData? inserted = null;
 
         try
         {
@@ -427,14 +427,14 @@ internal class Program
         return inserted;
     }
 
-    private static async Task<RowData?> ShowGetApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddress salesLTAddress)
+    private static async Task<SalesLTAddressRowData?> ShowGetApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddress salesLTAddress)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get a row by its primary key");
         Console.WriteLine("var rowData = await addressClient.GetAsync(salesLTAddress.AddressID);");
         Console.ResetColor();
 
-        RowData? rowData = null;
+        SalesLTAddressRowData? rowData = null;
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
         var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
@@ -463,14 +463,14 @@ internal class Program
         return rowData;
     }
 
-    private static async Task<RowsData?> ShowGetRowsApiUsage(SalesLTAddressDataSource addressClient)
+    private static async Task<SalesLTAddressRowsData?> ShowGetRowsApiUsage(SalesLTAddressDataSource addressClient)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get rows with support for pagination");
         Console.WriteLine("var rowsData = await addressClient.GetRowsAsync(pageNo: 1, pageSize: 5);");
         Console.ResetColor();
 
-        RowsData? rowsData = null;
+        SalesLTAddressRowsData? rowsData = null;
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
         var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
