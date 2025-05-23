@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace redflyDataAccessClient.APIs;
 
-internal enum DbOperationType
+public enum DbOperationType
 {
     Unspecified = 0,
     Select = 1,
