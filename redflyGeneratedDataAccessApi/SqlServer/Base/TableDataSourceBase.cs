@@ -1,6 +1,6 @@
 ﻿using Grpc.Net.Client;
 using RedflyCoreFramework;
-using redflyDataAccessClient.Protos.SqlServer;
+using redflyGeneratedDataAccessApi.Protos.SqlServer;
 using redflyDatabaseAdapters;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyDataAccessClient.APIs.SqlServer;
+namespace redflyGeneratedDataAccessApi.SqlServer;
 
 public abstract class TableDataSourceBase<T> where T : TableEntityBase
 {

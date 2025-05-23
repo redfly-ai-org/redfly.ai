@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -20,9 +19,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\RedflyCoreFramework\redflyCoreFramework.csproj" />
     <ProjectReference Include="..\redflyDatabaseAdapters\redflyDatabaseAdapters.csproj" />
-    <ProjectReference Include="..\redflyGeneratedDataAccessApi\redflyGeneratedDataAccessApi.csproj" />
-    <ProjectReference Include="..\RedflyGrpcAuthServiceClient\redflyGrpcAuthServiceClient.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="protos\sqlserver-api.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

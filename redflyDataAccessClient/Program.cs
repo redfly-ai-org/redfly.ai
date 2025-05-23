@@ -3,13 +3,15 @@ using Grpc.Net.Client;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using RedflyCoreFramework;
-using redflyDataAccessClient.APIs.SqlServer;
-using redflyDataAccessClient.Protos.SqlServer;
+using redflyGeneratedDataAccessApi.Protos.SqlServer;
 using redflyDatabaseAdapters;
 using redflyDatabaseAdapters.Setup;
 using RedflyLocalStorage;
 using RedflyLocalStorage.Collections;
 using System.Diagnostics;
+using redflyGeneratedDataAccessApi.SqlServer;
+using redflyGeneratedDataAccessApi;
+using redflyGeneratedDataAccessApi.Compilers;
 
 namespace redflyDataAccessClient;
 
@@ -202,6 +204,18 @@ internal class Program
                 Console.WriteLine("The API calls can be made now!");
                 Console.ResetColor();
                 Console.WriteLine();
+
+                Console.WriteLine("Do you want to generate the API classes for your database now? (y/n)");
+                response = Console.ReadLine();
+
+                if (response != null &&
+                    response.ToLower() == "y")
+                {
+                    (new SqlServerPolyLangCompiler())
+                        .GenerateForDatabase(
+                            $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;",
+                            "C:\\Code\\redfly-oss\\redflyDataAccessClient\\APIs\\SqlServer\\");
+                }
 
                 Console.WriteLine("Are you using the AdventureWorks database for testing? (y/n)");
                 response = Console.ReadLine();

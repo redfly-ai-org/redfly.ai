@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyDataAccessClient.APIs.SqlServer;
+namespace redflyGeneratedDataAccessApi.SqlServer;
 
 public abstract class BaseTableRowData
 {
