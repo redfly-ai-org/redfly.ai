@@ -106,7 +106,6 @@ message InsertResponse {
   Row inserted_row = 2;
   bool cacheUpdated = 3;
   string message = 4;
-  Row row = 5;
 }
 
 // Request for Get.
