@@ -3,6 +3,7 @@ using Grpc.Net.Client;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using RedflyCoreFramework;
+using redflyDataAccessClient.APIs.SqlServer;
 using redflyDataAccessClient.Protos.SqlServer;
 using redflyDatabaseAdapters;
 using redflyDatabaseAdapters.Setup;
@@ -26,7 +27,7 @@ internal class Program
             Console.ReadKey();
             Console.WriteLine("");
 
-            var grpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
+            AppGrpcSession.GrpcUrl = "https://hosted-chakra-grpc-linux.azurewebsites.net/";
 
             Console.WriteLine("Connect to the LOCAL WIN DEV environment? (y/n)");
             Console.WriteLine("This option is only relevant to redfly employees.");
@@ -35,7 +36,7 @@ internal class Program
             if (response != null &&
                 response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
             {
-                grpcUrl = "https://localhost:7176";
+                AppGrpcSession.GrpcUrl = "https://localhost:7176";
             }
             else
             {
@@ -46,7 +47,7 @@ internal class Program
                 if (response != null &&
                     response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
                 {
-                    grpcUrl = "http://localhost:5053";
+                    AppGrpcSession.GrpcUrl = "http://localhost:5053";
                 }
                 else
                 {
@@ -70,16 +71,16 @@ internal class Program
                             response = Console.ReadLine();
                         }
 
-                        grpcUrl = response;
+                        AppGrpcSession.GrpcUrl = response;
                     }
                 }
             }
 
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine($"Will connect to: {grpcUrl}");
+            Console.WriteLine($"Will connect to: {AppGrpcSession.GrpcUrl}");
             Console.ResetColor();
 
-            var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(grpcUrl);
+            var grpcAuthToken = await RedflyGrpcAuthServiceClient.AuthGrpcClient.RunAsync(AppGrpcSession.GrpcUrl);
 
             if (grpcAuthToken == null ||
                 grpcAuthToken.Length == 0)
@@ -132,7 +133,7 @@ internal class Program
             }
 
             //var loggerFactory = LoggerFactory.Create(builder => builder.AddConsole());
-            var channel = GrpcChannel.ForAddress(grpcUrl, new GrpcChannelOptions
+            var channel = GrpcChannel.ForAddress(AppGrpcSession.GrpcUrl, new GrpcChannelOptions
             {
                 //LoggerFactory = loggerFactory,
                 HttpHandler = new SocketsHttpHandler
@@ -145,13 +146,13 @@ internal class Program
                 HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
             });
 
-            var headers = new Metadata
+            AppGrpcSession.Headers = new Metadata
                 {
                     { "Authorization", $"Bearer {grpcAuthToken}" }
                 };
 
 
-            if (!await RedflyUserOrOrg.Setup(channel, headers)) { return; }
+            if (!await RedflyUserOrOrg.Setup(channel, AppGrpcSession.Headers)) { return; }
 
             if (isSqlServerSync)
             {
@@ -163,7 +164,7 @@ internal class Program
 
                 try
                 {
-                    getSyncProfilesResponse = await SqlServerSyncProfile.GetAllAsync(syncApiClient, channel, headers);
+                    getSyncProfilesResponse = await SqlServerSyncProfile.GetAllAsync(syncApiClient, channel, AppGrpcSession.Headers);
                 }
                 finally
                 {
@@ -200,85 +201,46 @@ internal class Program
                 Console.ForegroundColor = ConsoleColor.Cyan;
                 Console.WriteLine("The API calls can be made now!");
                 Console.ResetColor();
+                Console.WriteLine();
 
-                // Create the client
-                var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
+                var watch = new Stopwatch();
+                Console.WriteLine("Let us now explore the power of redfly.ai APIs accessed through Grpc:");
+                Console.WriteLine();
 
-                Console.WriteLine("Next, we will go through many operations for one table in the database...");
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.WriteLine("// No more SQL queries - just create the object");
+                Console.WriteLine("var addressClient = new SalesLTAddressClient();");
+                var addressClient = new SalesLTAddressClient();
 
-                string? tableSchemaName = null;
-                var tableName = "";
+                Console.WriteLine("// Make the method call");
+                Console.WriteLine("var rowCount = await addressClient.GetTotalRowCountAsync();");
+                Console.ResetColor();
 
-                while (tableSchemaName == null)
+                cts = new CancellationTokenSource();
+                progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+                try
                 {
-                    Console.WriteLine("Please enter the table schema name");
-                    Console.WriteLine("This could be an empty string.");
-                    tableSchemaName = Console.ReadLine();
+                    watch.Restart();
+                    var rowCount = await addressClient.GetTotalRowCountAsync();
+                    watch.Stop();
+
+                    cts.Cancel();
+                    await progressTask;
+                    Console.WriteLine();
+                    ShowResultsAsObject(watch, rowCount);
                 }
-
-                while (string.IsNullOrEmpty(tableName))
+                catch (Exception ex)
                 {
-                    Console.WriteLine("Please enter the table name");
-                    tableName = Console.ReadLine();
-                }
+                    cts.Cancel();
+                    await progressTask;
 
-                while (true)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine("\nChoose an operation to perform on the table:");
-                    Console.WriteLine("  1. Get table row count");
-                    Console.WriteLine("  2. Get table rows (paged)");
-                    Console.WriteLine("  3. Get a row by primary key");
-                    Console.WriteLine("  4. Insert a row");
-                    Console.WriteLine("  5. Update a row");
-                    Console.WriteLine("  6. Delete a row");
-                    Console.WriteLine("  0. Exit");
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"ERROR: {ex.Message}");
                     Console.ResetColor();
-
-                    Console.Write("Enter your choice: ");
-                    var choice = Console.ReadLine();
-
-                    try
-                    {
-                        switch (choice)
-                        {
-                            case "1":
-                                await PromptUserForTableRowCount(headers, sqlServerApiClient, tableSchemaName, tableName);
-                                break;
-                            case "2":
-                                await PromptUserForGetTableRows(headers, sqlServerApiClient, tableSchemaName, tableName);
-                                break;
-                            case "3":
-                                await PromptUserForGetTableRow(headers, sqlServerApiClient, tableSchemaName, tableName);
-                                break;
-                            case "4":
-                                await PromptUserForInsertRow(headers, sqlServerApiClient, tableSchemaName, tableName);
-                                break;
-                            case "5":
-                                await PromptUserForUpdateRow(headers, sqlServerApiClient, tableSchemaName, tableName);
-                                break;
-                            case "6":
-                                await PromptUserForDeleteRow(headers, sqlServerApiClient, tableSchemaName, tableName);
-                                break;
-                            case "0":
-                                Console.WriteLine("Exiting table operations menu.");
-                                return;
-                            default:
-                                Console.ForegroundColor = ConsoleColor.Red;
-                                Console.WriteLine("Invalid choice. Please enter a number from the list.");
-                                Console.ResetColor();
-                                break;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine($"ERROR on command execution: {ex.Message}");
-                        Console.ResetColor();
-                    }
                 }
 
-                // TODO: Generate the strongly typed client code for the tables.
+                await TestGrpcAPIsDirectly(channel);
             }
 
             Console.WriteLine("All API calls are completed!");
@@ -299,7 +261,108 @@ internal class Program
         }
     }
 
-    private static async Task PromptUserForDeleteRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static void ShowResultsAsObject<T>(Stopwatch watch, T result)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// Get the results as an object.");
+        Console.ResetColor();
+
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine($"Result Type: {typeof(T).Name}");
+
+        foreach (var prop in typeof(T).GetProperties())
+        {
+            var value = prop.GetValue(result, null);
+            Console.WriteLine($"  {prop.Name}: {value}");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+        Console.ResetColor();
+
+        Console.WriteLine();
+    }
+
+    private static async Task TestGrpcAPIsDirectly(GrpcChannel channel)
+    {
+        var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
+
+        Console.WriteLine("Next, we will go through many operations for one table in the database...");
+
+        string? tableSchemaName = null;
+        var tableName = "";
+
+        while (tableSchemaName == null)
+        {
+            Console.WriteLine("Please enter the table schema name");
+            Console.WriteLine("This could be an empty string.");
+            tableSchemaName = Console.ReadLine();
+        }
+
+        while (string.IsNullOrEmpty(tableName))
+        {
+            Console.WriteLine("Please enter the table name");
+            tableName = Console.ReadLine();
+        }
+
+        while (true)
+        {
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("\nChoose an operation to perform on the table:");
+            Console.WriteLine("  1. Get table row count");
+            Console.WriteLine("  2. Get table rows (paged)");
+            Console.WriteLine("  3. Get a row by primary key");
+            Console.WriteLine("  4. Insert a row");
+            Console.WriteLine("  5. Update a row");
+            Console.WriteLine("  6. Delete a row");
+            Console.WriteLine("  0. Exit");
+            Console.ResetColor();
+
+            Console.Write("Enter your choice: ");
+            var choice = Console.ReadLine();
+
+            try
+            {
+                switch (choice)
+                {
+                    case "1":
+                        await PromptUserForTableRowCount(sqlServerApiClient, tableSchemaName, tableName);
+                        break;
+                    case "2":
+                        await PromptUserForGetTableRows(sqlServerApiClient, tableSchemaName, tableName);
+                        break;
+                    case "3":
+                        await PromptUserForGetTableRow(sqlServerApiClient, tableSchemaName, tableName);
+                        break;
+                    case "4":
+                        await PromptUserForInsertRow(sqlServerApiClient, tableSchemaName, tableName);
+                        break;
+                    case "5":
+                        await PromptUserForUpdateRow(sqlServerApiClient, tableSchemaName, tableName);
+                        break;
+                    case "6":
+                        await PromptUserForDeleteRow(sqlServerApiClient, tableSchemaName, tableName);
+                        break;
+                    case "0":
+                        Console.WriteLine("Exiting table operations menu.");
+                        return;
+                    default:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Invalid choice. Please enter a number from the list.");
+                        Console.ResetColor();
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"ERROR on command execution: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
+    }
+
+    private static async Task PromptUserForDeleteRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         // Collect primary key column(s) and value(s)
         var primaryKeyValues = new Dictionary<string, string>();
@@ -334,13 +397,13 @@ internal class Program
         {
             var watch = new Stopwatch();
             watch.Start();
-            var deleteResponse = await sqlServerApiClient.DeleteAsync(deleteRequest, headers);
+            var deleteResponse = await sqlServerApiClient.DeleteAsync(deleteRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
             await progressTask;
 
-            ShowResults(watch, deleteResponse);
+            ShowResultsAsJson(watch, deleteResponse);
         }
         catch
         {
@@ -375,15 +438,16 @@ internal class Program
         return deleteRequest;
     }
 
-    private static void ShowResults(Stopwatch watch, DeleteResponse deleteResponse)
+    private static void ShowResultsAsJson<T>(Stopwatch watch, T response)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(JsonConvert.SerializeObject(deleteResponse, Formatting.Indented));
+        Console.WriteLine(JsonConvert.SerializeObject(response, Formatting.Indented));
         Console.ResetColor();
         Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+        Console.WriteLine();
     }
 
-    private static async Task PromptUserForUpdateRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForUpdateRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         Console.WriteLine("First enter the details for the row to be updated - this should include the primary keys and updated values.");
         var updatedData = PromptUserForColumnValuePairs();
@@ -399,13 +463,13 @@ internal class Program
         {
             var watch = new Stopwatch();
             watch.Start();
-            var updateResponse = await sqlServerApiClient.UpdateAsync(updateRequest, headers);
+            var updateResponse = await sqlServerApiClient.UpdateAsync(updateRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
             await progressTask;
 
-            ShowResults(watch, updateResponse);
+            ShowResultsAsJson(watch, updateResponse);
         }
         catch
         {
@@ -416,7 +480,7 @@ internal class Program
         }
     }
 
-    private static async Task PromptUserForInsertRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForInsertRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         Console.WriteLine("First enter the details for the row to be inserted - only NOT NULL columns have to be mandatorily entered.");
         var insertedData = PromptUserForColumnValuePairs();
@@ -432,13 +496,13 @@ internal class Program
         {
             var watch = new Stopwatch();
             watch.Start();
-            var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, headers);
+            var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
             await progressTask;
 
-            ShowResults(watch, insertResponse);
+            ShowResultsAsJson(watch, insertResponse);
         }
         catch
         {
@@ -449,7 +513,7 @@ internal class Program
         }
     }
 
-    private static async Task PromptUserForGetTableRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForGetTableRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         var primaryKeyColumnName = "";
         var primaryKeyColumnValue = "";
@@ -477,13 +541,13 @@ internal class Program
         {
             var watch = new Stopwatch();
             watch.Start();
-            var getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
+            var getResponse = await sqlServerApiClient.GetAsync(getRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
             await progressTask;
 
-            ShowResults(watch, getResponse);
+            ShowResultsAsJson(watch, getResponse);
         }
         catch
         {
@@ -494,7 +558,7 @@ internal class Program
         }
     }
 
-    private static async Task PromptUserForGetTableRows(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForGetTableRows(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         var orderByColumnName = "";
         var orderByColumnSort = "asc";
@@ -518,13 +582,13 @@ internal class Program
         {
             var watch = new Stopwatch();
             watch.Start();
-            var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
+            var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
             await progressTask;
 
-            ShowResults(watch, getRowsResponse);
+            ShowResultsAsJson(watch, getRowsResponse);
         }
         catch
         {
@@ -535,7 +599,7 @@ internal class Program
         }
     }
 
-    private static async Task PromptUserForTableRowCount(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForTableRowCount(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         // Prepare the request
         var getTotalRowCountRequest = CreateGetTotalRowCountRequest(tableSchemaName, tableName);
@@ -549,13 +613,13 @@ internal class Program
         {
             var watch = new Stopwatch();
             watch.Start();
-            var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, headers);
+            var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
             await progressTask;
 
-            ShowResults(watch, getTotalRowCountResponse);
+            ShowResultsAsJson(watch, getTotalRowCountResponse);
         }
         catch
         {
@@ -643,30 +707,6 @@ internal class Program
         return updateRequest;
     }
 
-    private static void ShowResults(Stopwatch watch, InsertResponse insertResponse)
-    {
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(JsonConvert.SerializeObject(insertResponse, Formatting.Indented));
-        Console.ResetColor();
-        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
-    }
-
-    private static void ShowResults(Stopwatch watch, UpdateResponse updateResponse)
-    {
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(JsonConvert.SerializeObject(updateResponse, Formatting.Indented));
-        Console.ResetColor();
-        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
-    }
-
-    private static void ShowResults(Stopwatch watch, GetResponse getResponse)
-    {
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(JsonConvert.SerializeObject(getResponse, Formatting.Indented));
-        Console.ResetColor();
-        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
-    }
-
     private static GetRequest CreateGetRequest(string tableSchemaName, string tableName, string primaryKeyColumnName, string primaryKeyColumnValue)
     {
         var getRequest = new GetRequest()
@@ -683,22 +723,6 @@ internal class Program
 
         getRequest.PrimaryKeyValues.Add(primaryKeyColumnName, primaryKeyColumnValue);
         return getRequest;
-    }
-
-    private static void ShowResults(Stopwatch watch, GetRowsResponse getRowsResponse)
-    {
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(JsonConvert.SerializeObject(getRowsResponse, Formatting.Indented));
-        Console.ResetColor();
-        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
-    }
-
-    private static void ShowResults(Stopwatch watch, GetTotalRowCountResponse getTotalRowCountResponse)
-    {
-        Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine(JsonConvert.SerializeObject(getTotalRowCountResponse, Formatting.Indented));
-        Console.ResetColor();
-        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
     }
 
     private static GetRowsRequest CreateGetRowsCachedRequest(string tableSchemaName, string tableName, string orderByColumnName, string orderByColumnSort)
