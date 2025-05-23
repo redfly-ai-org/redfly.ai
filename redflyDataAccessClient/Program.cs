@@ -227,19 +227,100 @@ internal class Program
 
     private static async Task ShowClientApiUsage()
     {
-        Console.WriteLine("Let us now explore the power of redfly.ai APIs accessed through Grpc:");
+        Console.WriteLine("Let us now explore the power of redfly.ai APIs accessed through Grpc with the AdventureWorks sample database:");
         Console.WriteLine();
 
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// No more SQL queries - just create the object");
         Console.WriteLine("var addressClient = new SalesLTAddressClient();");
+        Console.ResetColor();
         var addressClient = new SalesLTAddressClient();
 
         await ShowTotalRowCountApiUsage(addressClient);
+        var rowsData = await ShowGetRowsApiUsage(addressClient);
+
+        if (rowsData != null &&
+            rowsData.Rows.Count > 0)
+        {
+            var rowData = await ShowGetApiUsage(addressClient, rowsData.Rows[0]);
+        }
+    }
+
+    private static async Task<RowData?> ShowGetApiUsage(SalesLTAddressClient addressClient, SalesLTAddress salesLTAddress)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// Get a row by its primary key");
+        Console.WriteLine("var rowData = await addressClient.GetAsync(salesLTAddress.AddressID);");
+        Console.ResetColor();
+
+        RowData? rowData = null;
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            watch.Restart();
+            rowData = await addressClient.GetAsync(salesLTAddress.AddressID);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+            ShowResultsAsObject(watch, rowData);
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
+        }
+
+        return rowData;
+    }
+
+    private static async Task<RowsData?> ShowGetRowsApiUsage(SalesLTAddressClient addressClient)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// Get rows with support for pagination");
+        Console.WriteLine("var rowsData = await addressClient.GetRowsAsync(pageNo: 1, pageSize: 5);");
+        Console.ResetColor();
+
+        RowsData? rowsData = null;
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            watch.Restart();
+            rowsData = await addressClient.GetRowsAsync(pageNo: 1, pageSize: 5);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+            ShowResultsAsObject(watch, rowsData);
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
+        }
+
+        return rowsData;
     }
 
     private static async Task ShowTotalRowCountApiUsage(SalesLTAddressClient addressClient)
     {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Make the method call");
         Console.WriteLine("var rowCount = await addressClient.GetTotalRowCountAsync();");
         Console.ResetColor();
@@ -273,7 +354,7 @@ internal class Program
     private static void ShowResultsAsObject<T>(Stopwatch watch, T result)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine("// Get the results as an object.");
+        Console.WriteLine("// Get the result as an object.");
         Console.ResetColor();
 
         Console.ForegroundColor = ConsoleColor.Cyan;
