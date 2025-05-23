@@ -5,6 +5,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace redflyGeneratedDataAccessApi.Compilers;
 
@@ -19,7 +20,6 @@ public class SqlServerPolyLangCompiler
 
         foreach (var table in tables)
         {
-            // Skip system tables (names starting with sys or msdb, or schema is sys, db_owner, db_accessadmin, etc.)
             if (IsSystemTable(table.Schema, table.Name))
             {
                 Console.WriteLine($"Skipping System table: {table.Schema}.{table.Name}...");
@@ -29,9 +29,11 @@ public class SqlServerPolyLangCompiler
             var columns = GetColumns(connectionString, table.Schema, table.Name);
 
             Console.WriteLine($"Generating code for {table.Schema}.{table.Name}...");
-            var code = GenerateCodeForTable(table, columns);
-            var fileName = Path.Combine(outputFolder, $"{RemoveSpaces(table.Schema)}{RemoveSpaces(table.Name)}DataSource.cs");
-            
+            var classBaseName = table.Schema.Equals("dbo", StringComparison.OrdinalIgnoreCase)
+                ? RemoveSpaces(table.Name)
+                : RemoveSpaces(table.Schema) + RemoveSpaces(table.Name);
+            var code = GenerateCodeForTable(classBaseName, table, columns);
+            var fileName = Path.Combine(outputFolder, $"{classBaseName}DataSource.cs");
             File.WriteAllText(fileName, code);
         }
     }
@@ -53,7 +55,6 @@ public class SqlServerPolyLangCompiler
 
     private bool IsSystemTable(string schema, string tableName)
     {
-        // Common system schemas and table name patterns
         var systemSchemas = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
             "sys", "db_owner", "db_accessadmin", "db_securityadmin", "db_ddladmin", "db_backupoperator", "db_datareader", "db_datawriter", "db_denydatareader", "db_denydatawriter"
@@ -79,19 +80,48 @@ public class SqlServerPolyLangCompiler
         return false;
     }
 
-    private List<(string Name, string Type, bool IsNullable)> GetColumns(string connectionString, string schema, string table)
+    private List<(string Name, string Type, bool IsNullable, bool IsPrimaryKey)> GetColumns(string connectionString, string schema, string table)
     {
-        var columns = new List<(string, string, bool)>();
-        using var conn = new SqlConnection(connectionString);
-        conn.Open();
-        using var cmd = conn.CreateCommand();
-        cmd.CommandText = @"SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table";
-        cmd.Parameters.AddWithValue("@schema", schema);
-        cmd.Parameters.AddWithValue("@table", table);
-        using var reader = cmd.ExecuteReader();
-        while (reader.Read())
+        var columns = new List<(string, string, bool, bool)>();
+        var pkColumns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        using (var conn = new SqlConnection(connectionString))
         {
-            columns.Add((reader.GetString(0), reader.GetString(1), reader.GetString(2) == "YES"));
+            conn.Open();
+            // Get primary key columns
+            using (var pkCmd = conn.CreateCommand())
+            {
+                pkCmd.CommandText = @"
+                    SELECT kcu.COLUMN_NAME
+                    FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc
+                    JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE kcu
+                        ON tc.CONSTRAINT_NAME = kcu.CONSTRAINT_NAME
+                        AND tc.TABLE_SCHEMA = kcu.TABLE_SCHEMA
+                        AND tc.TABLE_NAME = kcu.TABLE_NAME
+                    WHERE tc.TABLE_SCHEMA = @schema AND tc.TABLE_NAME = @table AND tc.CONSTRAINT_TYPE = 'PRIMARY KEY'";
+                pkCmd.Parameters.AddWithValue("@schema", schema);
+                pkCmd.Parameters.AddWithValue("@table", table);
+                using var pkReader = pkCmd.ExecuteReader();
+                while (pkReader.Read())
+                {
+                    pkColumns.Add(pkReader.GetString(0));
+                }
+            }
+            // Get columns
+            using (var cmd = conn.CreateCommand())
+            {
+                cmd.CommandText = @"SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @schema AND TABLE_NAME = @table";
+                cmd.Parameters.AddWithValue("@schema", schema);
+                cmd.Parameters.AddWithValue("@table", table);
+                using var reader = cmd.ExecuteReader();
+                while (reader.Read())
+                {
+                    var colName = reader.GetString(0);
+                    var colType = reader.GetString(1);
+                    var isNullable = reader.GetString(2) == "YES";
+                    var isPk = pkColumns.Contains(colName);
+                    columns.Add((colName, colType, isNullable, isPk));
+                }
+            }
         }
         return columns;
     }
@@ -101,10 +131,18 @@ public class SqlServerPolyLangCompiler
         return input.Replace(" ", "");
     }
 
-    private string GenerateCodeForTable((string Schema, string Name) table, List<(string Name, string Type, bool IsNullable)> columns)
+    private string ToCamelCase(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        input = RemoveSpaces(input);
+        if (input.Length == 1) return input.ToLowerInvariant();
+        return char.ToLowerInvariant(input[0]) + input.Substring(1);
+    }
+
+    private string GenerateCodeForTable(string classBaseName, (string Schema, string Name) table, List<(string Name, string Type, bool IsNullable, bool IsPrimaryKey)> columns)
     {
         var sb = new StringBuilder();
-        var entityName = $"{RemoveSpaces(table.Schema)}{RemoveSpaces(table.Name)}";
+        var entityName = classBaseName;
         var dataSourceName = $"{entityName}DataSource";
         // Usings
         sb.AppendLine("using redflyDatabaseAdapters;");
@@ -118,7 +156,14 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine("{");
         foreach (var col in columns)
         {
-            sb.AppendLine($"    public {MapSqlTypeToCSharp(col.Type, col.IsNullable)} {RemoveSpaces(col.Name)} {{ get; set; }}");
+            if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var csharpType = MapSqlTypeToCSharp(col.Type, col.IsNullable);
+            var propName = ToCamelCase(col.Name);
+            if (csharpType == "string" && !col.IsNullable)
+                sb.AppendLine($"    public string {propName} {{ get; set; }} = string.Empty;");
+            else
+                sb.AppendLine($"    public {csharpType} {propName} {{ get; set; }}");
         }
         sb.AppendLine("}");
         sb.AppendLine();
@@ -141,8 +186,82 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine("{");
         sb.AppendLine($"    public {dataSourceName}() : base()\n    {{\n    }}");
         sb.AppendLine();
-        sb.AppendLine("    // TODO: Implement CRUD methods similar to the template, using base methods");
+        // Primary key columns
+        var pkCols = columns.Where(c => c.IsPrimaryKey).ToList();
+        // DeleteAsync
+        if (pkCols.Count > 0)
+        {
+            var pkParams = string.Join(", ", pkCols.Select(c => $"{MapSqlTypeToCSharp(c.Type, c.IsNullable)} {ToCamelCase(c.Name)}"));
+            sb.AppendLine($"    public async Task<DeletedData> DeleteAsync({pkParams}, bool modifyCache = true)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var req = base.CreateDeleteRequest(modifyCache);");
+            foreach (var pk in pkCols)
+                sb.AppendLine($"        req.PrimaryKeyValues.Add(\"{pk.Name}\", {ToCamelCase(pk.Name)}.ToString());");
+            sb.AppendLine("        return await base.DeleteCoreAsync(req);");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+        // GetRowsAsync
+        sb.AppendLine($"    public async Task<{entityName}RowsData> GetRowsAsync(int pageNo = 1, int pageSize = 50, string orderByColumnName = \"\", string orderBySort = \"\", bool useCache = true)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var req = base.CreateGetRowsRequest(pageNo, pageSize, orderByColumnName, orderBySort);");
+        sb.AppendLine("        var resp = await _client.GetRowsAsync(req, AppGrpcSession.Headers!);");
+        sb.AppendLine($"        var rows = new List<{entityName}>();");
+        sb.AppendLine("        foreach (var row in resp.Rows)");
+        sb.AppendLine("        {");
+        sb.AppendLine("            rows.Add(MapRowToTableEntity(row));");
+        sb.AppendLine("        }");
+        sb.AppendLine($"        return new {entityName}RowsData");
+        sb.AppendLine("        {");
+        sb.AppendLine("            Success = resp.Success,");
+        sb.AppendLine("            Rows = rows,");
+        sb.AppendLine("            FromCache = resp.FromCache,");
+        sb.AppendLine("            Message = resp.Message");
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
         sb.AppendLine();
+        // InsertAsync
+        sb.AppendLine($"    public async Task<{entityName}InsertedData> InsertAsync({entityName} entity, bool modifyCache = true)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var req = base.CreateInsertRequest(entity, modifyCache);");
+        sb.AppendLine("        var resp = await _client.InsertAsync(req, AppGrpcSession.Headers!);");
+        sb.AppendLine($"        return new {entityName}InsertedData");
+        sb.AppendLine("        {");
+        sb.AppendLine("            Success = resp.Success,");
+        sb.AppendLine("            InsertedRow = resp.InsertedRow != null ? MapRowToTableEntity(resp.InsertedRow) : null,");
+        sb.AppendLine("            CacheUpdated = resp.CacheUpdated,");
+        sb.AppendLine("            Message = resp.Message");
+        sb.AppendLine("        };");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        // GetAsync
+        if (pkCols.Count > 0)
+        {
+            var pkParams = string.Join(", ", pkCols.Select(c => $"{MapSqlTypeToCSharp(c.Type, c.IsNullable)} {ToCamelCase(c.Name)}"));
+            sb.AppendLine($"    public async Task<{entityName}RowData> GetAsync({pkParams}, bool useCache = true)");
+            sb.AppendLine("    {");
+            sb.AppendLine("        var req = base.CreateGetRequest();");
+            foreach (var pk in pkCols)
+                sb.AppendLine($"        req.PrimaryKeyValues.Add(\"{pk.Name}\", {ToCamelCase(pk.Name)}.ToString());");
+            sb.AppendLine("        var resp = await _client.GetAsync(req, AppGrpcSession.Headers!);");
+            sb.AppendLine($"        return new {entityName}RowData");
+            sb.AppendLine("        {");
+            sb.AppendLine("            Success = resp.Success,");
+            sb.AppendLine("            Row = resp.Row != null ? MapRowToTableEntity(resp.Row) : null,");
+            sb.AppendLine("            FromCache = resp.FromCache,");
+            sb.AppendLine("            Message = resp.Message");
+            sb.AppendLine("        };");
+            sb.AppendLine("    }");
+            sb.AppendLine();
+        }
+        // UpdateAsync
+        sb.AppendLine($"    public async Task<UpdatedData> UpdateAsync({entityName} entity, bool modifyCache = true)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        var req = CreateUpdateRequest(entity, modifyCache);");
+        sb.AppendLine("        return await UpdateCoreAsync(req);");
+        sb.AppendLine("    }");
+        sb.AppendLine();
+        // MapRowToTableEntity
         sb.AppendLine($"    protected override {entityName} MapRowToTableEntity(Row row)");
         sb.AppendLine("    {");
         sb.AppendLine("        var dict = new Dictionary<string, string?>();");
@@ -154,22 +273,63 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine("        {");
         foreach (var col in columns)
         {
-            sb.AppendLine($"            {RemoveSpaces(col.Name)} = /* parse from dict[\"{col.Name}\"] as {MapSqlTypeToCSharp(col.Type, col.IsNullable)} */ default,");
+            if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase))
+                continue;
+            var propName = ToCamelCase(col.Name);
+            var csharpType = MapSqlTypeToCSharp(col.Type, col.IsNullable);
+            if (csharpType == "int")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v1) && int.TryParse(v1, out var i1) ? i1 : 0,");
+            else if (csharpType == "long")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v2) && long.TryParse(v2, out var l2) ? l2 : 0L,");
+            else if (csharpType == "short")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v3) && short.TryParse(v3, out var s3) ? s3 : (short)0,");
+            else if (csharpType == "byte")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v4) && byte.TryParse(v4, out var b4) ? b4 : (byte)0,");
+            else if (csharpType == "bool")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v5) && bool.TryParse(v5, out var b5) ? b5 : false,");
+            else if (csharpType == "decimal")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v6) && decimal.TryParse(v6, out var d6) ? d6 : 0m,");
+            else if (csharpType == "double")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v7) && double.TryParse(v7, out var d7) ? d7 : 0.0,");
+            else if (csharpType == "float")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v8) && float.TryParse(v8, out var f8) ? f8 : 0f,");
+            else if (csharpType == "DateTime")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v9) && DateTime.TryParse(v9, out var d9) ? d9 : DateTime.MinValue,");
+            else if (csharpType == "Guid")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v10) && Guid.TryParse(v10, out var g10) ? g10 : Guid.Empty,");
+            else if (csharpType == "byte[]")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v11) ? Convert.FromBase64String(v11 ?? \"\") : Array.Empty<byte>(),");
+            else if (csharpType == "string")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v12) ? v12 ?? string.Empty : string.Empty,");
+            else if (csharpType == "string?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v13) ? v13 : null,");
+            else if (csharpType.EndsWith("?"))
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v14) && !string.IsNullOrEmpty(v14) ? ({csharpType.TrimEnd('?')})Convert.ChangeType(v14, typeof({csharpType.TrimEnd('?')})) : null,");
+            else
+                sb.AppendLine($"            {propName} = /* parse from dict[\"{col.Name}\"] as {csharpType} */ default,");
         }
         sb.AppendLine("        };");
         sb.AppendLine("    }");
         sb.AppendLine();
+        // MapTableEntityToRow
         sb.AppendLine($"    protected override Row MapTableEntityToRow({entityName} entity, DbOperationType dbOperationType)");
         sb.AppendLine("    {");
         sb.AppendLine("        var row = new Row();");
+        if (pkCols.Count > 0)
+        {
+            sb.AppendLine("        if (dbOperationType != DbOperationType.Insert)");
+            sb.AppendLine("        {");
+            foreach (var pk in pkCols)
+            {
+                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name}\", Value = new Value {{ StringValue = entity.{ToCamelCase(pk.Name)}.ToString() }} }});");
+            }
+            sb.AppendLine("        }");
+        }
         foreach (var col in columns)
         {
-            var colName = RemoveSpaces(col.Name);
-            if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase))
-            {
-                // Do not set Version column
+            if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase) || col.IsPrimaryKey)
                 continue;
-            }
+            var colName = ToCamelCase(col.Name);
             if (col.Type.ToLower().Contains("date"))
             {
                 sb.AppendLine($"        if (entity.{colName} != DateTime.MinValue)");
@@ -208,6 +368,8 @@ public class SqlServerPolyLangCompiler
         };
         if (type != "string" && type != "byte[]" && isNullable)
             return type + "?";
+        if (type == "string" && isNullable)
+            return "string?";
         return type;
     }
 }
