@@ -209,14 +209,14 @@ internal class Program
                 if (response != null && 
                     response.ToLower() == "y") 
                 {
-                    await ShowClientApiUsage();
+                    await DemonstrateClientApiUsage();
                 }
                 else
                 {
                     Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
                 }
 
-                await TestGrpcAPIsDirectly(channel);
+                await DemonstrateGrpcAPIsDirectly(channel);
             }
 
             Console.WriteLine("All API calls are completed!");
@@ -237,7 +237,7 @@ internal class Program
         }
     }
 
-    private static async Task ShowClientApiUsage()
+    private static async Task DemonstrateClientApiUsage()
     {
         Console.WriteLine("Let us now explore the power of redfly.ai APIs accessed through Grpc with the AdventureWorks sample database:");
         Console.WriteLine();
@@ -385,7 +385,7 @@ internal class Program
         Console.WriteLine();
     }
 
-    private static async Task TestGrpcAPIsDirectly(GrpcChannel channel)
+    private static async Task DemonstrateGrpcAPIsDirectly(GrpcChannel channel)
     {
         var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
 
