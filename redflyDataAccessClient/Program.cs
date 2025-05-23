@@ -201,7 +201,10 @@ internal class Program
                 Console.WriteLine("The API calls can be made now!");
                 Console.ResetColor();
 
-                Console.WriteLine("First we will retrieve the row count for a table...");
+                // Create the client
+                var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
+
+                Console.WriteLine("Next, we will go through many operations for one table in the database...");
 
                 string? tableSchemaName = null;
                 var tableName = "";
@@ -219,97 +222,61 @@ internal class Program
                     tableName = Console.ReadLine();
                 }
 
-                // Create the client
-                var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
-
-                // Prepare the request
-                var getTotalRowCountRequest = CreateGetTotalRowCountRequest(tableSchemaName, tableName);
-
-                var watch = new Stopwatch();
-
-                watch.Start();
-                var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, headers);
-                watch.Stop();
-
-                ShowResults(watch, getTotalRowCountResponse);
-
-                var orderByColumnName = "";
-                var orderByColumnSort = "asc";
-
-                while (string.IsNullOrEmpty(orderByColumnName))
-                {
-                    Console.WriteLine("Please enter the column by which you want the records ordered:");
-                    orderByColumnName = Console.ReadLine();
-                }
-
-                Console.WriteLine();
-
-                var getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
-
-                watch.Restart();
-                var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
-                watch.Stop();
-
-                ShowResults(watch, getRowsResponse);
-
-                Console.WriteLine("Next, we will retrieve a row by its primary key...");
-
-                var primaryKeyColumnName = "";
-                var primaryKeyColumnValue = "";
-
-                while (string.IsNullOrEmpty(primaryKeyColumnName))
-                {
-                    Console.WriteLine("Please enter the primary key column name:");
-                    primaryKeyColumnName = Console.ReadLine();
-                }
-
-                while (string.IsNullOrEmpty(primaryKeyColumnValue))
-                {
-                    Console.WriteLine("Please enter the primary key column value:");
-                    primaryKeyColumnValue = Console.ReadLine();
-                }
-
-                GetRequest getRequest = CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
-
-                watch.Restart();
-                var getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
-                watch.Stop();
-
-                ShowResults(watch, getResponse);
-
-                Console.WriteLine("Next, we will insert a record. First enter the row details to be inserted:");
-
-                var insertedData = new Dictionary<string, string>();
-
                 while (true)
                 {
-                    Console.WriteLine("Enter column name (leave empty to finish):");
-                    var columnName = Console.ReadLine();
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine("\nChoose an operation to perform on the table:");
+                    Console.WriteLine("  1. Get table row count");
+                    Console.WriteLine("  2. Get table rows (paged)");
+                    Console.WriteLine("  3. Get a row by primary key");
+                    Console.WriteLine("  4. Insert a row");
+                    Console.WriteLine("  5. Update a row");
+                    Console.WriteLine("  6. Delete a row");
+                    Console.WriteLine("  0. Exit");
+                    Console.ResetColor();
 
-                    if (string.IsNullOrWhiteSpace(columnName))
-                        break;
+                    Console.Write("Enter your choice: ");
+                    var choice = Console.ReadLine();
 
-                    Console.WriteLine($"Enter value for column '{columnName}':");
-                    var columnValue = Console.ReadLine() ?? string.Empty;
-
-                    insertedData[columnName] = columnValue;
+                    try
+                    {
+                        switch (choice)
+                        {
+                            case "1":
+                                await PromptUserForTableRowCount(headers, sqlServerApiClient, tableSchemaName, tableName);
+                                break;
+                            case "2":
+                                await PromptUserForGetTableRows(headers, sqlServerApiClient, tableSchemaName, tableName);
+                                break;
+                            case "3":
+                                await PromptUserForGetTableRow(headers, sqlServerApiClient, tableSchemaName, tableName);
+                                break;
+                            case "4":
+                                await PromptUserForInsertRow(headers, sqlServerApiClient, tableSchemaName, tableName);
+                                break;
+                            case "5":
+                                await PromptUserForUpdateRow(headers, sqlServerApiClient, tableSchemaName, tableName);
+                                break;
+                            case "6":
+                                await PromptUserForDeleteRow(headers, sqlServerApiClient, tableSchemaName, tableName);
+                                break;
+                            case "0":
+                                Console.WriteLine("Exiting table operations menu.");
+                                return;
+                            default:
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("Invalid choice. Please enter a number from the list.");
+                                Console.ResetColor();
+                                break;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine($"ERROR on command execution: {ex.Message}");
+                        Console.ResetColor();
+                    }
                 }
-
-                Console.WriteLine("Collected columns and values for insertion:");
-                foreach (var kvp in insertedData)
-                {
-                    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
-                }
-
-                var insertRequest = CreateInsertRequest(tableSchemaName, tableName, insertedData);
-
-                watch.Restart();
-                var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, headers);
-                watch.Stop();
-
-                ShowResults(watch, insertResponse);
-
-                // TODO: All the other API calls
 
                 // TODO: Generate the strongly typed client code for the tables.
             }
@@ -330,6 +297,199 @@ internal class Program
 
             RedflyLocalDatabase.Dispose();
         }
+    }
+
+    private static async Task PromptUserForDeleteRow(
+                                Metadata headers,
+                                NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient,
+                                string tableSchemaName,
+                                string tableName)
+    {
+        // Collect primary key column(s) and value(s)
+        var primaryKeyValues = new Dictionary<string, string>();
+        Console.WriteLine("Enter the primary key column(s) and value(s) for the row to delete.");
+        while (true)
+        {
+            Console.WriteLine("Enter primary key column name (leave empty to finish):");
+            var columnName = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(columnName))
+                break;
+
+            Console.WriteLine($"Enter value for column '{columnName}':");
+            var columnValue = Console.ReadLine() ?? string.Empty;
+
+            primaryKeyValues[columnName] = columnValue;
+        }
+
+        if (primaryKeyValues.Count == 0)
+        {
+            Console.WriteLine("No primary key values entered. Aborting delete operation.");
+            return;
+        }
+
+        var deleteRequest = CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
+
+        var watch = new Stopwatch();
+        watch.Start();
+        var deleteResponse = await sqlServerApiClient.DeleteAsync(deleteRequest, headers);
+        watch.Stop();
+
+        ShowResults(watch, deleteResponse);
+    }
+
+    private static DeleteRequest CreateDeleteRequest(
+        string tableSchemaName,
+        string tableName,
+        Dictionary<string, string> primaryKeyValues)
+    {
+        var deleteRequest = new DeleteRequest
+        {
+            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString(
+                $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+            EncryptionKey = RedflyEncryptionKeys.AesKey,
+            ModifyCache = true
+        };
+
+        foreach (var kvp in primaryKeyValues)
+        {
+            deleteRequest.PrimaryKeyValues.Add(kvp.Key, kvp.Value);
+        }
+
+        return deleteRequest;
+    }
+
+    private static void ShowResults(Stopwatch watch, DeleteResponse deleteResponse)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(JsonConvert.SerializeObject(deleteResponse, Formatting.Indented));
+        Console.ResetColor();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+    }
+
+    private static async Task PromptUserForUpdateRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    {
+        Console.WriteLine("First enter the details for the row to be updated - this should include the primary keys and updated values.");
+        var updatedData = PromptUserForColumnValuePairs();
+
+        var updateRequest = CreateUpdateRequest(tableSchemaName, tableName, updatedData);
+
+        var watch = new Stopwatch();
+        watch.Start();
+        var updateResponse = await sqlServerApiClient.UpdateAsync(updateRequest, headers);
+        watch.Stop();
+
+        ShowResults(watch, updateResponse);
+    }
+
+    private static async Task PromptUserForInsertRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    {
+        Console.WriteLine("First enter the details for the row to be inserted - only NOT NULL columns have to be mandatorily entered.");
+        var insertedData = PromptUserForColumnValuePairs();
+
+        var insertRequest = CreateInsertRequest(tableSchemaName, tableName, insertedData);
+
+        var watch = new Stopwatch();
+        watch.Start();
+        var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, headers);
+        watch.Stop();
+
+        ShowResults(watch, insertResponse);
+    }
+
+    private static async Task PromptUserForGetTableRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    {
+        var primaryKeyColumnName = "";
+        var primaryKeyColumnValue = "";
+
+        while (string.IsNullOrEmpty(primaryKeyColumnName))
+        {
+            Console.WriteLine("Please enter the primary key column name:");
+            primaryKeyColumnName = Console.ReadLine();
+        }
+
+        while (string.IsNullOrEmpty(primaryKeyColumnValue))
+        {
+            Console.WriteLine("Please enter the primary key column value:");
+            primaryKeyColumnValue = Console.ReadLine();
+        }
+
+        GetRequest getRequest = CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
+
+        var watch = new Stopwatch();
+        watch.Start();
+        var getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
+        watch.Stop();
+
+        ShowResults(watch, getResponse);
+    }
+
+    private static async Task PromptUserForGetTableRows(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    {
+        var orderByColumnName = "";
+        var orderByColumnSort = "asc";
+
+        while (string.IsNullOrEmpty(orderByColumnName))
+        {
+            Console.WriteLine("Please enter the column by which you want the records ordered:");
+            orderByColumnName = Console.ReadLine();
+        }
+
+        Console.WriteLine();
+
+        var getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
+
+        var watch = new Stopwatch();
+        watch.Start();
+        var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
+        watch.Stop();
+
+        ShowResults(watch, getRowsResponse);
+    }
+
+    private static async Task PromptUserForTableRowCount(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    {
+        // Prepare the request
+        var getTotalRowCountRequest = CreateGetTotalRowCountRequest(tableSchemaName, tableName);
+
+        var watch = new Stopwatch();
+        watch.Start();
+        var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, headers);
+        watch.Stop();
+
+        ShowResults(watch, getTotalRowCountResponse);
+    }
+
+    private static Dictionary<string, string> PromptUserForColumnValuePairs()
+    {
+        var insertedData = new Dictionary<string, string>();
+
+        while (true)
+        {
+            Console.WriteLine("Enter column name (leave empty to finish):");
+            var columnName = Console.ReadLine();
+
+            if (string.IsNullOrWhiteSpace(columnName))
+                break;
+
+            Console.WriteLine($"Enter value for column '{columnName}':");
+            var columnValue = Console.ReadLine() ?? string.Empty;
+
+            insertedData[columnName] = columnValue;
+        }
+
+        Console.WriteLine("Collected columns and values for insertion:");
+        foreach (var kvp in insertedData)
+        {
+            Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+        }
+
+        return insertedData;
     }
 
     private static InsertRequest CreateInsertRequest(string tableSchemaName, string tableName, Dictionary<string, string> insertedData)
@@ -357,10 +517,43 @@ internal class Program
         return insertRequest;
     }
 
+    private static UpdateRequest CreateUpdateRequest(string tableSchemaName, string tableName, Dictionary<string, string> updatedData)
+    {
+        var updateRequest = new UpdateRequest
+        {
+            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
+            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
+            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
+            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
+            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
+            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
+            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
+            EncryptionKey = RedflyEncryptionKeys.AesKey,
+            ModifyCache = true
+        };
+
+        updateRequest.Row = new Row();
+
+        foreach (var kvp in updatedData)
+        {
+            updateRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
+        }
+
+        return updateRequest;
+    }
+
     private static void ShowResults(Stopwatch watch, InsertResponse insertResponse)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
         Console.WriteLine(JsonConvert.SerializeObject(insertResponse, Formatting.Indented));
+        Console.ResetColor();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+    }
+
+    private static void ShowResults(Stopwatch watch, UpdateResponse updateResponse)
+    {
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine(JsonConvert.SerializeObject(updateResponse, Formatting.Indented));
         Console.ResetColor();
         Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
     }
