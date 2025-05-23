@@ -72,12 +72,12 @@ namespace redflyDataAccessClient.APIs.SqlServer
         public string? Message { get; set; }
     }
 
-    public class SalesLTAddressClient
+    public class SalesLTAddressDataSource
     {
         private readonly NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient _client;
         private readonly string _encDbServer, _encDbName, _encSchema, _encTable, _encClientId, _encDbId, _encConnStr, _encryptionKey;
 
-        public SalesLTAddressClient()
+        public SalesLTAddressDataSource()
         {
             var channel = GrpcChannel.ForAddress(AppGrpcSession.GrpcUrl, new GrpcChannelOptions
             {
@@ -198,7 +198,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
                 EncryptedServerOnlyConnectionString = _encConnStr,
                 EncryptionKey = _encryptionKey,
                 ModifyCache = modifyCache,
-                Row = MapAddressToRow(address)
+                Row = MapAddressToRow(address, DbOperationType.Insert)
             };
             var resp = await _client.InsertAsync(req, AppGrpcSession.Headers!);
             return new InsertedData
@@ -247,7 +247,7 @@ namespace redflyDataAccessClient.APIs.SqlServer
                 EncryptedServerOnlyConnectionString = _encConnStr,
                 EncryptionKey = _encryptionKey,
                 ModifyCache = modifyCache,
-                Row = MapAddressToRow(address)
+                Row = MapAddressToRow(address, DbOperationType.Update)
             };
             var resp = await _client.UpdateAsync(req, AppGrpcSession.Headers!);
             return new UpdatedData
@@ -283,10 +283,16 @@ namespace redflyDataAccessClient.APIs.SqlServer
         }
 
         // Helper: Map SalesLTAddress to proto Row
-        private static Row MapAddressToRow(SalesLTAddress address)
+        private static Row MapAddressToRow(SalesLTAddress address, DbOperationType dbOperationType)
         {
             var row = new Row();
-            row.Entries.Add(new RowEntry { Column = "AddressID", Value = new Value { StringValue = address.AddressID.ToString() } });
+
+            if (dbOperationType != DbOperationType.Insert)
+            {
+                //Do not add primary key for inserts
+                row.Entries.Add(new RowEntry { Column = "AddressID", Value = new Value { StringValue = address.AddressID.ToString() } });
+            }
+
             row.Entries.Add(new RowEntry { Column = "AddressLine1", Value = new Value { StringValue = address.AddressLine1 } });
             row.Entries.Add(new RowEntry { Column = "AddressLine2", Value = new Value { StringValue = address.AddressLine2 } });
             row.Entries.Add(new RowEntry { Column = "City", Value = new Value { StringValue = address.City } });
@@ -294,8 +300,16 @@ namespace redflyDataAccessClient.APIs.SqlServer
             row.Entries.Add(new RowEntry { Column = "CountryRegion", Value = new Value { StringValue = address.CountryRegion } });
             row.Entries.Add(new RowEntry { Column = "PostalCode", Value = new Value { StringValue = address.PostalCode } });
             row.Entries.Add(new RowEntry { Column = "rowguid", Value = new Value { StringValue = address.Rowguid.ToString() } });
-            row.Entries.Add(new RowEntry { Column = "ModifiedDate", Value = new Value { StringValue = address.ModifiedDate.ToString("o") } });
-            row.Entries.Add(new RowEntry { Column = "Version", Value = new Value { StringValue = Convert.ToBase64String(address.Version ?? Array.Empty<byte>()) } });
+
+            if (address.ModifiedDate != DateTime.MinValue)
+            {
+                row.Entries.Add(new RowEntry { Column = "ModifiedDate", Value = new Value { StringValue = address.ModifiedDate.ToString("yyyy-MM-dd HH:mm:ss.fff") } });
+            }
+
+            // The Version column is a special timestamp column in our system and we never set it to a value
+            // for inserts or updates.
+            //row.Entries.Add(new RowEntry { Column = "Version", Value = new Value { StringValue = Convert.ToBase64String(address.Version ?? Array.Empty<byte>()) } });
+
             return row;
         }
     }

@@ -243,22 +243,191 @@ internal class Program
         Console.WriteLine();
 
         Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine("// No more SQL queries - just create the object");
-        Console.WriteLine("var addressClient = new SalesLTAddressClient();");
+        Console.WriteLine("// Create the data source object.");
+        Console.WriteLine("var addressClient = new SalesLTAddressDataSource();");
         Console.ResetColor();
-        var addressClient = new SalesLTAddressClient();
+        var addressClient = new SalesLTAddressDataSource();
 
         await ShowTotalRowCountApiUsage(addressClient);
+
+        Console.WriteLine("Press ANY key to continue...");
+        Console.ReadKey();
+        Console.WriteLine();
+
         var rowsData = await ShowGetRowsApiUsage(addressClient);
+
+        Console.WriteLine("Press ANY key to continue...");
+        Console.ReadKey();
+        Console.WriteLine();
 
         if (rowsData != null &&
             rowsData.Rows.Count > 0)
         {
             var rowData = await ShowGetApiUsage(addressClient, rowsData.Rows[0]);
+
+            Console.WriteLine("Press ANY key to continue...");
+            Console.ReadKey();
+            Console.WriteLine();
+        }
+
+        var inserted = await ShowInsertApiUsage(addressClient);
+
+        Console.WriteLine("Press ANY key to continue...");
+        Console.ReadKey();
+        Console.WriteLine();
+
+        if (inserted != null && 
+            inserted.InsertedRow != null)
+        {
+            await ShowUpdateApiUsage(addressClient, inserted);
+
+            Console.WriteLine("Press ANY key to continue...");
+            Console.ReadKey();
+            Console.WriteLine();
+
+            await ShowDeleteApiUsage(addressClient, inserted);
+
+            Console.WriteLine("Press ANY key to continue...");
+            Console.ReadKey();
+            Console.WriteLine();
+        }
+
+        Console.WriteLine("Nothing else to demo.");
+    }
+
+    private static async Task ShowDeleteApiUsage(SalesLTAddressDataSource addressClient, InsertedData inserted)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine($"// Delete the record");
+        Console.WriteLine("// Call the delete method with the primary key value.");
+        Console.WriteLine($"var deleted = await addressClient.DeleteAsync({inserted.InsertedRow.AddressID});");
+        Console.ResetColor();
+
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            watch.Restart();
+            var deleted = await addressClient.DeleteAsync(inserted.InsertedRow.AddressID);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+            ShowObjectResult(watch, deleted);
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
         }
     }
 
-    private static async Task<RowData?> ShowGetApiUsage(SalesLTAddressClient addressClient, SalesLTAddress salesLTAddress)
+    private static async Task ShowUpdateApiUsage(SalesLTAddressDataSource addressClient, InsertedData inserted)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine($"// Update the city from '{inserted.InsertedRow.City}' to 'Redmond'");
+        Console.WriteLine($"inserted.InsertedRow.City = \"Redmond\";");
+        Console.WriteLine();
+        Console.WriteLine("// Call the update method with the object.");
+        Console.WriteLine("var updated = await addressClient.UpdateAsync(inserted.InsertedRow);");
+        Console.ResetColor();
+
+        inserted.InsertedRow.City = "Redmond";
+
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            watch.Restart();
+            var updated = await addressClient.UpdateAsync(inserted.InsertedRow);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+            ShowObjectResult(watch, updated);
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
+        }
+    }
+
+    private static async Task<InsertedData?> ShowInsertApiUsage(SalesLTAddressDataSource addressClient)
+    {
+        var newAddress = new SalesLTAddress
+        {
+            AddressLine1 = "123 Main St",
+            AddressLine2 = "Apt 4B",
+            City = "Seattle",
+            StateProvince = "WA",
+            CountryRegion = "USA",
+            PostalCode = "98101",
+            ModifiedDate = DateTime.Now
+        };
+
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// Create a new object to insert it into the database.");
+        Console.WriteLine("var newAddress = new SalesLTAddress");
+        Console.WriteLine("{");
+        Console.WriteLine("    AddressLine1 = \"123 Main St\",");
+        Console.WriteLine("    AddressLine2 = \"Apt 4B\",");
+        Console.WriteLine("    City = \"Seattle\",");
+        Console.WriteLine("    StateProvince = \"WA\",");
+        Console.WriteLine("    CountryRegion = \"USA\",");
+        Console.WriteLine("    PostalCode = \"98101\"");
+        Console.WriteLine("    ModifiedDate = DateTime.Now");
+        Console.WriteLine("};");
+
+        Console.WriteLine();
+        Console.WriteLine("// Call the insert method with the object.");
+        Console.WriteLine("var inserted = await addressClient.InsertAsync(newAddress);");
+        Console.ResetColor();
+
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+        InsertedData? inserted = null;
+
+        try
+        {
+            watch.Restart();
+            inserted = await addressClient.InsertAsync(newAddress);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+            ShowObjectResult(watch, inserted);
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
+        }
+
+        return inserted;
+    }
+
+    private static async Task<RowData?> ShowGetApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddress salesLTAddress)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get a row by its primary key");
@@ -279,7 +448,7 @@ internal class Program
             cts.Cancel();
             await progressTask;
             Console.WriteLine();
-            ShowResultsAsObject(watch, rowData);
+            ShowObjectResult(watch, rowData);
         }
         catch (Exception ex)
         {
@@ -294,7 +463,7 @@ internal class Program
         return rowData;
     }
 
-    private static async Task<RowsData?> ShowGetRowsApiUsage(SalesLTAddressClient addressClient)
+    private static async Task<RowsData?> ShowGetRowsApiUsage(SalesLTAddressDataSource addressClient)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get rows with support for pagination");
@@ -315,7 +484,7 @@ internal class Program
             cts.Cancel();
             await progressTask;
             Console.WriteLine();
-            ShowResultsAsObject(watch, rowsData);
+            ShowObjectResult(watch, rowsData);
         }
         catch (Exception ex)
         {
@@ -330,7 +499,7 @@ internal class Program
         return rowsData;
     }
 
-    private static async Task ShowTotalRowCountApiUsage(SalesLTAddressClient addressClient)
+    private static async Task ShowTotalRowCountApiUsage(SalesLTAddressDataSource addressClient)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Make the method call");
@@ -350,7 +519,7 @@ internal class Program
             cts.Cancel();
             await progressTask;
             Console.WriteLine();
-            ShowResultsAsObject(watch, rowCount);
+            ShowObjectResult(watch, rowCount);
         }
         catch (Exception ex)
         {
@@ -363,7 +532,7 @@ internal class Program
         }
     }
 
-    private static void ShowResultsAsObject<T>(Stopwatch watch, T result)
+    private static void ShowObjectResult<T>(Stopwatch watch, T result)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get the result as an object.");
