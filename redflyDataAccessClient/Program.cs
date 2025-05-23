@@ -299,11 +299,7 @@ internal class Program
         }
     }
 
-    private static async Task PromptUserForDeleteRow(
-                                Metadata headers,
-                                NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient,
-                                string tableSchemaName,
-                                string tableName)
+    private static async Task PromptUserForDeleteRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         // Collect primary key column(s) and value(s)
         var primaryKeyValues = new Dictionary<string, string>();
@@ -329,18 +325,33 @@ internal class Program
 
         var deleteRequest = CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
 
-        var watch = new Stopwatch();
-        watch.Start();
-        var deleteResponse = await sqlServerApiClient.DeleteAsync(deleteRequest, headers);
-        watch.Stop();
+        Console.WriteLine("Getting results from the server...");
 
-        ShowResults(watch, deleteResponse);
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            var deleteResponse = await sqlServerApiClient.DeleteAsync(deleteRequest, headers);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+
+            ShowResults(watch, deleteResponse);
+        }
+        catch
+        {
+            cts.Cancel();
+            await progressTask;
+
+            throw;
+        }
     }
 
-    private static DeleteRequest CreateDeleteRequest(
-        string tableSchemaName,
-        string tableName,
-        Dictionary<string, string> primaryKeyValues)
+    private static DeleteRequest CreateDeleteRequest(string tableSchemaName, string tableName, Dictionary<string, string> primaryKeyValues)
     {
         var deleteRequest = new DeleteRequest
         {
@@ -379,12 +390,30 @@ internal class Program
 
         var updateRequest = CreateUpdateRequest(tableSchemaName, tableName, updatedData);
 
-        var watch = new Stopwatch();
-        watch.Start();
-        var updateResponse = await sqlServerApiClient.UpdateAsync(updateRequest, headers);
-        watch.Stop();
+        Console.WriteLine("Getting results from the server...");
 
-        ShowResults(watch, updateResponse);
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            var updateResponse = await sqlServerApiClient.UpdateAsync(updateRequest, headers);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+
+            ShowResults(watch, updateResponse);
+        }
+        catch
+        {
+            cts.Cancel();
+            await progressTask;
+
+            throw;
+        }
     }
 
     private static async Task PromptUserForInsertRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
@@ -394,12 +423,30 @@ internal class Program
 
         var insertRequest = CreateInsertRequest(tableSchemaName, tableName, insertedData);
 
-        var watch = new Stopwatch();
-        watch.Start();
-        var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, headers);
-        watch.Stop();
+        Console.WriteLine("Getting results from the server...");
 
-        ShowResults(watch, insertResponse);
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, headers);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+
+            ShowResults(watch, insertResponse);
+        }
+        catch
+        {
+            cts.Cancel();
+            await progressTask;
+
+            throw;
+        }
     }
 
     private static async Task PromptUserForGetTableRow(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
@@ -421,12 +468,30 @@ internal class Program
 
         GetRequest getRequest = CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
 
-        var watch = new Stopwatch();
-        watch.Start();
-        var getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
-        watch.Stop();
+        Console.WriteLine("Getting results from the server...");
 
-        ShowResults(watch, getResponse);
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            var getResponse = await sqlServerApiClient.GetAsync(getRequest, headers);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+
+            ShowResults(watch, getResponse);
+        }
+        catch
+        {
+            cts.Cancel();
+            await progressTask;
+
+            throw;
+        }
     }
 
     private static async Task PromptUserForGetTableRows(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
@@ -444,12 +509,30 @@ internal class Program
 
         var getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
 
-        var watch = new Stopwatch();
-        watch.Start();
-        var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
-        watch.Stop();
+        Console.WriteLine("Getting results from the server...");
 
-        ShowResults(watch, getRowsResponse);
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, headers);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+
+            ShowResults(watch, getRowsResponse);
+        }
+        catch
+        {
+            cts.Cancel();
+            await progressTask;
+
+            throw;
+        }
     }
 
     private static async Task PromptUserForTableRowCount(Metadata headers, NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
@@ -457,12 +540,30 @@ internal class Program
         // Prepare the request
         var getTotalRowCountRequest = CreateGetTotalRowCountRequest(tableSchemaName, tableName);
 
-        var watch = new Stopwatch();
-        watch.Start();
-        var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, headers);
-        watch.Stop();
+        Console.WriteLine("Getting results from the server...");
 
-        ShowResults(watch, getTotalRowCountResponse);
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            var watch = new Stopwatch();
+            watch.Start();
+            var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, headers);
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+
+            ShowResults(watch, getTotalRowCountResponse);
+        }
+        catch
+        {
+            cts.Cancel();
+            await progressTask;
+
+            throw;
+        }
     }
 
     private static Dictionary<string, string> PromptUserForColumnValuePairs()
