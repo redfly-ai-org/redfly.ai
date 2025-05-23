@@ -202,44 +202,8 @@ internal class Program
                 Console.WriteLine("The API calls can be made now!");
                 Console.ResetColor();
                 Console.WriteLine();
-
-                var watch = new Stopwatch();
-                Console.WriteLine("Let us now explore the power of redfly.ai APIs accessed through Grpc:");
-                Console.WriteLine();
-
-                Console.ForegroundColor = ConsoleColor.DarkCyan;
-                Console.WriteLine("// No more SQL queries - just create the object");
-                Console.WriteLine("var addressClient = new SalesLTAddressClient();");
-                var addressClient = new SalesLTAddressClient();
-
-                Console.WriteLine("// Make the method call");
-                Console.WriteLine("var rowCount = await addressClient.GetTotalRowCountAsync();");
-                Console.ResetColor();
-
-                cts = new CancellationTokenSource();
-                progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
-
-                try
-                {
-                    watch.Restart();
-                    var rowCount = await addressClient.GetTotalRowCountAsync();
-                    watch.Stop();
-
-                    cts.Cancel();
-                    await progressTask;
-                    Console.WriteLine();
-                    ShowResultsAsObject(watch, rowCount);
-                }
-                catch (Exception ex)
-                {
-                    cts.Cancel();
-                    await progressTask;
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine($"ERROR: {ex.Message}");
-                    Console.ResetColor();
-                }
-
+                
+                await ShowClientApiUsage();
                 await TestGrpcAPIsDirectly(channel);
             }
 
@@ -258,6 +222,51 @@ internal class Program
             Console.ReadKey();
 
             RedflyLocalDatabase.Dispose();
+        }
+    }
+
+    private static async Task ShowClientApiUsage()
+    {
+        Console.WriteLine("Let us now explore the power of redfly.ai APIs accessed through Grpc:");
+        Console.WriteLine();
+
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// No more SQL queries - just create the object");
+        Console.WriteLine("var addressClient = new SalesLTAddressClient();");
+        var addressClient = new SalesLTAddressClient();
+
+        await ShowTotalRowCountApiUsage(addressClient);
+    }
+
+    private static async Task ShowTotalRowCountApiUsage(SalesLTAddressClient addressClient)
+    {
+        Console.WriteLine("// Make the method call");
+        Console.WriteLine("var rowCount = await addressClient.GetTotalRowCountAsync();");
+        Console.ResetColor();
+
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            watch.Restart();
+            var rowCount = await addressClient.GetTotalRowCountAsync();
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+            ShowResultsAsObject(watch, rowCount);
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
         }
     }
 
