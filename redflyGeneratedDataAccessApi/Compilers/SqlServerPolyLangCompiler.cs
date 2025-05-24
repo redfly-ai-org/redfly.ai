@@ -183,6 +183,12 @@ public class SqlServerPolyLangCompiler
             // If it's a non-nullable reference type, initialize to string.Empty
             if (csharpType == "string" && !col.IsNullable)
                 sb.AppendLine($"    public string {propName} {{ get; set; }} = string.Empty;");
+            // If it's a non-nullable byte array, initialize to Array.Empty<byte>()
+            else if (csharpType == "byte[]" && !col.IsNullable)
+                sb.AppendLine($"    public byte[] {propName} {{ get; set; }} = Array.Empty<byte>();");
+            // If it's a nullable byte array
+            else if (csharpType == "byte[]" && col.IsNullable)
+                sb.AppendLine($"    public byte[]? {propName} {{ get; set; }}");
             // If it's a non-nullable value type, just declare
             else if (!col.IsNullable && (csharpType == "Guid" || csharpType == "int" || csharpType == "decimal" || csharpType == "byte" || csharpType == "short" || csharpType == "long" || csharpType == "bool" || csharpType == "float" || csharpType == "double"))
                 sb.AppendLine($"    public {csharpType} {propName} {{ get; set; }}");
@@ -377,6 +383,11 @@ public class SqlServerPolyLangCompiler
                 sb.AppendLine("        {");
                 sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}.ToString(\"yyyy-MM-dd HH:mm:ss.fff\") }} }});");
                 sb.AppendLine("        }");
+            }
+            // byte[]
+            else if (csharpType == "byte[]" || csharpType == "byte[]?")
+            {
+                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName} != null ? Convert.ToBase64String(entity.{propName}) : null }} }});");
             }
             // Value types (no ?)
             else if (csharpType == "Guid" || csharpType == "int" || csharpType == "decimal" || csharpType == "byte" || csharpType == "short" || csharpType == "long" || csharpType == "bool" || csharpType == "float" || csharpType == "double")
