@@ -10,7 +10,7 @@ using System.Diagnostics;
 
 namespace redflyDataAccessClient;
 
-internal class GrpcApiDemonstrator
+internal class GrpcServerApiDemonstrator
 {
 
     internal static async Task Demonstrate(GrpcChannel channel)
@@ -116,7 +116,7 @@ internal class GrpcApiDemonstrator
             return;
         }
 
-        var deleteRequest = GrpcApiRequests.CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
+        var deleteRequest = GrpcServerApiRequests.CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -158,7 +158,7 @@ internal class GrpcApiDemonstrator
         Console.WriteLine("First enter the details for the row to be updated - this should include the primary keys and updated values.");
         var updatedData = PromptUserForColumnValuePairs();
 
-        var updateRequest = GrpcApiRequests.CreateUpdateRequest(tableSchemaName, tableName, updatedData);
+        var updateRequest = GrpcServerApiRequests.CreateUpdateRequest(tableSchemaName, tableName, updatedData);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -191,7 +191,7 @@ internal class GrpcApiDemonstrator
         Console.WriteLine("First enter the details for the row to be inserted - only NOT NULL columns have to be mandatorily entered.");
         var insertedData = PromptUserForColumnValuePairs();
 
-        var insertRequest = GrpcApiRequests.CreateInsertRequest(tableSchemaName, tableName, insertedData);
+        var insertRequest = GrpcServerApiRequests.CreateInsertRequest(tableSchemaName, tableName, insertedData);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -236,7 +236,7 @@ internal class GrpcApiDemonstrator
             primaryKeyColumnValue = Console.ReadLine();
         }
 
-        GetRequest getRequest = GrpcApiRequests.CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
+        GetRequest getRequest = GrpcServerApiRequests.CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -277,7 +277,7 @@ internal class GrpcApiDemonstrator
 
         Console.WriteLine();
 
-        var getRowsRequest = GrpcApiRequests.CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
+        var getRowsRequest = GrpcServerApiRequests.CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -308,7 +308,7 @@ internal class GrpcApiDemonstrator
     private static async Task PromptUserForTableRowCount(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         // Prepare the request
-        var getTotalRowCountRequest = GrpcApiRequests.CreateGetTotalRowCountRequest(tableSchemaName, tableName);
+        var getTotalRowCountRequest = GrpcServerApiRequests.CreateGetTotalRowCountRequest(tableSchemaName, tableName);
 
         Console.WriteLine("Getting results from the server...");
 

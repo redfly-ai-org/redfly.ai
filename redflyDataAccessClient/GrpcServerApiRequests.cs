@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace redflyDataAccessClient;
-internal class GrpcApiRequests
+internal class GrpcServerApiRequests
 {
 
     internal static DeleteRequest CreateDeleteRequest(string tableSchemaName, string tableName, Dictionary<string, string> primaryKeyValues)
