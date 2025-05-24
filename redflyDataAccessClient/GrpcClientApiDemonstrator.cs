@@ -43,7 +43,7 @@ internal class GrpcClientApiDemonstrator
             Console.ReadKey();
             Console.WriteLine();
 
-            await ShowGetSqlRowsApiUsage(addressDataSource, rowsData.Rows[0].AddressId);
+            await ShowJoinUsingGetSqlRowsApi(addressDataSource, rowsData.Rows[0].AddressId);
 
             Console.WriteLine("Press ANY key to continue...");
             Console.ReadKey();
@@ -283,7 +283,7 @@ internal class GrpcClientApiDemonstrator
         return rowsData;
     }
 
-    private static async Task ShowGetSqlRowsApiUsage(SalesLTAddressDataSource addressDataSource, int addressId)
+    private static async Task ShowJoinUsingGetSqlRowsApi(SalesLTAddressDataSource addressDataSource, int addressId)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Execute a custom SQL query joining two tables");
