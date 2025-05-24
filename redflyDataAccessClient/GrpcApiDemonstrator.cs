@@ -116,7 +116,7 @@ internal class GrpcApiDemonstrator
             return;
         }
 
-        var deleteRequest = CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
+        var deleteRequest = GrpcApiRequests.CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -144,30 +144,6 @@ internal class GrpcApiDemonstrator
         }
     }
 
-    private static DeleteRequest CreateDeleteRequest(string tableSchemaName, string tableName, Dictionary<string, string> primaryKeyValues)
-    {
-        var deleteRequest = new DeleteRequest
-        {
-            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString(
-                $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-            EncryptionKey = RedflyEncryptionKeys.AesKey,
-            ModifyCache = true
-        };
-
-        foreach (var kvp in primaryKeyValues)
-        {
-            deleteRequest.PrimaryKeyValues.Add(kvp.Key, kvp.Value);
-        }
-
-        return deleteRequest;
-    }
-
     private static void ShowResultsAsJson<T>(Stopwatch watch, T response)
     {
         Console.ForegroundColor = ConsoleColor.Cyan;
@@ -182,7 +158,7 @@ internal class GrpcApiDemonstrator
         Console.WriteLine("First enter the details for the row to be updated - this should include the primary keys and updated values.");
         var updatedData = PromptUserForColumnValuePairs();
 
-        var updateRequest = CreateUpdateRequest(tableSchemaName, tableName, updatedData);
+        var updateRequest = GrpcApiRequests.CreateUpdateRequest(tableSchemaName, tableName, updatedData);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -215,7 +191,7 @@ internal class GrpcApiDemonstrator
         Console.WriteLine("First enter the details for the row to be inserted - only NOT NULL columns have to be mandatorily entered.");
         var insertedData = PromptUserForColumnValuePairs();
 
-        var insertRequest = CreateInsertRequest(tableSchemaName, tableName, insertedData);
+        var insertRequest = GrpcApiRequests.CreateInsertRequest(tableSchemaName, tableName, insertedData);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -260,7 +236,7 @@ internal class GrpcApiDemonstrator
             primaryKeyColumnValue = Console.ReadLine();
         }
 
-        GetRequest getRequest = CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
+        GetRequest getRequest = GrpcApiRequests.CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -301,7 +277,7 @@ internal class GrpcApiDemonstrator
 
         Console.WriteLine();
 
-        var getRowsRequest = CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
+        var getRowsRequest = GrpcApiRequests.CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -332,7 +308,7 @@ internal class GrpcApiDemonstrator
     private static async Task PromptUserForTableRowCount(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
     {
         // Prepare the request
-        var getTotalRowCountRequest = CreateGetTotalRowCountRequest(tableSchemaName, tableName);
+        var getTotalRowCountRequest = GrpcApiRequests.CreateGetTotalRowCountRequest(tableSchemaName, tableName);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -385,108 +361,6 @@ internal class GrpcApiDemonstrator
         }
 
         return insertedData;
-    }
-
-    private static InsertRequest CreateInsertRequest(string tableSchemaName, string tableName, Dictionary<string, string> insertedData)
-    {
-        var insertRequest = new InsertRequest
-        {
-            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-            EncryptionKey = RedflyEncryptionKeys.AesKey,
-            ModifyCache = true
-        };
-
-        insertRequest.Row = new Row();
-
-        foreach (var kvp in insertedData)
-        {
-            insertRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
-        }
-
-        return insertRequest;
-    }
-
-    private static UpdateRequest CreateUpdateRequest(string tableSchemaName, string tableName, Dictionary<string, string> updatedData)
-    {
-        var updateRequest = new UpdateRequest
-        {
-            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-            EncryptionKey = RedflyEncryptionKeys.AesKey,
-            ModifyCache = true
-        };
-
-        updateRequest.Row = new Row();
-
-        foreach (var kvp in updatedData)
-        {
-            updateRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
-        }
-
-        return updateRequest;
-    }
-
-    private static GetRequest CreateGetRequest(string tableSchemaName, string tableName, string primaryKeyColumnName, string primaryKeyColumnValue)
-    {
-        var getRequest = new GetRequest()
-        {
-            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-            EncryptionKey = RedflyEncryptionKeys.AesKey
-        };
-
-        getRequest.PrimaryKeyValues.Add(primaryKeyColumnName, primaryKeyColumnValue);
-        return getRequest;
-    }
-
-    private static GetRowsRequest CreateGetRowsCachedRequest(string tableSchemaName, string tableName, string orderByColumnName, string orderByColumnSort)
-    {
-        return new GetRowsRequest
-        {
-            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-            EncryptionKey = RedflyEncryptionKeys.AesKey,
-            OrderbyColumnName = orderByColumnName,
-            OrderbyColumnSort = orderByColumnSort,
-            PageNo = 1,
-            PageSize = 5
-        };
-    }
-
-    private static GetTotalRowCountRequest CreateGetTotalRowCountRequest(string tableSchemaName, string tableName)
-    {
-        return new GetTotalRowCountRequest
-        {
-            EncryptedDatabaseServerName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.HostName),
-            EncryptedDatabaseName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name),
-            EncryptedTableSchemaName = RedflyEncryption.EncryptToString(tableSchemaName),
-            EncryptedTableName = RedflyEncryption.EncryptToString(tableName),
-            EncryptedClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.ClientId),
-            EncryptedDatabaseId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id),
-            EncryptedServerOnlyConnectionString = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;"),
-            EncryptionKey = RedflyEncryptionKeys.AesKey
-        };
     }
 
 }
