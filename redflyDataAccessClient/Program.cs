@@ -262,17 +262,17 @@ internal class Program
 
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Create the data source object.");
-        Console.WriteLine("var addressClient = new SalesLTAddressDataSource();");
+        Console.WriteLine("var addressDataSource = new SalesLTAddressDataSource();");
         Console.ResetColor();
-        var addressClient = new SalesLTAddressDataSource();
+        var addressDataSource = new SalesLTAddressDataSource();
 
-        await ShowTotalRowCountApiUsage(addressClient);
+        await ShowTotalRowCountApiUsage(addressDataSource);
 
         Console.WriteLine("Press ANY key to continue...");
         Console.ReadKey();
         Console.WriteLine();
 
-        var rowsData = await ShowGetRowsApiUsage(addressClient);
+        var rowsData = await ShowGetRowsApiUsage(addressDataSource);
 
         Console.WriteLine("Press ANY key to continue...");
         Console.ReadKey();
@@ -281,14 +281,14 @@ internal class Program
         if (rowsData != null &&
             rowsData.Rows.Count > 0)
         {
-            var rowData = await ShowGetApiUsage(addressClient, rowsData.Rows[0]);
+            var rowData = await ShowGetApiUsage(addressDataSource, rowsData.Rows[0]);
 
             Console.WriteLine("Press ANY key to continue...");
             Console.ReadKey();
             Console.WriteLine();
         }
 
-        var inserted = await ShowInsertApiUsage(addressClient);
+        var inserted = await ShowInsertApiUsage(addressDataSource);
 
         Console.WriteLine("Press ANY key to continue...");
         Console.ReadKey();
@@ -297,13 +297,13 @@ internal class Program
         if (inserted != null && 
             inserted.InsertedRow != null)
         {
-            await ShowUpdateApiUsage(addressClient, inserted);
+            await ShowUpdateApiUsage(addressDataSource, inserted);
 
             Console.WriteLine("Press ANY key to continue...");
             Console.ReadKey();
             Console.WriteLine();
 
-            await ShowDeleteApiUsage(addressClient, inserted);
+            await ShowDeleteApiUsage(addressDataSource, inserted);
 
             Console.WriteLine("Press ANY key to continue...");
             Console.ReadKey();
@@ -313,12 +313,12 @@ internal class Program
         Console.WriteLine("Nothing else to demo.");
     }
 
-    private static async Task ShowDeleteApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddressInsertedData inserted)
+    private static async Task ShowDeleteApiUsage(SalesLTAddressDataSource addressDataSource, SalesLTAddressInsertedData inserted)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine($"// Delete the record");
         Console.WriteLine("// Call the delete method with the primary key value.");
-        Console.WriteLine($"var deleted = await addressClient.DeleteAsync({inserted.InsertedRow.AddressId});");
+        Console.WriteLine($"var deleted = await addressDataSource.DeleteAsync({inserted.InsertedRow.AddressId});");
         Console.ResetColor();
 
         var watch = new Stopwatch();
@@ -328,7 +328,7 @@ internal class Program
         try
         {
             watch.Restart();
-            var deleted = await addressClient.DeleteAsync(inserted.InsertedRow.AddressId);
+            var deleted = await addressDataSource.DeleteAsync(inserted.InsertedRow.AddressId);
             watch.Stop();
 
             cts.Cancel();
@@ -347,14 +347,14 @@ internal class Program
         }
     }
 
-    private static async Task ShowUpdateApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddressInsertedData inserted)
+    private static async Task ShowUpdateApiUsage(SalesLTAddressDataSource addressDataSource, SalesLTAddressInsertedData inserted)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine($"// Update the city from '{inserted.InsertedRow.City}' to 'Redmond'");
         Console.WriteLine($"inserted.InsertedRow.City = \"Redmond\";");
         Console.WriteLine();
         Console.WriteLine("// Call the update method with the object.");
-        Console.WriteLine("var updated = await addressClient.UpdateAsync(inserted.InsertedRow);");
+        Console.WriteLine("var updated = await addressDataSource.UpdateAsync(inserted.InsertedRow);");
         Console.ResetColor();
 
         inserted.InsertedRow.City = "Redmond";
@@ -366,7 +366,7 @@ internal class Program
         try
         {
             watch.Restart();
-            var updated = await addressClient.UpdateAsync(inserted.InsertedRow);
+            var updated = await addressDataSource.UpdateAsync(inserted.InsertedRow);
             watch.Stop();
 
             cts.Cancel();
@@ -385,7 +385,7 @@ internal class Program
         }
     }
 
-    private static async Task<SalesLTAddressInsertedData?> ShowInsertApiUsage(SalesLTAddressDataSource addressClient)
+    private static async Task<SalesLTAddressInsertedData?> ShowInsertApiUsage(SalesLTAddressDataSource addressDataSource)
     {
         var newAddress = new SalesLTAddress
         {
@@ -413,7 +413,7 @@ internal class Program
 
         Console.WriteLine();
         Console.WriteLine("// Call the insert method with the object.");
-        Console.WriteLine("var inserted = await addressClient.InsertAsync(newAddress);");
+        Console.WriteLine("var inserted = await addressDataSource.InsertAsync(newAddress);");
         Console.ResetColor();
 
         var watch = new Stopwatch();
@@ -424,7 +424,7 @@ internal class Program
         try
         {
             watch.Restart();
-            inserted = await addressClient.InsertAsync(newAddress);
+            inserted = await addressDataSource.InsertAsync(newAddress);
             watch.Stop();
 
             cts.Cancel();
@@ -445,11 +445,11 @@ internal class Program
         return inserted;
     }
 
-    private static async Task<SalesLTAddressRowData?> ShowGetApiUsage(SalesLTAddressDataSource addressClient, SalesLTAddress salesLTAddress)
+    private static async Task<SalesLTAddressRowData?> ShowGetApiUsage(SalesLTAddressDataSource addressDataSource, SalesLTAddress salesLTAddress)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get a row by its primary key");
-        Console.WriteLine("var rowData = await addressClient.GetAsync(salesLTAddress.AddressId);");
+        Console.WriteLine("var rowData = await addressDataSource.GetAsync(salesLTAddress.AddressId);");
         Console.ResetColor();
 
         SalesLTAddressRowData? rowData = null;
@@ -460,7 +460,7 @@ internal class Program
         try
         {
             watch.Restart();
-            rowData = await addressClient.GetAsync(salesLTAddress.AddressId);
+            rowData = await addressDataSource.GetAsync(salesLTAddress.AddressId);
             watch.Stop();
 
             cts.Cancel();
@@ -481,11 +481,11 @@ internal class Program
         return rowData;
     }
 
-    private static async Task<SalesLTAddressRowsData?> ShowGetRowsApiUsage(SalesLTAddressDataSource addressClient)
+    private static async Task<SalesLTAddressRowsData?> ShowGetRowsApiUsage(SalesLTAddressDataSource addressDataSource)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get rows with support for pagination");
-        Console.WriteLine("var rowsData = await addressClient.GetRowsAsync(pageNo: 1, pageSize: 5);");
+        Console.WriteLine("var rowsData = await addressDataSource.GetRowsAsync(pageNo: 1, pageSize: 5);");
         Console.ResetColor();
 
         SalesLTAddressRowsData? rowsData = null;
@@ -496,7 +496,7 @@ internal class Program
         try
         {
             watch.Restart();
-            rowsData = await addressClient.GetRowsAsync(pageNo: 1, pageSize: 5);
+            rowsData = await addressDataSource.GetRowsAsync(pageNo: 1, pageSize: 5);
             watch.Stop();
 
             cts.Cancel();
@@ -517,11 +517,11 @@ internal class Program
         return rowsData;
     }
 
-    private static async Task ShowTotalRowCountApiUsage(SalesLTAddressDataSource addressClient)
+    private static async Task ShowTotalRowCountApiUsage(SalesLTAddressDataSource addressDataSource)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Make the method call");
-        Console.WriteLine("var rowCount = await addressClient.GetTotalRowCountAsync();");
+        Console.WriteLine("var rowCount = await addressDataSource.GetTotalRowCountAsync();");
         Console.ResetColor();
 
         var watch = new Stopwatch();
@@ -531,7 +531,7 @@ internal class Program
         try
         {
             watch.Restart();
-            var rowCount = await addressClient.GetTotalRowCountAsync();
+            var rowCount = await addressDataSource.GetTotalRowCountAsync();
             watch.Stop();
 
             cts.Cancel();
