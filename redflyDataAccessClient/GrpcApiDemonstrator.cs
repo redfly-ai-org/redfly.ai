@@ -13,7 +13,7 @@ namespace redflyDataAccessClient;
 internal class GrpcApiDemonstrator
 {
 
-    internal static async Task DemonstrateGrpcAPIsDirectly(GrpcChannel channel)
+    internal static async Task Demonstrate(GrpcChannel channel)
     {
         var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
 

@@ -235,7 +235,7 @@ internal class Program
                     Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
                 }
 
-                await GrpcApiDemonstrator.DemonstrateGrpcAPIsDirectly(channel);
+                await GrpcApiDemonstrator.Demonstrate(channel);
             }
 
             Console.WriteLine("All API calls are completed!");
