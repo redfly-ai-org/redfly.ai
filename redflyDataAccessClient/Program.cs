@@ -207,6 +207,7 @@ internal class Program
                 Console.WriteLine();
 
                 Console.WriteLine("Do you want to generate the API classes for your database now? (y/n)");
+                Console.WriteLine("Entering 'y' will require you to exit the app after code generation so that the app can recompile.");
                 response = Console.ReadLine();
 
                 if (response != null &&

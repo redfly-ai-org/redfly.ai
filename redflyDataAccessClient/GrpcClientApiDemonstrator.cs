@@ -42,13 +42,13 @@ internal class GrpcClientApiDemonstrator
             Console.WriteLine("Press ANY key to continue...");
             Console.ReadKey();
             Console.WriteLine();
+
+            await ShowGetSqlRowsApiUsage(addressDataSource, rowsData.Rows[0].AddressId);
+
+            Console.WriteLine("Press ANY key to continue...");
+            Console.ReadKey();
+            Console.WriteLine();
         }
-
-        await ShowGetSqlRowsApiUsage(addressDataSource);
-
-        Console.WriteLine("Press ANY key to continue...");
-        Console.ReadKey();
-        Console.WriteLine();
 
         var inserted = await ShowInsertApiUsage(addressDataSource);
 
@@ -258,7 +258,11 @@ internal class GrpcClientApiDemonstrator
         try
         {
             watch.Restart();
-            rowsData = await addressDataSource.GetRowsAsync(pageNo: 1, pageSize: 5);
+            rowsData = await addressDataSource.GetRowsAsync(
+                                pageNo: 1, 
+                                pageSize: 5, 
+                                orderByColumnName: "City", 
+                                orderBySort: "asc");
             watch.Stop();
 
             cts.Cancel();
@@ -279,27 +283,26 @@ internal class GrpcClientApiDemonstrator
         return rowsData;
     }
 
-    private static async Task ShowGetSqlRowsApiUsage(SalesLTAddressDataSource addressDataSource)
+    private static async Task ShowGetSqlRowsApiUsage(SalesLTAddressDataSource addressDataSource, int addressId)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine("// Execute a custom SQL query joining multiple tables");
-        Console.WriteLine("// This SQL query joins SalesLT.Address with SalesLT.CustomerAddress and SalesLT.Customer tables");
+        Console.WriteLine("// Execute a custom SQL query joining two tables");
+        Console.WriteLine("// This SQL query gets an Address by its primary key and then");
+        Console.WriteLine("// finds the corresponding CustomerAddress row using the same AddressID");
         Console.WriteLine("string sqlQuery = @\"");
-        Console.WriteLine("    SELECT c.CustomerID, c.FirstName, c.LastName, a.AddressID, a.AddressLine1, a.City, a.StateProvince");
+        Console.WriteLine("    SELECT a.AddressID, a.AddressLine1, a.City, a.StateProvince, ");
+        Console.WriteLine("           ca.CustomerID, ca.AddressType");
         Console.WriteLine("    FROM SalesLT.Address a");
         Console.WriteLine("    JOIN SalesLT.CustomerAddress ca ON a.AddressID = ca.AddressID");
-        Console.WriteLine("    JOIN SalesLT.Customer c ON ca.CustomerID = c.CustomerID");
-        Console.WriteLine("    WHERE a.City = 'Seattle'");
-        Console.WriteLine("    ORDER BY c.LastName, c.FirstName\";");
+        Console.WriteLine($"    WHERE a.AddressID = {addressId}\";");
         Console.ResetColor();
 
         string sqlQuery = @"
-            SELECT c.CustomerID, c.FirstName, c.LastName, a.AddressID, a.AddressLine1, a.City, a.StateProvince
+            SELECT a.AddressID, a.AddressLine1, a.City, a.StateProvince, 
+                   ca.CustomerID, ca.AddressType
             FROM SalesLT.Address a
             JOIN SalesLT.CustomerAddress ca ON a.AddressID = ca.AddressID
-            JOIN SalesLT.Customer c ON ca.CustomerID = c.CustomerID
-            WHERE a.City = 'Seattle'
-            ORDER BY c.LastName, c.FirstName";
+            WHERE a.AddressID = " + addressId.ToString();
 
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
@@ -317,6 +320,8 @@ internal class GrpcClientApiDemonstrator
 
             Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.WriteLine("// Get the result as a list of rows.");
+            Console.WriteLine("// This demonstrates getting a specific Address by its primary key (AddressID = 1)");
+            Console.WriteLine("// and then getting the linked CustomerAddress data in one query.");
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Cyan;
@@ -329,7 +334,7 @@ internal class GrpcClientApiDemonstrator
 
             if (sqlRowsData.Rows.Count > 0)
             {
-                Console.WriteLine("First 5 rows of data (or all if less than 5):");
+                Console.WriteLine("First row of data:");
                 int displayCount = Math.Min(5, sqlRowsData.Rows.Count);
 
                 for (int i = 0; i < displayCount; i++)
@@ -358,6 +363,8 @@ internal class GrpcClientApiDemonstrator
             Console.WriteLine($"ERROR: {ex.Message}");
             Console.ResetColor();
         }
+
+        Console.WriteLine();
     }
 
     private static async Task ShowTotalRowCountApiUsage(SalesLTAddressDataSource addressDataSource)
