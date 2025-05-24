@@ -215,9 +215,13 @@ internal class Program
                         .GenerateForDatabase(
                             $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;Initial Catalog={AppDbSession.SqlServerDatabase!.DecryptedDatabaseName};",
                             "C:\\Code\\redfly-oss\\redflyGeneratedDataAccessApi\\SqlServer\\");
+
+                    Console.WriteLine("Press ANY key to exit so you can recompile the app and run again.");
+                    Console.ReadKey();
+                    return;
                 }
 
-                Console.WriteLine("Are you using the AdventureWorks database for testing? (y/n)");
+                Console.WriteLine("Are you using the AdventureWorks database? (y/n)");
                 response = Console.ReadLine();
 
                 if (response != null && 
@@ -314,7 +318,7 @@ internal class Program
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine($"// Delete the record");
         Console.WriteLine("// Call the delete method with the primary key value.");
-        Console.WriteLine($"var deleted = await addressClient.DeleteAsync({inserted.InsertedRow.AddressID});");
+        Console.WriteLine($"var deleted = await addressClient.DeleteAsync({inserted.InsertedRow.AddressId});");
         Console.ResetColor();
 
         var watch = new Stopwatch();
@@ -324,7 +328,7 @@ internal class Program
         try
         {
             watch.Restart();
-            var deleted = await addressClient.DeleteAsync(inserted.InsertedRow.AddressID);
+            var deleted = await addressClient.DeleteAsync(inserted.InsertedRow.AddressId);
             watch.Stop();
 
             cts.Cancel();
@@ -445,7 +449,7 @@ internal class Program
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get a row by its primary key");
-        Console.WriteLine("var rowData = await addressClient.GetAsync(salesLTAddress.AddressID);");
+        Console.WriteLine("var rowData = await addressClient.GetAsync(salesLTAddress.AddressId);");
         Console.ResetColor();
 
         SalesLTAddressRowData? rowData = null;
@@ -456,7 +460,7 @@ internal class Program
         try
         {
             watch.Restart();
-            rowData = await addressClient.GetAsync(salesLTAddress.AddressID);
+            rowData = await addressClient.GetAsync(salesLTAddress.AddressId);
             watch.Stop();
 
             cts.Cancel();
