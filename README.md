@@ -28,14 +28,16 @@ Provide source code that:
 3. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (WIP🏃🏽‍♀️‍➡️).
    - Generic API implementation (this is what the generated code will call under the scenes) (WIP🏃🏽‍♀️‍➡️)
      - GetTotalRowCount (Done ✔️)
-     - Delete (Server Done ✔️, Client TBD ⌚)
+     - Delete (Server Done ✔️)
      - GetRows (Done ✔️)
-     - Insert (TBD ⌚)
-     - Get (TBD ⌚)
-     - Update (TBD ⌚)
-   - Grpc Client Code Generation (TBD ⌚)
-     - Template (TBD ⌚)
-     - Code Generation (TBD ⌚)
+     - Insert (Done ✔️)
+     - Get (Done ✔️)
+     - Update (Done ✔️)
+   - Grpc Client Code Generation (Done ✔️)
+     - Template (Done ✔️)
+     - Code Generation (Done ✔️)
+   - Postgres support (TBD ⌚)
+   - MongoDB support (TBD ⌚)
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time. 
 
