@@ -1,3 +1,4 @@
+using RedflyCoreFramework;
 using redflyDatabaseAdapters;
 using redflyGeneratedDataAccessApi.Protos.SqlServer;
 
@@ -45,6 +46,8 @@ public class SalesLTProductDataSource : BaseTableDataSource<SalesLTProduct>
 {
     public SalesLTProductDataSource() : base()
     {
+        _encSchema = RedflyEncryption.EncryptToString("SalesLT");
+        _encTable = RedflyEncryption.EncryptToString("Product");
     }
 
     public async Task<DeletedData> DeleteAsync(int productId, bool modifyCache = true)
@@ -128,19 +131,19 @@ public class SalesLTProductDataSource : BaseTableDataSource<SalesLTProduct>
 
             Size = dict.TryGetValue("Size", out var v7) ? v7 : null,
 
-            Weight = dict.TryGetValue("Weight", out var v8) && !string.IsNullOrEmpty(v8) ? (decimal)Convert.ChangeType(v8, typeof(decimal)) : null,
+            Weight = dict.TryGetValue("Weight", out var v8) && decimal.TryParse(v8, out var d8) ? d8 : null,
 
-            ProductCategoryId = dict.TryGetValue("ProductCategoryID", out var v9) && !string.IsNullOrEmpty(v9) ? (int)Convert.ChangeType(v9, typeof(int)) : null,
+            ProductCategoryId = dict.TryGetValue("ProductCategoryID", out var v9) && int.TryParse(v9, out var d9) ? d9 : null,
 
-            ProductModelId = dict.TryGetValue("ProductModelID", out var v10) && !string.IsNullOrEmpty(v10) ? (int)Convert.ChangeType(v10, typeof(int)) : null,
+            ProductModelId = dict.TryGetValue("ProductModelID", out var v10) && int.TryParse(v10, out var d10) ? d10 : null,
 
             SellStartDate = dict.TryGetValue("SellStartDate", out var v11) && DateTime.TryParse(v11, out var d11) ? d11 : DateTime.MinValue,
 
-            SellEndDate = dict.TryGetValue("SellEndDate", out var v12) && !string.IsNullOrEmpty(v12) ? (DateTime)Convert.ChangeType(v12, typeof(DateTime)) : null,
+            SellEndDate = dict.TryGetValue("SellEndDate", out var v12) && DateTime.TryParse(v12, out var d12) ? d12 : null,
 
-            DiscontinuedDate = dict.TryGetValue("DiscontinuedDate", out var v13) && !string.IsNullOrEmpty(v13) ? (DateTime)Convert.ChangeType(v13, typeof(DateTime)) : null,
+            DiscontinuedDate = dict.TryGetValue("DiscontinuedDate", out var v13) && DateTime.TryParse(v13, out var d13) ? d13 : null,
 
-            ThumbNailPhoto = dict.TryGetValue("ThumbNailPhoto", out var v14) ? Convert.FromBase64String(v14 ?? "") : Array.Empty<byte>(),
+            //ThumbNailPhoto = dict.TryGetValue("ThumbNailPhoto", out var v14) ? Convert.FromBase64String(v14 ?? "") : Array.Empty<byte>(),
 
             ThumbnailPhotoFileName = dict.TryGetValue("ThumbnailPhotoFileName", out var v15) ? v15 : null,
 
@@ -148,7 +151,7 @@ public class SalesLTProductDataSource : BaseTableDataSource<SalesLTProduct>
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v17) && DateTime.TryParse(v17, out var d17) ? d17 : DateTime.MinValue,
 
-            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

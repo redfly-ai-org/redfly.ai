@@ -19,7 +19,8 @@ public abstract class BaseTableDataSource<T> where T : BaseTableEntity
 {
 
     protected readonly NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient _client;
-    protected readonly string _encDbServer, _encDbName, _encSchema, _encTable, _encClientId, _encDbId, _encConnStr, _encryptionKey;
+    protected readonly string _encDbServer, _encDbName, _encClientId, _encDbId, _encConnStr, _encryptionKey;
+    protected string _encSchema, _encTable = "";
 
     protected BaseTableDataSource()
     {
@@ -37,10 +38,6 @@ public abstract class BaseTableDataSource<T> where T : BaseTableEntity
         });
 
         _client = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
-
-        //These are hard-coded as it is specific to this class.
-        _encSchema = RedflyEncryption.EncryptToString("SalesLT");
-        _encTable = RedflyEncryption.EncryptToString("Address");
 
         //Everything else comes from the environment.
         _encDbServer = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.HostName);

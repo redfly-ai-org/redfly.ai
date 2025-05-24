@@ -42,13 +42,22 @@ internal class GrpcClientApiDemonstrator
             Console.WriteLine("Press ANY key to continue...");
             Console.ReadKey();
             Console.WriteLine();
-
-            await ShowJoinUsingGetSqlRowsApi(addressDataSource, rowsData.Rows[0].AddressId);
-
-            Console.WriteLine("Press ANY key to continue...");
-            Console.ReadKey();
-            Console.WriteLine();
         }
+
+        var productDataSource = new SalesLTProductDataSource();
+        var productRowsData = await productDataSource.GetRowsAsync(1, 5, "ProductID", "ASC");
+
+        await ShowJoinUsingGetSqlRowsApi(productDataSource, productRowsData.Rows[0]);
+
+        Console.WriteLine("Press ANY key to continue...");
+        Console.ReadKey();
+        Console.WriteLine();
+
+        await ShowJoinUsingGrpcApi(productDataSource, productRowsData.Rows[0]);
+
+        Console.WriteLine("Press ANY key to continue...");
+        Console.ReadKey();
+        Console.WriteLine();
 
         var inserted = await ShowInsertApiUsage(addressDataSource);
 
@@ -283,26 +292,24 @@ internal class GrpcClientApiDemonstrator
         return rowsData;
     }
 
-    private static async Task ShowJoinUsingGetSqlRowsApi(SalesLTAddressDataSource addressDataSource, int addressId)
+    private static async Task ShowJoinUsingGetSqlRowsApi(
+        SalesLTProductDataSource productDataSource, 
+        SalesLTProduct product)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine("// Execute a custom SQL query joining two tables");
-        Console.WriteLine("// This SQL query gets an Address by its primary key and then");
-        Console.WriteLine("// finds the corresponding CustomerAddress row using the same AddressID");
+        Console.WriteLine("// Execute a custom SQL query joining several tables");
         Console.WriteLine("string sqlQuery = @\"");
-        Console.WriteLine("    SELECT a.AddressID, a.AddressLine1, a.City, a.StateProvince, ");
-        Console.WriteLine("           ca.CustomerID, ca.AddressType");
-        Console.WriteLine("    FROM SalesLT.Address a");
-        Console.WriteLine("    JOIN SalesLT.CustomerAddress ca ON a.AddressID = ca.AddressID");
-        Console.WriteLine($"    WHERE a.AddressID = {addressId}\";");
+        Console.WriteLine("    select PR.*, PC.*, PM.* from SalesLT.Product PR");
+        Console.WriteLine("    INNER JOIN SalesLT.ProductCategory PC ON PC.ProductCategoryID = PR.ProductCategoryID");
+        Console.WriteLine("    INNER JOIN SalesLT.ProductModel PM ON PM.ProductModelID = PR.ProductModelID");
+        Console.WriteLine($"    where PR.ProductID = {product.ProductId};");
         Console.ResetColor();
 
         string sqlQuery = @"
-            SELECT a.AddressID, a.AddressLine1, a.City, a.StateProvince, 
-                   ca.CustomerID, ca.AddressType
-            FROM SalesLT.Address a
-            JOIN SalesLT.CustomerAddress ca ON a.AddressID = ca.AddressID
-            WHERE a.AddressID = " + addressId.ToString();
+            select PR.*, PC.*, PM.* from SalesLT.Product PR
+            INNER JOIN SalesLT.ProductCategory PC ON PC.ProductCategoryID = PR.ProductCategoryID 
+            INNER JOIN SalesLT.ProductModel PM ON PM.ProductModelID = PR.ProductModelID
+            where PR.ProductID = " + product.ProductId.ToString() + ";";
 
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
@@ -311,7 +318,7 @@ internal class GrpcClientApiDemonstrator
         try
         {
             watch.Restart();
-            var sqlRowsData = await addressDataSource.GetSqlRowsAsync(sqlQuery);
+            var sqlRowsData = await productDataSource.GetSqlRowsAsync(sqlQuery);
             watch.Stop();
 
             cts.Cancel();
@@ -353,6 +360,67 @@ internal class GrpcClientApiDemonstrator
 
             Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
             Console.ResetColor();
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
+        }
+
+        Console.WriteLine();
+    }
+
+    private static async Task ShowJoinUsingGrpcApi(
+        SalesLTProductDataSource productDataSource, 
+        SalesLTProduct product)
+    {
+        var productCategoryDataSource = new SalesLTProductCategoryDataSource();
+        var productModelDataSource = new SalesLTProductModelDataSource();
+
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// The same custom SQL query joining two tables can be executed");
+        Console.WriteLine("// using redfly Grpc API calls in a much more intuitive manner.");
+        Console.WriteLine("// This is also more scalable than using SQL queries which");
+        Console.WriteLine("// will slow down over time with data and usage growth.");
+        Console.WriteLine("var productRow = await productDataSource.GetAsync(product.ProductId);");
+        Console.WriteLine("productCategoryRow = await productCategoryDataSource.GetAsync(product.ProductCategoryId.Value);");
+        Console.WriteLine("productModelRow = await productModelDataSource.GetAsync(product.ProductModelId.Value);");
+        Console.ResetColor();
+
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        SalesLTProductCategoryRowData? productCategoryRow = null;
+        SalesLTProductModelRowData? productModelRow = null;
+
+        try
+        {
+            watch.Restart();
+
+            var productRow = await productDataSource.GetAsync(product.ProductId);
+
+            if (product.ProductCategoryId != null)
+            {
+                productCategoryRow = await productCategoryDataSource.GetAsync(product.ProductCategoryId.Value);
+            }
+
+            if (product.ProductModelId != null)
+            {
+                productModelRow = await productModelDataSource.GetAsync(product.ProductModelId.Value);
+            }
+
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+
+            ShowObjectResult(watch, productRow, productCategoryRow, productModelRow);
         }
         catch (Exception ex)
         {
@@ -412,6 +480,40 @@ internal class GrpcClientApiDemonstrator
         foreach (var prop in typeof(T).GetProperties())
         {
             var value = prop.GetValue(result, null);
+            Console.WriteLine($"  {prop.Name}: {value}");
+        }
+
+        Console.WriteLine();
+        Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+        Console.ResetColor();
+
+        Console.WriteLine();
+    }
+
+    private static void ShowObjectResult<A, B, C>(Stopwatch watch, A result1, B result2, C result3)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// Get the result as an object.");
+        Console.ResetColor();
+
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine($"Result Types: {typeof(A).Name}, {typeof(B).Name}, {typeof(C).Name}");
+
+        foreach (var prop in typeof(A).GetProperties())
+        {
+            var value = prop.GetValue(result1, null);
+            Console.WriteLine($"  {prop.Name}: {value}");
+        }
+
+        foreach (var prop in typeof(B).GetProperties())
+        {
+            var value = prop.GetValue(result2, null);
+            Console.WriteLine($"  {prop.Name}: {value}");
+        }
+
+        foreach (var prop in typeof(C).GetProperties())
+        {
+            var value = prop.GetValue(result3, null);
             Console.WriteLine($"  {prop.Name}: {value}");
         }
 

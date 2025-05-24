@@ -1,3 +1,4 @@
+using RedflyCoreFramework;
 using redflyDatabaseAdapters;
 using redflyGeneratedDataAccessApi.Protos.SqlServer;
 
@@ -43,6 +44,8 @@ public class SalesLTCustomerDataSource : BaseTableDataSource<SalesLTCustomer>
 {
     public SalesLTCustomerDataSource() : base()
     {
+        _encSchema = RedflyEncryption.EncryptToString("SalesLT");
+        _encTable = RedflyEncryption.EncryptToString("Customer");
     }
 
     public async Task<DeletedData> DeleteAsync(int customerId, bool modifyCache = true)
@@ -142,7 +145,7 @@ public class SalesLTCustomerDataSource : BaseTableDataSource<SalesLTCustomer>
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v15) && DateTime.TryParse(v15, out var d15) ? d15 : DateTime.MinValue,
 
-            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

@@ -1,3 +1,4 @@
+using RedflyCoreFramework;
 using redflyDatabaseAdapters;
 using redflyGeneratedDataAccessApi.Protos.SqlServer;
 
@@ -33,6 +34,9 @@ public class BuildVersionDataSource : BaseTableDataSource<BuildVersion>
 {
     public BuildVersionDataSource() : base()
     {
+        //These are hard-coded as it is specific to this class.
+        _encSchema = RedflyEncryption.EncryptToString("dbo");
+        _encTable = RedflyEncryption.EncryptToString("BuildVersion");
     }
 
     public async Task<DeletedData> DeleteAsync(Guid buildVersionId, bool modifyCache = true)
@@ -112,7 +116,7 @@ public class BuildVersionDataSource : BaseTableDataSource<BuildVersion>
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v5) && DateTime.TryParse(v5, out var d5) ? d5 : DateTime.MinValue,
 
-            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

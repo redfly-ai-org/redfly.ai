@@ -1,3 +1,4 @@
+using RedflyCoreFramework;
 using redflyDatabaseAdapters;
 using redflyGeneratedDataAccessApi.Protos.SqlServer;
 
@@ -37,6 +38,8 @@ public class ErrorLogDataSource : BaseTableDataSource<ErrorLog>
 {
     public ErrorLogDataSource() : base()
     {
+        _encSchema = RedflyEncryption.EncryptToString("dbo");
+        _encTable = RedflyEncryption.EncryptToString("ErrorLog");
     }
 
     public async Task<DeletedData> DeleteAsync(int errorLogId, bool modifyCache = true)
@@ -124,7 +127,7 @@ public class ErrorLogDataSource : BaseTableDataSource<ErrorLog>
 
             ErrorMessage = dict.TryGetValue("ErrorMessage", out var v9) ? v9 ?? string.Empty : string.Empty,
 
-            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }
