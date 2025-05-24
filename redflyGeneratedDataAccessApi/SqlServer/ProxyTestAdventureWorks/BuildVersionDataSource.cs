@@ -7,7 +7,7 @@ namespace redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 // redfly SqlServerGrpcPolyLangCompiler on 05/24/25 12:43:05 AM
 // This is only meant to be indicative of the features available in the core product.
 
-public class BuildVersion : TableEntityBase
+public class BuildVersion : BaseTableEntity
 {
     public Guid BuildVersionId { get; set; }
     public byte SystemInformationId { get; set; }
@@ -29,7 +29,7 @@ public class BuildVersionRowData : BaseTableRowData
     public BuildVersion? Row { get; set; }
 }
 
-public class BuildVersionDataSource : TableDataSourceBase<BuildVersion>
+public class BuildVersionDataSource : BaseTableDataSource<BuildVersion>
 {
     public BuildVersionDataSource() : base()
     {

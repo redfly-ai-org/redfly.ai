@@ -178,7 +178,7 @@ public class SqlServerGrpcPolyLangCompiler
         sb.AppendLine($"// redfly {this.GetType().Name} on {DateTime.Now.ToString("MM/dd/yy hh:mm:ss tt")}");
         sb.AppendLine("// This is only meant to be indicative of the features available in the core product.");
         sb.AppendLine();
-        sb.AppendLine($"public class {entityName} : TableEntityBase");
+        sb.AppendLine($"public class {entityName} : BaseTableEntity");
         sb.AppendLine("{");
         foreach (var col in columns)
         {
@@ -222,7 +222,7 @@ public class SqlServerGrpcPolyLangCompiler
         sb.AppendLine("}");
         sb.AppendLine();
         // DataSource class
-        sb.AppendLine($"public class {dataSourceName} : TableDataSourceBase<{entityName}>");
+        sb.AppendLine($"public class {dataSourceName} : BaseTableDataSource<{entityName}>");
         sb.AppendLine("{");
         sb.AppendLine($"    public {dataSourceName}() : base()\n    {{\n    }}");
         sb.AppendLine();

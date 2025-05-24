@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace redflyGeneratedDataAccessApi.SqlServer;
 
-public abstract class TableDataSourceBase<T> where T : TableEntityBase
+public abstract class BaseTableDataSource<T> where T : BaseTableEntity
 {
 
     protected readonly NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient _client;
     protected readonly string _encDbServer, _encDbName, _encSchema, _encTable, _encClientId, _encDbId, _encConnStr, _encryptionKey;
 
-    protected TableDataSourceBase()
+    protected BaseTableDataSource()
     {
         var channel = GrpcChannel.ForAddress(AppGrpcSession.GrpcUrl, new GrpcChannelOptions
         {
