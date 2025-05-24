@@ -211,7 +211,7 @@ internal class Program
                 if (response != null &&
                     response.ToLower() == "y")
                 {
-                    (new SqlServerPolyLangCompiler())
+                    (new SqlServerGrpcPolyLangCompiler())
                         .GenerateForDatabase(
                             $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;Initial Catalog={AppDbSession.SqlServerDatabase!.DecryptedDatabaseName};",
                             "C:\\Code\\redfly-oss\\redflyGeneratedDataAccessApi\\SqlServer\\");

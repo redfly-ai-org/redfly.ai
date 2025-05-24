@@ -12,7 +12,7 @@ namespace redflyGeneratedDataAccessApi.Compilers;
 /// <summary>
 /// Generates strongly-typed data source and entity classes for every table in a SQL Server database.
 /// </summary>
-public class SqlServerPolyLangCompiler
+public class SqlServerGrpcPolyLangCompiler
 {
     public void GenerateForDatabase(string connectionString, string outputFolder)
     {
