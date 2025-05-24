@@ -271,42 +271,45 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine("        }");
         sb.AppendLine($"        return new {entityName}");
         sb.AppendLine("        {");
+        int varCounter = 1;
         foreach (var col in columns)
         {
             if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase))
                 continue;
             var propName = ToCamelCase(col.Name);
             var csharpType = MapSqlTypeToCSharp(col.Type, col.IsNullable);
+            string varName = $"v{varCounter}";
             if (csharpType == "int")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v1) && int.TryParse(v1, out var i1) ? i1 : 0,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && int.TryParse({varName}, out var i{varCounter}) ? i{varCounter} : 0,");
             else if (csharpType == "long")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v2) && long.TryParse(v2, out var l2) ? l2 : 0L,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && long.TryParse({varName}, out var l{varCounter}) ? l{varCounter} : 0L,");
             else if (csharpType == "short")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v3) && short.TryParse(v3, out var s3) ? s3 : (short)0,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && short.TryParse({varName}, out var s{varCounter}) ? s{varCounter} : (short)0,");
             else if (csharpType == "byte")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v4) && byte.TryParse(v4, out var b4) ? b4 : (byte)0,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && byte.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : (byte)0,");
             else if (csharpType == "bool")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v5) && bool.TryParse(v5, out var b5) ? b5 : false,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && bool.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : false,");
             else if (csharpType == "decimal")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v6) && decimal.TryParse(v6, out var d6) ? d6 : 0m,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && decimal.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : 0m,");
             else if (csharpType == "double")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v7) && double.TryParse(v7, out var d7) ? d7 : 0.0,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && double.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : 0.0,");
             else if (csharpType == "float")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v8) && float.TryParse(v8, out var f8) ? f8 : 0f,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && float.TryParse({varName}, out var f{varCounter}) ? f{varCounter} : 0f,");
             else if (csharpType == "DateTime")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v9) && DateTime.TryParse(v9, out var d9) ? d9 : DateTime.MinValue,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && DateTime.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : DateTime.MinValue,");
             else if (csharpType == "Guid")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v10) && Guid.TryParse(v10, out var g10) ? g10 : Guid.Empty,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && Guid.TryParse({varName}, out var g{varCounter}) ? g{varCounter} : Guid.Empty,");
             else if (csharpType == "byte[]")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v11) ? Convert.FromBase64String(v11 ?? \"\") : Array.Empty<byte>(),");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) ? Convert.FromBase64String({varName} ?? \"\") : Array.Empty<byte>(),");
             else if (csharpType == "string")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v12) ? v12 ?? string.Empty : string.Empty,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) ? {varName} ?? string.Empty : string.Empty,");
             else if (csharpType == "string?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v13) ? v13 : null,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) ? {varName} : null,");
             else if (csharpType.EndsWith("?"))
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var v14) && !string.IsNullOrEmpty(v14) ? ({csharpType.TrimEnd('?')})Convert.ChangeType(v14, typeof({csharpType.TrimEnd('?')})) : null,");
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? ({csharpType.TrimEnd('?')})Convert.ChangeType({varName}, typeof({csharpType.TrimEnd('?')})) : null,");
             else
                 sb.AppendLine($"            {propName} = /* parse from dict[\"{col.Name}\"] as {csharpType} */ default,");
+            varCounter++;
         }
         sb.AppendLine("        };");
         sb.AppendLine("    }");
