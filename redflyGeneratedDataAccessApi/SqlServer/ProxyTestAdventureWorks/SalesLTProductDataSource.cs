@@ -143,7 +143,7 @@ public class SalesLTProductDataSource : BaseTableDataSource<SalesLTProduct>
 
             DiscontinuedDate = dict.TryGetValue("DiscontinuedDate", out var v13) && DateTime.TryParse(v13, out var d13) ? d13 : null,
 
-            //ThumbNailPhoto = dict.TryGetValue("ThumbNailPhoto", out var v14) ? Convert.FromBase64String(v14 ?? "") : Array.Empty<byte>(),
+            ThumbNailPhoto = dict.TryGetValue("ThumbNailPhoto", out var v14) ? Convert.FromBase64String(v14 ?? "") : Array.Empty<byte>(),
 
             ThumbnailPhotoFileName = dict.TryGetValue("ThumbnailPhotoFileName", out var v15) ? v15 : null,
 
@@ -151,7 +151,7 @@ public class SalesLTProductDataSource : BaseTableDataSource<SalesLTProduct>
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v17) && DateTime.TryParse(v17, out var d17) ? d17 : DateTime.MinValue,
 
-            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

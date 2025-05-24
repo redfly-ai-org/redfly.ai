@@ -127,7 +127,7 @@ public class ErrorLogDataSource : BaseTableDataSource<ErrorLog>
 
             ErrorMessage = dict.TryGetValue("ErrorMessage", out var v9) ? v9 ?? string.Empty : string.Empty,
 
-            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

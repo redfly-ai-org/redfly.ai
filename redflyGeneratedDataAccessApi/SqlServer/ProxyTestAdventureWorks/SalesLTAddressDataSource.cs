@@ -128,7 +128,7 @@ public class SalesLTAddressDataSource : BaseTableDataSource<SalesLTAddress>
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v9) && DateTime.TryParse(v9, out var d9) ? d9 : DateTime.MinValue,
 
-            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

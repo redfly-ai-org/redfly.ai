@@ -166,7 +166,7 @@ public class SalesLTSalesOrderHeaderDataSource : BaseTableDataSource<SalesLTSale
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v22) && DateTime.TryParse(v22, out var d22) ? d22 : DateTime.MinValue,
 
-            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

@@ -145,7 +145,7 @@ public class SalesLTCustomerDataSource : BaseTableDataSource<SalesLTCustomer>
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v15) && DateTime.TryParse(v15, out var d15) ? d15 : DateTime.MinValue,
 
-            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }

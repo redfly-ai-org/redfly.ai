@@ -112,7 +112,7 @@ public class SalesLTProductDescriptionDataSource : BaseTableDataSource<SalesLTPr
 
             ModifiedDate = dict.TryGetValue("ModifiedDate", out var v4) && DateTime.TryParse(v4, out var d4) ? d4 : DateTime.MinValue,
 
-            //Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
+            Version = dict.TryGetValue("Version", out var vVersion) ? Convert.FromBase64String(vVersion ?? "") : Array.Empty<byte>(),
 
         };
     }
