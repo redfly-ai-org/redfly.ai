@@ -12,6 +12,7 @@ using System.Diagnostics;
 using redflyGeneratedDataAccessApi;
 using redflyGeneratedDataAccessApi.Compilers;
 using redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
+using redflyGeneratedDataAccessApi.SqlServer; // Add this namespace for GenericRowsData
 
 namespace redflyDataAccessClient;
 
@@ -288,6 +289,12 @@ internal class Program
             Console.WriteLine();
         }
 
+        await ShowGetSqlRowsApiUsage(addressDataSource);
+
+        Console.WriteLine("Press ANY key to continue...");
+        Console.ReadKey();
+        Console.WriteLine();
+
         var inserted = await ShowInsertApiUsage(addressDataSource);
 
         Console.WriteLine("Press ANY key to continue...");
@@ -517,12 +524,27 @@ internal class Program
         return rowsData;
     }
 
-    private static async Task ShowTotalRowCountApiUsage(SalesLTAddressDataSource addressDataSource)
+    private static async Task ShowGetSqlRowsApiUsage(SalesLTAddressDataSource addressDataSource)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
-        Console.WriteLine("// Make the method call");
-        Console.WriteLine("var rowCount = await addressDataSource.GetTotalRowCountAsync();");
+        Console.WriteLine("// Execute a custom SQL query joining multiple tables");
+        Console.WriteLine("// This SQL query joins SalesLT.Address with SalesLT.CustomerAddress and SalesLT.Customer tables");
+        Console.WriteLine("string sqlQuery = @\"");
+        Console.WriteLine("    SELECT c.CustomerID, c.FirstName, c.LastName, a.AddressID, a.AddressLine1, a.City, a.StateProvince");
+        Console.WriteLine("    FROM SalesLT.Address a");
+        Console.WriteLine("    JOIN SalesLT.CustomerAddress ca ON a.AddressID = ca.AddressID");
+        Console.WriteLine("    JOIN SalesLT.Customer c ON ca.CustomerID = c.CustomerID");
+        Console.WriteLine("    WHERE a.City = 'Seattle'");
+        Console.WriteLine("    ORDER BY c.LastName, c.FirstName\";");
         Console.ResetColor();
+
+        string sqlQuery = @"
+            SELECT c.CustomerID, c.FirstName, c.LastName, a.AddressID, a.AddressLine1, a.City, a.StateProvince
+            FROM SalesLT.Address a
+            JOIN SalesLT.CustomerAddress ca ON a.AddressID = ca.AddressID
+            JOIN SalesLT.Customer c ON ca.CustomerID = c.CustomerID
+            WHERE a.City = 'Seattle'
+            ORDER BY c.LastName, c.FirstName";
 
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
@@ -531,13 +553,46 @@ internal class Program
         try
         {
             watch.Restart();
-            var rowCount = await addressDataSource.GetTotalRowCountAsync();
+            var sqlRowsData = await addressDataSource.GetSqlRowsAsync(sqlQuery);
             watch.Stop();
 
             cts.Cancel();
             await progressTask;
             Console.WriteLine();
-            ShowObjectResult(watch, rowCount);
+            
+            Console.ForegroundColor = ConsoleColor.DarkCyan;
+            Console.WriteLine("// Get the result as a list of rows.");
+            Console.ResetColor();
+
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"Result Type: GenericRowsData");
+            Console.WriteLine($"  Success: {sqlRowsData.Success}");
+            Console.WriteLine($"  FromCache: {sqlRowsData.FromCache}");
+            Console.WriteLine($"  Message: {sqlRowsData.Message}");
+            Console.WriteLine($"  Rows Count: {sqlRowsData.Rows.Count}");
+            Console.WriteLine();
+            
+            if (sqlRowsData.Rows.Count > 0)
+            {
+                Console.WriteLine("First 5 rows of data (or all if less than 5):");
+                int displayCount = Math.Min(5, sqlRowsData.Rows.Count);
+                
+                for (int i = 0; i < displayCount; i++)
+                {
+                    var row = sqlRowsData.Rows[i];
+                    Console.WriteLine($"Row #{i+1}:");
+                    
+                    foreach (var entry in row.Entries)
+                    {
+                        string value = entry.Value.StringValue ?? "null";
+                        Console.WriteLine($"  {entry.Column}: {value}");
+                    }
+                    Console.WriteLine();
+                }
+            }
+            
+            Console.WriteLine($"Response Time: {watch.ElapsedMilliseconds} ms");
+            Console.ResetColor();
         }
         catch (Exception ex)
         {
@@ -1077,4 +1132,36 @@ internal class Program
         Console.WriteLine("This is a demo application designed to give you a taste of our capabilities. It is NOT intended for production use.\r\n");
     }
 
+    private static async Task ShowTotalRowCountApiUsage(SalesLTAddressDataSource addressDataSource)
+    {
+        Console.ForegroundColor = ConsoleColor.DarkCyan;
+        Console.WriteLine("// Make the method call");
+        Console.WriteLine("var rowCount = await addressDataSource.GetTotalRowCountAsync();");
+        Console.ResetColor();
+
+        var watch = new Stopwatch();
+        var cts = new CancellationTokenSource();
+        var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
+
+        try
+        {
+            watch.Restart();
+            var rowCount = await addressDataSource.GetTotalRowCountAsync();
+            watch.Stop();
+
+            cts.Cancel();
+            await progressTask;
+            Console.WriteLine();
+            ShowObjectResult(watch, rowCount);
+        }
+        catch (Exception ex)
+        {
+            cts.Cancel();
+            await progressTask;
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"ERROR: {ex.Message}");
+            Console.ResetColor();
+        }
+    }
 }

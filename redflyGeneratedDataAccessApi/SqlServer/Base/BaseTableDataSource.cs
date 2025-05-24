@@ -10,6 +10,11 @@ using System.Threading.Tasks;
 
 namespace redflyGeneratedDataAccessApi.SqlServer;
 
+public class GenericRowsData : BaseTableRowsData
+{
+    public List<Row> Rows { get; set; } = new();
+}
+
 public abstract class BaseTableDataSource<T> where T : BaseTableEntity
 {
 
@@ -49,6 +54,31 @@ public abstract class BaseTableDataSource<T> where T : BaseTableEntity
     protected abstract T MapRowToTableEntity(Row row);
 
     protected abstract Row MapTableEntityToRow(T address, DbOperationType dbOperationType);
+    
+    public async Task<GenericRowsData> GetSqlRowsAsync(string sqlQuery)
+    {
+        var encSqlQuery = RedflyEncryption.EncryptToString(sqlQuery);
+        var req = new GetSqlRowsRequest
+        {
+            EncryptedDatabaseServerName = _encDbServer,
+            EncryptedDatabaseName = _encDbName,
+            EncryptedTableSchemaName = _encSchema,
+            EncryptedTableName = _encTable,
+            EncryptedClientId = _encClientId,
+            EncryptedDatabaseId = _encDbId,
+            EncryptedServerOnlyConnectionString = _encConnStr,
+            EncryptedSqlQuery = encSqlQuery,
+            EncryptionKey = _encryptionKey
+        };
+        var resp = await _client.GetSqlRowsAsync(req, AppGrpcSession.Headers!);
+        return new GenericRowsData
+        {
+            Success = resp.Success,
+            Rows = resp.Rows.ToList(),
+            FromCache = resp.FromCache,
+            Message = resp.Message
+        };
+    }
 
     public async Task<TotalRowCount> GetTotalRowCountAsync()
     {
