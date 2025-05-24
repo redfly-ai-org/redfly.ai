@@ -139,6 +139,23 @@ public class SqlServerPolyLangCompiler
         return char.ToLowerInvariant(input[0]) + input.Substring(1);
     }
 
+    private string ToPascalCase(string input)
+    {
+        if (string.IsNullOrEmpty(input)) return input;
+        input = RemoveSpaces(input);
+        if (input.Length == 1) return input.ToUpperInvariant();
+        return char.ToUpperInvariant(input[0]) + input.Substring(1);
+    }
+
+    private string ToParameterCase(string input)
+    {
+        // PascalCase to camelCase, but also handle ID -> Id, GUID -> Guid, etc.
+        if (string.IsNullOrEmpty(input)) return input;
+        input = RemoveSpaces(input);
+        var pascal = ToPascalCase(input).Replace("ID", "Id"); // Always use Id not ID
+        return char.ToLowerInvariant(pascal[0]) + pascal.Substring(1);
+    }
+
     private string GenerateCodeForTable(string classBaseName, (string Schema, string Name) table, List<(string Name, string Type, bool IsNullable, bool IsPrimaryKey)> columns)
     {
         var sb = new StringBuilder();
@@ -150,7 +167,12 @@ public class SqlServerPolyLangCompiler
         sb.AppendLine();
         sb.AppendLine($"namespace redflyGeneratedDataAccessApi.SqlServer;");
         sb.AppendLine();
-        sb.AppendLine($"//\n// This is only meant to be indicative of the features available in the core product.\n//\n// Strongly-typed model for [{table.Schema}].[{table.Name}]\n//");
+        // Add comments as in SalesLTAddressDataSource
+        sb.AppendLine("//");
+        sb.AppendLine("// This is only meant to be indicative of the features available in the core product.");
+        sb.AppendLine("//");
+        sb.AppendLine($"// Strongly-typed model for [{table.Schema}].[{table.Name}]");
+        sb.AppendLine("//");
         // Entity class
         sb.AppendLine($"public class {entityName} : TableEntityBase");
         sb.AppendLine("{");
@@ -159,7 +181,7 @@ public class SqlServerPolyLangCompiler
             if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase))
                 continue;
             var csharpType = MapSqlTypeToCSharp(col.Type, col.IsNullable);
-            var propName = ToCamelCase(col.Name);
+            var propName = ToPascalCase(col.Name).Replace("ID", "Id");
             if (csharpType == "string" && !col.IsNullable)
                 sb.AppendLine($"    public string {propName} {{ get; set; }} = string.Empty;");
             else
@@ -191,12 +213,12 @@ public class SqlServerPolyLangCompiler
         // DeleteAsync
         if (pkCols.Count > 0)
         {
-            var pkParams = string.Join(", ", pkCols.Select(c => $"{MapSqlTypeToCSharp(c.Type, c.IsNullable)} {ToCamelCase(c.Name)}"));
+            var pkParams = string.Join(", ", pkCols.Select(c => $"{MapSqlTypeToCSharp(c.Type, c.IsNullable)} {ToParameterCase(c.Name)}"));
             sb.AppendLine($"    public async Task<DeletedData> DeleteAsync({pkParams}, bool modifyCache = true)");
             sb.AppendLine("    {");
             sb.AppendLine("        var req = base.CreateDeleteRequest(modifyCache);");
             foreach (var pk in pkCols)
-                sb.AppendLine($"        req.PrimaryKeyValues.Add(\"{pk.Name}\", {ToCamelCase(pk.Name)}.ToString());");
+                sb.AppendLine($"        req.PrimaryKeyValues.Add(\"{pk.Name}\", {ToParameterCase(pk.Name)}.ToString());");
             sb.AppendLine("        return await base.DeleteCoreAsync(req);");
             sb.AppendLine("    }");
             sb.AppendLine();
@@ -237,12 +259,12 @@ public class SqlServerPolyLangCompiler
         // GetAsync
         if (pkCols.Count > 0)
         {
-            var pkParams = string.Join(", ", pkCols.Select(c => $"{MapSqlTypeToCSharp(c.Type, c.IsNullable)} {ToCamelCase(c.Name)}"));
+            var pkParams = string.Join(", ", pkCols.Select(c => $"{MapSqlTypeToCSharp(c.Type, c.IsNullable)} {ToParameterCase(c.Name)}"));
             sb.AppendLine($"    public async Task<{entityName}RowData> GetAsync({pkParams}, bool useCache = true)");
             sb.AppendLine("    {");
             sb.AppendLine("        var req = base.CreateGetRequest();");
             foreach (var pk in pkCols)
-                sb.AppendLine($"        req.PrimaryKeyValues.Add(\"{pk.Name}\", {ToCamelCase(pk.Name)}.ToString());");
+                sb.AppendLine($"        req.PrimaryKeyValues.Add(\"{pk.Name}\", {ToParameterCase(pk.Name)}.ToString());");
             sb.AppendLine("        var resp = await _client.GetAsync(req, AppGrpcSession.Headers!);");
             sb.AppendLine($"        return new {entityName}RowData");
             sb.AppendLine("        {");
@@ -276,7 +298,7 @@ public class SqlServerPolyLangCompiler
         {
             if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase))
                 continue;
-            var propName = ToCamelCase(col.Name);
+            var propName = ToPascalCase(col.Name).Replace("ID", "Id");
             var csharpType = MapSqlTypeToCSharp(col.Type, col.IsNullable);
             string varName = $"v{varCounter}";
             if (csharpType == "int")
@@ -309,7 +331,14 @@ public class SqlServerPolyLangCompiler
                 sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? ({csharpType.TrimEnd('?')})Convert.ChangeType({varName}, typeof({csharpType.TrimEnd('?')})) : null,");
             else
                 sb.AppendLine($"            {propName} = /* parse from dict[\"{col.Name}\"] as {csharpType} */ default,");
+            sb.AppendLine();
             varCounter++;
+        }
+        // Version column
+        if (columns.Any(c => c.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)))
+        {
+            sb.AppendLine("            Version = dict.TryGetValue(\"Version\", out var vVersion) ? Convert.FromBase64String(vVersion ?? \"\") : Array.Empty<byte>(),");
+            sb.AppendLine();
         }
         sb.AppendLine("        };");
         sb.AppendLine("    }");
@@ -324,7 +353,8 @@ public class SqlServerPolyLangCompiler
             sb.AppendLine("        {");
             foreach (var pk in pkCols)
             {
-                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name}\", Value = new Value {{ StringValue = entity.{ToCamelCase(pk.Name)}.ToString() }} }});");
+                var pkProp = ToPascalCase(pk.Name).Replace("ID", "Id");
+                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name}\", Value = new Value {{ StringValue = entity.{pkProp}.ToString() }} }});");
             }
             sb.AppendLine("        }");
         }
@@ -332,22 +362,22 @@ public class SqlServerPolyLangCompiler
         {
             if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase) || col.IsPrimaryKey)
                 continue;
-            var colName = ToCamelCase(col.Name);
+            var propName = ToPascalCase(col.Name).Replace("ID", "Id");
             if (col.Type.ToLower().Contains("date"))
             {
-                sb.AppendLine($"        if (entity.{colName} != DateTime.MinValue)");
+                sb.AppendLine($"        if (entity.{propName} != DateTime.MinValue)");
                 sb.AppendLine("        {");
-                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{colName}.ToString(\"yyyy-MM-dd HH:mm:ss.fff\") }} }});");
+                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}.ToString(\"yyyy-MM-dd HH:mm:ss.fff\") }} }});");
                 sb.AppendLine("        }");
             }
             else
             {
-                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{colName}?.ToString() }} }});");
+                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}?.ToString() }} }});");
             }
         }
         sb.AppendLine("        return row;");
         sb.AppendLine("    }");
-        sb.AppendLine("}");
+        sb.AppendLine("}"); // Ensure class closing brace is always present
         return sb.ToString();
     }
 
