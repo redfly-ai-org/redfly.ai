@@ -224,7 +224,11 @@ public class SqlServerGrpcPolyLangCompiler
         // DataSource class
         sb.AppendLine($"public class {dataSourceName} : BaseTableDataSource<{entityName}>");
         sb.AppendLine("{");
-        sb.AppendLine($"    public {dataSourceName}() : base()\n    {{\n    }}");
+        sb.AppendLine($"    public {dataSourceName}() : base()");
+        sb.AppendLine("{");
+        sb.AppendLine($"    _encSchema = RedflyEncryption.EncryptToString(\"{table.Schema}\");");
+        sb.AppendLine($"    _encTable = RedflyEncryption.EncryptToString(\"{table.Name}\");");
+        sb.AppendLine("}");
         sb.AppendLine();
         // Primary key columns
         var pkCols = columns.Where(c => c.IsPrimaryKey).ToList();
