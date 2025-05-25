@@ -165,6 +165,7 @@ public class SqlServerGrpcPolyLangCompiler
         var entityName = classBaseName;
         var dataSourceName = $"{entityName}DataSource";
         // Usings
+        sb.AppendLine("using RedflyCoreFramework;");
         sb.AppendLine("using redflyDatabaseAdapters;");
         sb.AppendLine("using redflyGeneratedDataAccessApi.Protos.SqlServer;");
         sb.AppendLine();
@@ -224,11 +225,12 @@ public class SqlServerGrpcPolyLangCompiler
         // DataSource class
         sb.AppendLine($"public class {dataSourceName} : BaseTableDataSource<{entityName}>");
         sb.AppendLine("{");
+        // Constructor with _encSchema and _encTable initialization
         sb.AppendLine($"    public {dataSourceName}() : base()");
-        sb.AppendLine("{");
-        sb.AppendLine($"    _encSchema = RedflyEncryption.EncryptToString(\"{table.Schema}\");");
-        sb.AppendLine($"    _encTable = RedflyEncryption.EncryptToString(\"{table.Name}\");");
-        sb.AppendLine("}");
+        sb.AppendLine("    {");
+        sb.AppendLine($"        _encSchema = RedflyEncryption.EncryptToString(\"{table.Schema}\");");
+        sb.AppendLine($"        _encTable = RedflyEncryption.EncryptToString(\"{table.Name}\");");
+        sb.AppendLine("    }");
         sb.AppendLine();
         // Primary key columns
         var pkCols = columns.Where(c => c.IsPrimaryKey).ToList();
@@ -323,6 +325,7 @@ public class SqlServerGrpcPolyLangCompiler
             var propName = ToPascalCase(col.Name).Replace("ID", "Id");
             var csharpType = MapSqlTypeToCSharp(col.Type, col.IsNullable);
             string varName = $"v{varCounter}";
+            // Non-nullable value types
             if (csharpType == "int")
                 sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && int.TryParse({varName}, out var i{varCounter}) ? i{varCounter} : 0,");
             else if (csharpType == "long")
@@ -343,25 +346,44 @@ public class SqlServerGrpcPolyLangCompiler
                 sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && DateTime.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : DateTime.MinValue,");
             else if (csharpType == "Guid")
                 sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && Guid.TryParse({varName}, out var g{varCounter}) ? g{varCounter} : Guid.Empty,");
+            // Nullable value types: return null if missing or not parseable
+            else if (csharpType == "int?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && int.TryParse({varName}, out var i{varCounter}) ? i{varCounter} : (int?)null,");
+            else if (csharpType == "long?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && long.TryParse({varName}, out var l{varCounter}) ? l{varCounter} : (long?)null,");
+            else if (csharpType == "short?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && short.TryParse({varName}, out var s{varCounter}) ? s{varCounter} : (short?)null,");
+            else if (csharpType == "byte?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && byte.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : (byte?)null,");
+            else if (csharpType == "bool?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && bool.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : (bool?)null,");
+            else if (csharpType == "decimal?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && decimal.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : (decimal?)null,");
+            else if (csharpType == "double?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && double.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : (double?)null,");
+            else if (csharpType == "float?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && float.TryParse({varName}, out var f{varCounter}) ? f{varCounter} : (float?)null,");
+            else if (csharpType == "DateTime?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && DateTime.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : (DateTime?)null,");
+            else if (csharpType == "Guid?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && Guid.TryParse({varName}, out var g{varCounter}) ? g{varCounter} : (Guid?)null,");
+            // Byte array
             else if (csharpType == "byte[]")
                 sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) ? Convert.FromBase64String({varName} ?? \"\") : Array.Empty<byte>(),");
-            else if (csharpType == "string")
+            else if (csharpType == "byte[]?")
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? Convert.FromBase64String({varName}) : null,");
+            // String
+            else if (csharpType == "string" && !col.IsNullable)
                 sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) ? {varName} ?? string.Empty : string.Empty,");
-            else if (csharpType == "string?")
+            else if (csharpType == "string?" || csharpType == "string" && col.IsNullable)
                 sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) ? {varName} : null,");
-            else if (csharpType.EndsWith("?"))
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{col.Name}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? ({csharpType.TrimEnd('?')})Convert.ChangeType({varName}, typeof({csharpType.TrimEnd('?')})) : null,");
             else
                 sb.AppendLine($"            {propName} = /* parse from dict[\"{col.Name}\"] as {csharpType} */ default,");
-            sb.AppendLine();
             varCounter++;
         }
         // Version column
-        if (columns.Any(c => c.Name.Equals("Version", StringComparison.OrdinalIgnoreCase)))
-        {
-            sb.AppendLine("            Version = dict.TryGetValue(\"Version\", out var vVersion) ? Convert.FromBase64String(vVersion ?? \"\") : Array.Empty<byte>(),");
-            sb.AppendLine();
-        }
+        sb.AppendLine("            Version = dict.TryGetValue(\"Version\", out var vVersion) ? Convert.FromBase64String(vVersion ?? \"\") : Array.Empty<byte>(),");
+        
         sb.AppendLine("        };");
         sb.AppendLine("    }");
         sb.AppendLine();
@@ -380,13 +402,17 @@ public class SqlServerGrpcPolyLangCompiler
             }
             sb.AppendLine("        }");
         }
+        
+        // Non-primary key columns
         foreach (var col in columns)
         {
             if (col.Name.Equals("Version", StringComparison.OrdinalIgnoreCase) || col.IsPrimaryKey)
                 continue;
+                
             var propName = ToPascalCase(col.Name).Replace("ID", "Id");
             var csharpType = MapSqlTypeToCSharp(col.Type, col.IsNullable);
-            // DateTime formatting
+            
+            // DateTime handling
             if (csharpType == "DateTime")
             {
                 sb.AppendLine($"        if (entity.{propName} != DateTime.MinValue)");
@@ -401,30 +427,55 @@ public class SqlServerGrpcPolyLangCompiler
                 sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}.Value.ToString(\"yyyy-MM-dd HH:mm:ss.fff\") }} }});");
                 sb.AppendLine("        }");
             }
-            // byte[]
-            else if (csharpType == "byte[]" || csharpType == "byte[]?")
+            // Byte array handling
+            else if (csharpType == "byte[]")
             {
                 sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName} != null ? Convert.ToBase64String(entity.{propName}) : null }} }});");
             }
-            // Value types (no ?)
-            else if (csharpType == "Guid" || csharpType == "int" || csharpType == "decimal" || csharpType == "byte" || csharpType == "short" || csharpType == "long" || csharpType == "bool" || csharpType == "float" || csharpType == "double")
+            else if (csharpType == "byte[]?")
             {
-                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}.ToString() }} }});");
+                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName} != null ? Convert.ToBase64String(entity.{propName}) : null }} }});");
             }
-            // Nullable value types
-            else if (csharpType == "Guid?" || csharpType == "int?" || csharpType == "decimal?" || csharpType == "byte?" || csharpType == "short?" || csharpType == "long?" || csharpType == "bool?" || csharpType == "float?" || csharpType == "double?")
-            {
-                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName} != null ? entity.{propName}.ToString() : null }} }});");
-            }
-            // Reference types
-            else
+            // String handling
+            else if (csharpType == "string")
             {
                 sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName} }} }});");
             }
+            else if (csharpType == "string?")
+            {
+                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName} }} }});");
+            }
+            // Value type handling
+            else if (csharpType == "int" || csharpType == "long" || csharpType == "short" || csharpType == "byte" || 
+                     csharpType == "bool" || csharpType == "decimal" || csharpType == "double" || csharpType == "float" || 
+                     csharpType == "Guid")
+            {
+                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}.ToString() }} }});");
+            }
+            // Nullable value type handling
+            else if (csharpType == "int?" || csharpType == "long?" || csharpType == "short?" || csharpType == "byte?" || 
+                     csharpType == "bool?" || csharpType == "decimal?" || csharpType == "double?" || csharpType == "float?" || 
+                     csharpType == "Guid?")
+            {
+                sb.AppendLine($"        if (entity.{propName} != null)");
+                sb.AppendLine("        {");
+                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}.ToString() }} }});");
+                sb.AppendLine("        }");
+                sb.AppendLine("        else");
+                sb.AppendLine("        {");
+                sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = null }} }});");
+                sb.AppendLine("        }");
+            }
+            // Default fallback for unknown types
+            else
+            {
+                sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{col.Name}\", Value = new Value {{ StringValue = entity.{propName}?.ToString() }} }});");
+            }
         }
+        
         sb.AppendLine("        return row;");
         sb.AppendLine("    }");
-        sb.AppendLine("}"); // Ensure class closing brace is always present
+        sb.AppendLine("}");
         return sb.ToString();
     }
 
