@@ -81,7 +81,7 @@ internal class GrpcClientApiDemonstrator
             Console.WriteLine();
         }
 
-        Console.WriteLine("Nothing else to demo.");
+        Console.WriteLine("Completed demonstrating the Grpc Client API.");
     }
 
     private static async Task ShowDeleteApiUsage(SalesLTAddressDataSource addressDataSource, SalesLTAddressInsertedData inserted)
@@ -327,8 +327,6 @@ internal class GrpcClientApiDemonstrator
 
             Console.ForegroundColor = ConsoleColor.DarkCyan;
             Console.WriteLine("// Get the result as a list of rows.");
-            Console.WriteLine("// This demonstrates getting a specific Address by its primary key (AddressID = 1)");
-            Console.WriteLine("// and then getting the linked CustomerAddress data in one query.");
             Console.ResetColor();
 
             Console.ForegroundColor = ConsoleColor.Cyan;
