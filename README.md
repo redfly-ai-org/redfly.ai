@@ -17,15 +17,19 @@ redfly.ai lets you synchronize your database with Redis <i>transparently</i> and
 Provide source code that:
 
 1. **redflyPerformanceTest** Project: Lets you easily verify that our system performs better than conventional techniques for data access at scale (Done ✔️).
+   - Databases will give you good performance because that is what they have been used for all along.
+   - However, this performance goes down with more data and a higher load.
+   - Scaling it up means spending a lot of money - even with OSS databases.
+   - Redis can provide much better performance, scalability, and reliability at a significantly lower cost for data that is most frequently accessed. 
 
-2. **redflyDatabaseSyncProxy** Project: Provides a way for anybody to test our Redis synchronization service on demand
+3. **redflyDatabaseSyncProxy** Project: Provides a way for anybody to test our Redis synchronization service on demand
    - Get the database ready for synchronization by adding the functionality to prep it (Done ✔️)
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - **SQL Server** Support (Available since day 1 ✔️)
       - **Postgres** Support (Done ✔️)
       - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our internals TBD ⌚) 
       
-3. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (WIP🏃🏽‍♀️‍➡️).
+4. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (WIP🏃🏽‍♀️‍➡️).
    - Generic API implementation (this is what the generated code will call under the scenes) (Done ✔️)
      - GetTotalRowCount (Done ✔️)
      - Delete (Server Done ✔️)
