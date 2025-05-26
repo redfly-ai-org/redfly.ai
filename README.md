@@ -49,7 +49,7 @@ We do all this setup work for our customers within our environment. This should 
 
 These applications do not require complex configuration or modifications to work. They will be simple console applications written in C# and using the latest version of .NET Core. 
 
-**Pre-requisites**
+## Pre-requisites
 
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/>
 https://transparent.azurewebsites.net/Identity/Account/Register
@@ -58,30 +58,30 @@ Check your junk folder for emails from redfly.ai. Since this is a new domain, em
 
 The proof is in the pudding. All our cloud services run on our technology.  
 
-**Compatibility**
+## Compatibility
 
 We currently support Postgres, MongoDB & SQL Server sync with Redis. We intend to support other relational databases (like Oracle, MySQL, etc) in the future. Eventually, we plan to support all **disk-based** databases and other public clouds like AWS and GCP. 
 
 _We have a list of customers in our queue. If interested, please let us know at developer at redfly dot ai_.
 
-**Caveats**
+## Caveats
 
 Relational Databases perform well for a small number of rows without a lot of use. The longer and harder you run the test (feel free to pound it), and the more data is in the DB table, the better redfly.ai will perform relative to SQL.
 
 A better performance test can be found here: https://transparent.azurewebsites.net/fusioncore-demo. 
 
-**Trust**
+## Trust
 
 We are funded by the <a href="https://www.alchemistaccelerator.com/">Alchemist Accelerator</a> - the #1 accelerator for Enterprise Startups.
 
 Under an NDA, customers can get more source code than what is available in our public repo. However, we do not expect the complete source code to be useful to the vast majority of developers who lack the specialized knowledge or experience in synchronization and other technologies underlying our core platform. 
 
-**Documentation**
+## Documentation
 
 Higher-level overview: https://redfly.ai <br/>
 More technical: https://nautilus2k.netlify.app <br/>
 
-**Sales**
+## Sales
 
 In the Azure Marketplace:<br/>
 https://azuremarketplace.microsoft.com/en-us/marketplace/apps/redfly.redfly-offer-1?tab=overview
