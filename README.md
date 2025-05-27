@@ -8,9 +8,11 @@ This enables interacting with data using strongly typed, object-oriented paradig
 
 Some of the largest companies in the world synchronize their database directly with the cache so that they can seamlessly access their data without worrying about optimizing SQL queries or scaling up their disk-based databases. Now, for the first time in history, we have made it possible for anybody to implement the same thing without spending several million dollars and years in R&D costs. 
 
-redfly.ai is the world's first schema-agnostic caching system. No other company has done or will do this. Why build a data-agnostic system when you could _more_ easily (still non-trivial) make something that works solely with your database? This made it possible to cache any database. The second step was to build on that foundation a new way of interacting with the database, which we could only imagine for many years.
+redfly is the world's first schema-agnostic caching system. No other company has done or will do this. Why build a data-agnostic system when you could _more_ easily (still non-trivial) make something that works solely with your database? This made it possible to cache any database. The second step was to build on that foundation a new way of interacting with the database, which we could only imagine for many years.
 
-redfly.ai lets you synchronize your database with Redis <i>transparently</i> and <i>generate</i> a data access layer that <i>integrates</i> data access code with caching. This open-source repo is intended to make it easy for developers to understand and try out a novel system that is sure to fire all their neurons when they see what is truly possible.
+This open-source repo is intended to make it easy for developers to understand and try out a novel system that is sure to fire all their neurons when they see what is truly possible.
+
+We don’t do everything. But, we are very good at the few things we do.
 
 ## Goals
 
