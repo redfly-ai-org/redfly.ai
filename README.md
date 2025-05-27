@@ -12,7 +12,7 @@ redfly is the world's first schema-agnostic caching system. No other company has
 
 This open-source repo is intended to make it easy for developers to understand and try out a novel system that is sure to fire all their neurons when they see what is truly possible.
 
-**We don’t do everything but, we try to be exceptional at the few things we do**
+**We don’t do everything but we try to be exceptional at the few things we do**
 
 ## Goals
 
