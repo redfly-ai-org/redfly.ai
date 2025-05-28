@@ -44,6 +44,8 @@ Provide source code that:
      - Code Generation (Done ✔️)
    - Postgres support (TBD ⌚)
    - MongoDB support (TBD ⌚)
+  
+5. **redflyRemoteSync** Project: The ability to sync massive amounts of data from remote sites with spotty internet connectivity, over the public internet securely (TBD ⌚).
 
 This code is not intended to be used as a best-practice implementation. It is focused on doing what it needs to do with minimal implementation time. 
 
