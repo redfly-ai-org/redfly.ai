@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+option csharp_namespace = "redflyGeneratedDataAccessApi.Protos.SqlServer";
+
+package databaseapi;
+
+// Represents a generic value for a table column.
+message Value {
+  // The value as a string (all values are transmitted as strings; conversion happens on the server side)
+  string string_value = 1;
+}
+
+// Represents a dictionary entry for a row (column name to value).
+message RowEntry {
+  string column = 1;
+  Value value = 2;
+}
+
+// Represents a full row as a repeated list of RowEntry.
+message Row {
+  repeated RowEntry entries = 1;
+}
+
+// Generic request to specify a table name.
+message TableRequest {
+  string table_name = 1;
+}
+
+message GetTotalRowCountResponse {
+  int64 total = 1;
+  bool fromCache = 2;
+  string message = 3;
+}
+
+message DeleteResponse {
+  bool success = 1;
+  bool cacheUpdated = 2;
+  string message = 3;
+}
+
+message GetRowsResponse {
+  bool success = 1;
+  repeated Row rows = 2;
+  bool fromCache = 3;
+  string message = 4;
+}
+
+message InsertResponse {
+  bool success = 1;
+  Row inserted_row = 2;
+  bool cacheUpdated = 3;
+  string message = 4;
+}
+
+message GetResponse {
+  bool success = 1;
+  Row row = 2;
+  bool fromCache = 3;
+  string message = 4;
+}
+
+message UpdateResponse {
+  bool success = 1;
+  int32 updated_count = 2;
+  bool cacheUpdated = 3;
+  string message = 4;
+}
+
+
+

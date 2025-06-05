@@ -1,30 +1,9 @@
 syntax = "proto3";
+import "Protos/database-api.proto";
 
 option csharp_namespace = "redflyGeneratedDataAccessApi.Protos.SqlServer";
 
-package sqlserverapi;
-
-// Represents a generic value for a table column.
-message Value {
-  // The value as a string (all values are transmitted as strings; conversion happens on the server side)
-  string string_value = 1;
-}
-
-// Represents a dictionary entry for a row (column name to value).
-message RowEntry {
-  string column = 1;
-  Value value = 2;
-}
-
-// Represents a full row as a repeated list of RowEntry.
-message Row {
-  repeated RowEntry entries = 1;
-}
-
-// Generic request to specify a table name.
-message TableRequest {
-  string table_name = 1;
-}
+package databaseapi;
 
 // Request for GetTotalRowCount.
 message GetTotalRowCountRequest {
@@ -36,12 +15,6 @@ message GetTotalRowCountRequest {
   string encrypted_database_id = 6;
   string encryptedServerOnlyConnectionString = 7;
   string encryption_key = 8;
-}
-
-message GetTotalRowCountResponse {
-  int64 total = 1;
-  bool fromCache = 2;
-  string message = 3;
 }
 
 // Request for Delete.
@@ -56,12 +29,6 @@ message DeleteRequest {
   string encryption_key = 8;
   map<string, string> primary_key_values = 9; // key: PK column name, value: PK value
   bool modify_cache = 10;
-}
-
-message DeleteResponse {
-  bool success = 1;
-  bool cacheUpdated = 2;
-  string message = 3;
 }
 
 // Request for GetRows.
@@ -93,13 +60,6 @@ message GetSqlRowsRequest {
   string encryption_key = 9;
 }
 
-message GetRowsResponse {
-  bool success = 1;
-  repeated Row rows = 2;
-  bool fromCache = 3;
-  string message = 4;
-}
-
 // Request for Insert.
 message InsertRequest {
   string encrypted_database_server_name = 1;
@@ -112,13 +72,6 @@ message InsertRequest {
   string encryption_key = 8;
   Row row = 9;
   bool modify_cache = 10;
-}
-
-message InsertResponse {
-  bool success = 1;
-  Row inserted_row = 2;
-  bool cacheUpdated = 3;
-  string message = 4;
 }
 
 // Request for Get.
@@ -134,13 +87,6 @@ message GetRequest {
   map<string, string> primary_key_values = 9; // key: PK column name, value: PK value
 }
 
-message GetResponse {
-  bool success = 1;
-  Row row = 2;
-  bool fromCache = 3;
-  string message = 4;
-}
-
 // Request for Update.
 message UpdateRequest {
   string encrypted_database_server_name = 1;
@@ -153,13 +99,6 @@ message UpdateRequest {
   string encryption_key = 8;
   Row row = 9;
   bool modify_cache = 10;
-}
-
-message UpdateResponse {
-  bool success = 1;
-  int32 updated_count = 2;
-  bool cacheUpdated = 3;
-  string message = 4;
 }
 
 // The generic SQL Server API service.

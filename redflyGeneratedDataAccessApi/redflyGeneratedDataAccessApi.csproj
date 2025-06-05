@@ -25,6 +25,7 @@
 
   <ItemGroup>
     <Protobuf Include="protos\sqlserver-api.proto" GrpcServices="Client" />
+	<Protobuf Include="protos\database-api.proto" GrpcServices="None" />
   </ItemGroup>
 
 </Project>
