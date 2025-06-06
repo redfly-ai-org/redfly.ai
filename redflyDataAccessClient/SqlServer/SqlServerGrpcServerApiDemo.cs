@@ -8,9 +8,9 @@ using redflyGeneratedDataAccessApi.Protos.SqlServer;
 using redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 using System.Diagnostics;
 
-namespace redflyDataAccessClient;
+namespace redflyDataAccessClient.SqlServer;
 
-internal class GrpcServerApiDemonstrator
+internal class SqlServerGrpcServerApiDemo
 {
 
     internal static async Task Demonstrate(GrpcChannel channel)

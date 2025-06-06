@@ -7,8 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyDataAccessClient;
-internal class GrpcClientApiDemonstrator
+namespace redflyDataAccessClient.SqlServer;
+internal class SqlServerGrpcClientApiDemo
 {
 
     internal static async Task Demonstrate()

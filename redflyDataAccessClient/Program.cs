@@ -12,7 +12,8 @@ using System.Diagnostics;
 using redflyGeneratedDataAccessApi;
 using redflyGeneratedDataAccessApi.Compilers;
 using redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
-using redflyGeneratedDataAccessApi.SqlServer; // Add this namespace for GenericRowsData
+using redflyGeneratedDataAccessApi.SqlServer;
+using redflyDataAccessClient.SqlServer; // Add this namespace for GenericRowsData
 
 namespace redflyDataAccessClient;
 
@@ -229,14 +230,14 @@ internal class Program
                 if (response != null && 
                     response.ToLower() == "y") 
                 {
-                    await GrpcClientApiDemonstrator.Demonstrate();
+                    await SqlServerGrpcClientApiDemo.Demonstrate();
                 }
                 else
                 {
                     Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
                 }
 
-                await GrpcServerApiDemonstrator.Demonstrate(channel);
+                await SqlServerGrpcServerApiDemo.Demonstrate(channel);
             }
 
             Console.WriteLine("All API calls are completed!");
