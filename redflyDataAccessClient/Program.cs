@@ -270,20 +270,21 @@ internal class Program
                 Console.ResetColor();
                 Console.WriteLine();
 
-                //Console.WriteLine("Do you want to generate the API classes for your database now? (y/n)");
-                //Console.WriteLine("Entering 'y' will require you to exit the app after code generation so that the app can recompile.");
-                //response = Console.ReadLine();
+                Console.WriteLine("Do you want to generate the API classes for your database now? (y/n)");
+                Console.WriteLine("Entering 'y' will require you to exit the app after code generation so that the app can recompile.");
+                response = Console.ReadLine();
 
-                //if (response != null &&
-                //    response.ToLower() == "y")
-                //{
-                //    (new PostgresGrpcPolyLangCompiler())
-                //        .GenerateForDatabase();
+                if (response != null &&
+                    response.ToLower() == "y")
+                {
+                    (new PostgresGrpcPolyLangCompiler())
+                        .GenerateForDatabase(
+                            "C:\\Code\\redfly-oss\\redflyGeneratedDataAccessApi\\Postgres\\" + AppDbSession.PostgresDatabase!.DecryptedDatabaseName.Replace(" ", "") + "\\");
 
-                //    Console.WriteLine("Press ANY key to exit so you can recompile the app and run again.");
-                //    Console.ReadKey();
-                //    return;
-                //}
+                    Console.WriteLine("Press ANY key to exit so you can recompile the app and run again.");
+                    Console.ReadKey();
+                    return;
+                }
 
                 Console.WriteLine("Are you using the AdventureWorks database? (y/n)");
                 response = Console.ReadLine();
