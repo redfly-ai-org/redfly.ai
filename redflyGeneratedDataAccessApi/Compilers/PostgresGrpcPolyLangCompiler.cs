@@ -190,169 +190,65 @@ public class PostgresGrpcPolyLangCompiler
         if (string.IsNullOrEmpty(input)) return input;
         input = RemoveSpaces(input);
         if (input.Length == 1) return input.ToUpperInvariant();
-        
-        // First, handle common prefixes and compound words
-        var knownPrefixes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+
+        // Known words for splitting compound identifiers
+        var knownWords = new[]
         {
-            // Schemas and business areas
-            { "human", "Human" },
-            { "resources", "Resources" },
-            { "sales", "Sales" },
-            { "customer", "Customer" },
-            { "product", "Product" },
-            { "production", "Production" },
-            { "purchasing", "Purchasing" },
-            { "person", "Person" },
-            { "employee", "Employee" },
-            { "finance", "Finance" },
-            { "accounting", "Accounting" },
-            { "inventory", "Inventory" },
-            { "marketing", "Marketing" },
-            { "research", "Research" },
-            { "development", "Development" },
-            { "warehouse", "Warehouse" },
-            { "logistics", "Logistics" },
-            
-            // Common database table/column components
-            { "order", "Order" },
-            { "detail", "Detail" },
-            { "header", "Header" },
-            { "modified", "Modified" },
-            { "created", "Created" },
-            { "date", "Date" },
-            { "time", "Time" },
-            { "timestamp", "Timestamp" },
-            { "group", "Group" },
-            { "name", "Name" },
-            { "department", "Department" },
-            { "category", "Category" },
-            { "subcategory", "Subcategory" },
-            { "description", "Description" },
-            { "address", "Address" },
-            { "line", "Line" },
-            { "city", "City" },
-            { "state", "State" },
-            { "province", "Province" },
-            { "country", "Country" },
-            { "region", "Region" },
-            { "postal", "Postal" },
-            { "zip", "Zip" },
-            { "code", "Code" },
-            { "credit", "Credit" },
-            { "card", "Card" },
-            { "payment", "Payment" },
-            { "method", "Method" },
-            { "price", "Price" },
-            { "cost", "Cost" },
-            { "quantity", "Quantity" },
-            { "amount", "Amount" },
-            { "currency", "Currency" },
-            { "tax", "Tax" },
-            { "discount", "Discount" },
-            { "total", "Total" },
-            { "subtotal", "Subtotal" },
-            { "shipping", "Shipping" },
-            { "billing", "Billing" },
-            { "status", "Status" },
-            { "type", "Type" },
-            { "number", "Number" },
-            { "phone", "Phone" },
-            { "email", "Email" },
-            { "user", "User" },
-            { "password", "Password" },
-            { "login", "Login" },
-            { "account", "Account" },
-            { "transaction", "Transaction" },
-            { "first", "First" },
-            { "last", "Last" },
-            { "middle", "Middle" },
-            { "initial", "Initial" },
-            { "prefix", "Prefix" },
-            { "suffix", "Suffix" },
-            { "title", "Title" },
-            { "start", "Start" },
-            { "end", "End" },
-            { "due", "Due" },
-            { "version", "Version" },
-            { "rate", "Rate" },
-            { "percent", "Percent" },
-            { "unit", "Unit" },
-            { "measure", "Measure" },
-            { "color", "Color" },
-            { "size", "Size" },
-            { "weight", "Weight" },
-            { "height", "Height" },
-            { "width", "Width" },
-            { "depth", "Depth" },
-            { "dimension", "Dimension" }
+            "human", "resources", "sales", "customer", "product", "production", "purchasing", "person", "employee", "finance", "accounting", "inventory", "marketing", "research", "development", "warehouse", "logistics",
+            "order", "detail", "header", "modified", "created", "date", "time", "timestamp", "group", "name", "department", "category", "subcategory", "description", "address", "line", "city", "state", "province", "country", "region", "postal", "zip", "code", "credit", "card", "payment", "method", "price", "cost", "quantity", "amount", "currency", "tax", "discount", "total", "subtotal", "shipping", "billing", "status", "type", "number", "phone", "email", "user", "password", "login", "account", "transaction", "first", "last", "middle", "initial", "prefix", "suffix", "title", "start", "end", "due", "version", "rate", "percent", "unit", "measure", "color", "size", "weight", "height", "width", "depth", "dimension", "id", "guid", "flag", "node", "row", "pay", "frequency", "hire", "birth", "marital", "hours", "organization"
         };
-        
+
         // Split by underscores, hyphens, and spaces
         var parts = Regex.Split(input.ToLowerInvariant(), "[_\\-\\s]")
             .Where(s => !string.IsNullOrEmpty(s))
             .ToList();
-            
-        // Process each part to properly capitalize known words
-        for (int i = 0; i < parts.Count; i++)
+
+        // Recursively split each part by known words
+        List<string> SplitByKnownWords(string s)
         {
-            string part = parts[i];
-            bool matchFound = false;
-            
-            // Check if this part matches any known prefix
-            foreach (var prefix in knownPrefixes.Keys)
+            var result = new List<string>();
+            int i = 0;
+            while (i < s.Length)
             {
-                if (part.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && 
-                    part.Length > prefix.Length)
+                string match = null;
+                foreach (var word in knownWords.OrderByDescending(w => w.Length))
                 {
-                    // Split the part at the prefix boundary
-                    string remainder = part.Substring(prefix.Length);
-                    
-                    // Check if remainder is another known word
-                    string remainderCased = remainder;
-                    foreach (var innerPrefix in knownPrefixes.Keys)
+                    if (s.Substring(i).StartsWith(word, StringComparison.OrdinalIgnoreCase))
                     {
-                        if (remainder.Equals(innerPrefix, StringComparison.OrdinalIgnoreCase))
-                        {
-                            remainderCased = knownPrefixes[innerPrefix];
-                            matchFound = true;
-                            break;
-                        }
+                        match = word;
+                        break;
                     }
-                    
-                    // If remainder is not a known word, capitalize first letter
-                    if (!matchFound && !string.IsNullOrEmpty(remainder))
-                    {
-                        remainderCased = char.ToUpperInvariant(remainder[0]) + 
-                                        (remainder.Length > 1 ? remainder.Substring(1) : "");
-                    }
-                    
-                    parts[i] = knownPrefixes[prefix] + remainderCased;
-                    matchFound = true;
-                    break;
                 }
-                else if (part.Equals(prefix, StringComparison.OrdinalIgnoreCase))
+                if (match != null)
                 {
-                    // Full match with a known word
-                    parts[i] = knownPrefixes[prefix];
-                    matchFound = true;
-                    break;
+                    result.Add(match);
+                    i += match.Length;
+                }
+                else
+                {
+                    // If no match, take one character and continue
+                    result.Add(s[i].ToString());
+                    i++;
                 }
             }
-            
-            // If no known prefix was found, use standard PascalCase
-            if (!matchFound)
-            {
-                parts[i] = char.ToUpperInvariant(part[0]) + (part.Length > 1 ? part.Substring(1) : "");
-            }
+            return result;
         }
-        
-        var result = string.Join("", parts);
-        
+
+        var words = new List<string>();
+        foreach (var part in parts)
+        {
+            var split = SplitByKnownWords(part);
+            words.AddRange(split);
+        }
+
+        // Capitalize each word
+        var result = string.Join("", words.Where(w => !string.IsNullOrEmpty(w)).Select(w => char.ToUpperInvariant(w[0]) + (w.Length > 1 ? w.Substring(1) : "")));
+
         // Handle special cases like ID, IDs, etc.
         result = Regex.Replace(result, "Id([^a-zA-Z]|$)", "Id$1", RegexOptions.IgnoreCase);
         result = Regex.Replace(result, "Ids([^a-zA-Z]|$)", "Ids$1", RegexOptions.IgnoreCase);
         result = Regex.Replace(result, "Guid([^a-zA-Z]|$)", "Guid$1", RegexOptions.IgnoreCase);
-        
+
         return result;
     }
 
@@ -613,15 +509,15 @@ public class PostgresGrpcPolyLangCompiler
                 
                 // Handle different types
                 if (csharpType == "JObject" || csharpType == "JObject?")
-                    sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}?.ToString(Formatting.None) ?? \"{{}}\" }} }});");
+                    sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}?.ToString(Formatting.None) ?? \"{{}}\" }} }});");
                 else if (csharpType == "JArray" || csharpType == "JArray?")
-                    sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}?.ToString(Formatting.None) ?? \"[]\" }} }});");
+                    sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}?.ToString(Formatting.None) ?? \"[]\" }} }});");
                 else if (csharpType.StartsWith("List<"))
-                    sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = JsonConvert.SerializeObject(entity.{pkProp}) }} }});");
+                    sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = JsonConvert.SerializeObject(entity.{pkProp}) }} }});");
                 else if (csharpType == "byte[]" || csharpType == "byte[]?")
-                    sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp} != null ? Convert.ToBase64String(entity.{pkProp}) : null }} }});");
+                    sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp} != null ? Convert.ToBase64String(entity.{pkProp}) : null }} }});");
                 else
-                    sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}.ToString() }} }});");
+                    sb.AppendLine($"        row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}.ToString() }} }});");
             }
             sb.AppendLine();
         }
