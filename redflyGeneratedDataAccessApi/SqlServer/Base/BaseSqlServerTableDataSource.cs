@@ -13,37 +13,21 @@ using redflyGeneratedDataAccessApi.Base;
 
 namespace redflyGeneratedDataAccessApi.SqlServer;
 
-public abstract class BaseSqlServerTableDataSource<T> where T : BaseSqlServerTableSchema
+public abstract class BaseSqlServerTableDataSource<T> : BaseDatabaseTableDataSource where T : BaseSqlServerTableSchema
 {
 
     protected readonly NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient _client;
-    protected readonly string _encDbServer, _encDbName, _encClientId, _encDbId, _encConnStr, _encryptionKey;
-    protected string _encSchema, _encTable = "";
+    protected readonly string _encClientId, _encDbId, _encConnStr;
+    protected string _encSchema = "";
 
-    protected BaseSqlServerTableDataSource()
+    protected BaseSqlServerTableDataSource() : base()
     {
-        var channel = GrpcChannel.ForAddress(AppGrpcSession.GrpcUrl, new GrpcChannelOptions
-        {
-            //LoggerFactory = loggerFactory,
-            HttpHandler = new SocketsHttpHandler
-            {
-                EnableMultipleHttp2Connections = true,
-                KeepAlivePingPolicy = HttpKeepAlivePingPolicy.Always,
-                KeepAlivePingDelay = TimeSpan.FromSeconds(30), // Frequency of keepalive pings
-                KeepAlivePingTimeout = TimeSpan.FromSeconds(5) // Timeout before considering the connection dead
-            },
-            HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
-        });
+        _client = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(_channel);
 
-        _client = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
-
-        //Everything else comes from the environment.
-        _encDbServer = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.HostName);
-        _encDbName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name);
+        //Everything else comes from the environment.        
         _encClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.ClientId);
         _encDbId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id);
-        _encConnStr = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;");
-        _encryptionKey = RedflyEncryptionKeys.AesKey;
+        _encConnStr = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;");        
     }
 
     protected abstract T MapRowToTableEntity(Row row);
