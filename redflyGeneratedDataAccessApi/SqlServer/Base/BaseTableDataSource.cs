@@ -1,12 +1,13 @@
 ﻿using Grpc.Net.Client;
 using RedflyCoreFramework;
-using redflyGeneratedDataAccessApi.Protos.SqlServer;
+using redflyGeneratedDataAccessApi.Protos.DatabaseApi;
 using redflyDatabaseAdapters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using redflyGeneratedDataAccessApi.Protos.SqlServer;
 
 namespace redflyGeneratedDataAccessApi.SqlServer;
 

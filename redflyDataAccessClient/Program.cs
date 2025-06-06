@@ -13,7 +13,8 @@ using redflyGeneratedDataAccessApi;
 using redflyGeneratedDataAccessApi.Compilers;
 using redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 using redflyGeneratedDataAccessApi.SqlServer;
-using redflyDataAccessClient.SqlServer; // Add this namespace for GenericRowsData
+using redflyDataAccessClient.SqlServer;
+using redflyDataAccessClient.Postgres; // Add this namespace for GenericRowsData
 
 namespace redflyDataAccessClient;
 
@@ -98,6 +99,25 @@ internal class Program
             bool isMongoSync = false;
             bool isSqlServerSync = false;
 
+            Console.WriteLine("Are you trying to read data from a Postgres database? (y/n)");
+            response = Console.ReadLine();
+
+            if (response != null &&
+                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+            {
+                isPostgresSync = true;
+
+                if (!PostgresReady.ForChakraSync())
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("redfly Postgres Data APIs cannot be used without syncing the Postgres database.");
+                    Console.WriteLine("Please sync the Postgres database using the redflyDatabaseSyncProxy app and try again.");
+                    Console.ResetColor();
+
+                    return;
+                }
+            }
+
             if (!isPostgresSync &&
                 !isMongoSync)
             {
@@ -127,10 +147,14 @@ internal class Program
             {
                 SqlServerSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
             }
+            else if (isPostgresSync)
+            {
+                PostgresSyncRelationship.FindExistingRelationshipWithRedis(redisServerCollection);
+            }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("We only support SQL Server APIs at present.");
+                Console.WriteLine("We only support Postgres & SQL Server APIs at present.");
                 Console.ResetColor();
 
                 return;
@@ -227,17 +251,55 @@ internal class Program
                 Console.WriteLine("Are you using the AdventureWorks database? (y/n)");
                 response = Console.ReadLine();
 
-                if (response != null && 
-                    response.ToLower() == "y") 
+                if (response != null &&
+                    response.ToLower() == "y")
                 {
-                    await SqlServerGrpcClientApiDemo.Demonstrate();
+                    await SqlServerGrpcClientApiDemo.Run();
                 }
                 else
                 {
                     Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
                 }
 
-                await SqlServerGrpcServerApiDemo.Demonstrate(channel);
+                await SqlServerGrpcServerApiDemo.Run(channel);
+            }
+            else if (isPostgresSync)
+            {
+                // Make calls to the Postgres APIs from here!.
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine("The API calls can be made now!");
+                Console.ResetColor();
+                Console.WriteLine();
+
+                //Console.WriteLine("Do you want to generate the API classes for your database now? (y/n)");
+                //Console.WriteLine("Entering 'y' will require you to exit the app after code generation so that the app can recompile.");
+                //response = Console.ReadLine();
+
+                //if (response != null &&
+                //    response.ToLower() == "y")
+                //{
+                //    (new PostgresGrpcPolyLangCompiler())
+                //        .GenerateForDatabase();
+
+                //    Console.WriteLine("Press ANY key to exit so you can recompile the app and run again.");
+                //    Console.ReadKey();
+                //    return;
+                //}
+
+                //Console.WriteLine("Are you using the AdventureWorks database? (y/n)");
+                //response = Console.ReadLine();
+
+                //if (response != null &&
+                //    response.ToLower() == "y")
+                //{
+                //    await PostgresGrpcClientApiDemo.Demonstrate();
+                //}
+                //else
+                //{
+                //    Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
+                //}
+
+                await PostgresGrpcServerApiDemo.Run(channel);
             }
 
             Console.WriteLine("All API calls are completed!");

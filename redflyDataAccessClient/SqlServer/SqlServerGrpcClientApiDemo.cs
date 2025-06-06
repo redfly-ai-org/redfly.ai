@@ -11,7 +11,7 @@ namespace redflyDataAccessClient.SqlServer;
 internal class SqlServerGrpcClientApiDemo
 {
 
-    internal static async Task Demonstrate()
+    internal static async Task Run()
     {
         Console.WriteLine("Let us now explore the power of redfly.ai APIs accessed through Grpc with the AdventureWorks sample database:");
         Console.WriteLine();

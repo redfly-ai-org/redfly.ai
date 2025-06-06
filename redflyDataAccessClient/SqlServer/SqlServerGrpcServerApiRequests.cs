@@ -1,6 +1,7 @@
 ﻿using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
 using redflyDatabaseAdapters;
+using redflyGeneratedDataAccessApi.Protos.DatabaseApi;
 using redflyGeneratedDataAccessApi.Protos.SqlServer;
 using System;
 using System.Collections.Generic;
@@ -8,8 +9,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyDataAccessClient;
-internal class GrpcServerApiRequests
+namespace redflyDataAccessClient.SqlServer;
+internal class SqlServerGrpcServerApiRequests
 {
 
     internal static DeleteRequest CreateDeleteRequest(string tableSchemaName, string tableName, Dictionary<string, string> primaryKeyValues)

@@ -1,6 +1,7 @@
 using RedflyCoreFramework;
 using redflyDatabaseAdapters;
-using redflyGeneratedDataAccessApi.Protos.SqlServer;
+using redflyGeneratedDataAccessApi.Protos.DatabaseApi;
+using redflyGeneratedDataAccessApi.Protos.DatabaseApi;
 
 namespace redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 

@@ -3,19 +3,18 @@ using Grpc.Net.Client;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using RedflyCoreFramework;
-using redflyDataAccessClient.Base;
 using redflyDatabaseAdapters;
-using redflyGeneratedDataAccessApi.Protos.SqlServer;
-using redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
+using PostgresProtos = redflyGeneratedDataAccessApi.Protos.Postgres;
 using System.Diagnostics;
+using redflyDataAccessClient.Base;
 
-namespace redflyDataAccessClient.SqlServer;
+namespace redflyDataAccessClient.Postgres;
 
-internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
+internal class PostgresGrpcServerApiDemo : GrpcServerApiDemoBase
 {
     internal static async Task Run(GrpcChannel channel)
     {
-        var sqlServerApiClient = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(channel);
+        var postgresApiClient = new PostgresProtos.NativeGrpcPostgresApiService.NativeGrpcPostgresApiServiceClient(channel);
 
         Console.WriteLine("Next, we will go through many operations for one table in the database...");
 
@@ -56,22 +55,22 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
                 switch (choice)
                 {
                     case "1":
-                        await PromptUserForTableRowCount(sqlServerApiClient, tableSchemaName, tableName);
+                        await PromptUserForTableRowCount(postgresApiClient, tableSchemaName, tableName);
                         break;
                     case "2":
-                        await PromptUserForGetTableRows(sqlServerApiClient, tableSchemaName, tableName);
+                        await PromptUserForGetTableRows(postgresApiClient, tableSchemaName, tableName);
                         break;
                     case "3":
-                        await PromptUserForGetTableRow(sqlServerApiClient, tableSchemaName, tableName);
+                        await PromptUserForGetTableRow(postgresApiClient, tableSchemaName, tableName);
                         break;
                     case "4":
-                        await PromptUserForInsertRow(sqlServerApiClient, tableSchemaName, tableName);
+                        await PromptUserForInsertRow(postgresApiClient, tableSchemaName, tableName);
                         break;
                     case "5":
-                        await PromptUserForUpdateRow(sqlServerApiClient, tableSchemaName, tableName);
+                        await PromptUserForUpdateRow(postgresApiClient, tableSchemaName, tableName);
                         break;
                     case "6":
-                        await PromptUserForDeleteRow(sqlServerApiClient, tableSchemaName, tableName);
+                        await PromptUserForDeleteRow(postgresApiClient, tableSchemaName, tableName);
                         break;
                     case "0":
                         Console.WriteLine("Exiting table operations menu.");
@@ -92,7 +91,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         }
     }
 
-    private static async Task PromptUserForDeleteRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForDeleteRow(PostgresProtos.NativeGrpcPostgresApiService.NativeGrpcPostgresApiServiceClient postgresApiClient, string tableSchemaName, string tableName)
     {
         // Collect primary key column(s) and value(s)
         var primaryKeyValues = new Dictionary<string, string>();
@@ -116,7 +115,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
             return;
         }
 
-        var deleteRequest = SqlServerGrpcServerApiRequests.CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
+        var deleteRequest = PostgresGrpcServerApiRequests.CreateDeleteRequest(tableSchemaName, tableName, primaryKeyValues);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -127,7 +126,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         {
             var watch = new Stopwatch();
             watch.Start();
-            var deleteResponse = await sqlServerApiClient.DeleteAsync(deleteRequest, AppGrpcSession.Headers!);
+            var deleteResponse = await postgresApiClient.DeleteAsync(deleteRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
@@ -144,12 +143,12 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         }
     }
 
-    private static async Task PromptUserForUpdateRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForUpdateRow(PostgresProtos.NativeGrpcPostgresApiService.NativeGrpcPostgresApiServiceClient postgresApiClient, string tableSchemaName, string tableName)
     {
         Console.WriteLine("First enter the details for the row to be updated - this should include the primary keys and updated values.");
         var updatedData = PromptUserForColumnValuePairs();
 
-        var updateRequest = SqlServerGrpcServerApiRequests.CreateUpdateRequest(tableSchemaName, tableName, updatedData);
+        var updateRequest = PostgresGrpcServerApiRequests.CreateUpdateRequest(tableSchemaName, tableName, updatedData);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -160,7 +159,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         {
             var watch = new Stopwatch();
             watch.Start();
-            var updateResponse = await sqlServerApiClient.UpdateAsync(updateRequest, AppGrpcSession.Headers!);
+            var updateResponse = await postgresApiClient.UpdateAsync(updateRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
@@ -177,12 +176,12 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         }
     }
 
-    private static async Task PromptUserForInsertRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForInsertRow(PostgresProtos.NativeGrpcPostgresApiService.NativeGrpcPostgresApiServiceClient postgresApiClient, string tableSchemaName, string tableName)
     {
         Console.WriteLine("First enter the details for the row to be inserted - only NOT NULL columns have to be mandatorily entered.");
         var insertedData = PromptUserForColumnValuePairs();
 
-        var insertRequest = SqlServerGrpcServerApiRequests.CreateInsertRequest(tableSchemaName, tableName, insertedData);
+        var insertRequest = PostgresGrpcServerApiRequests.CreateInsertRequest(tableSchemaName, tableName, insertedData);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -193,7 +192,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         {
             var watch = new Stopwatch();
             watch.Start();
-            var insertResponse = await sqlServerApiClient.InsertAsync(insertRequest, AppGrpcSession.Headers!);
+            var insertResponse = await postgresApiClient.InsertAsync(insertRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
@@ -210,7 +209,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         }
     }
 
-    private static async Task PromptUserForGetTableRow(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForGetTableRow(PostgresProtos.NativeGrpcPostgresApiService.NativeGrpcPostgresApiServiceClient postgresApiClient, string tableSchemaName, string tableName)
     {
         var primaryKeyColumnName = "";
         var primaryKeyColumnValue = "";
@@ -227,7 +226,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
             primaryKeyColumnValue = Console.ReadLine();
         }
 
-        GetRequest getRequest = SqlServerGrpcServerApiRequests.CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
+        var getRequest = PostgresGrpcServerApiRequests.CreateGetRequest(tableSchemaName, tableName, primaryKeyColumnName, primaryKeyColumnValue);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -238,7 +237,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         {
             var watch = new Stopwatch();
             watch.Start();
-            var getResponse = await sqlServerApiClient.GetAsync(getRequest, AppGrpcSession.Headers!);
+            var getResponse = await postgresApiClient.GetAsync(getRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
@@ -255,7 +254,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         }
     }
 
-    private static async Task PromptUserForGetTableRows(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForGetTableRows(PostgresProtos.NativeGrpcPostgresApiService.NativeGrpcPostgresApiServiceClient postgresApiClient, string tableSchemaName, string tableName)
     {
         var orderByColumnName = "";
         var orderByColumnSort = "asc";
@@ -268,7 +267,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
 
         Console.WriteLine();
 
-        var getRowsRequest = SqlServerGrpcServerApiRequests.CreateGetRowsCachedRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
+        var getRowsRequest = PostgresGrpcServerApiRequests.CreateGetRowsRequest(tableSchemaName, tableName, orderByColumnName, orderByColumnSort);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -279,7 +278,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         {
             var watch = new Stopwatch();
             watch.Start();
-            var getRowsResponse = await sqlServerApiClient.GetRowsAsync(getRowsRequest, AppGrpcSession.Headers!);
+            var getRowsResponse = await postgresApiClient.GetRowsAsync(getRowsRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();
@@ -296,10 +295,10 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         }
     }
 
-    private static async Task PromptUserForTableRowCount(NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient sqlServerApiClient, string tableSchemaName, string tableName)
+    private static async Task PromptUserForTableRowCount(PostgresProtos.NativeGrpcPostgresApiService.NativeGrpcPostgresApiServiceClient postgresApiClient, string tableSchemaName, string tableName)
     {
         // Prepare the request
-        var getTotalRowCountRequest = SqlServerGrpcServerApiRequests.CreateGetTotalRowCountRequest(tableSchemaName, tableName);
+        var getTotalRowCountRequest = PostgresGrpcServerApiRequests.CreateGetTotalRowCountRequest(tableSchemaName, tableName);
 
         Console.WriteLine("Getting results from the server...");
 
@@ -310,7 +309,7 @@ internal class SqlServerGrpcServerApiDemo : GrpcServerApiDemoBase
         {
             var watch = new Stopwatch();
             watch.Start();
-            var getTotalRowCountResponse = await sqlServerApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, AppGrpcSession.Headers!);
+            var getTotalRowCountResponse = await postgresApiClient.GetTotalRowCountAsync(getTotalRowCountRequest, AppGrpcSession.Headers!);
             watch.Stop();
 
             cts.Cancel();

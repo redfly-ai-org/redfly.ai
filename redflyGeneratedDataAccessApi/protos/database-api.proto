@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option csharp_namespace = "redflyGeneratedDataAccessApi.Protos.SqlServer";
+option csharp_namespace = "redflyGeneratedDataAccessApi.Protos.DatabaseApi";
 
 package databaseapi;
 
