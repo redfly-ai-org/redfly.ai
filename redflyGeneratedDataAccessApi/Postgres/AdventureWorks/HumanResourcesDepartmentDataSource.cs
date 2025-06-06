@@ -118,10 +118,9 @@ public class HumanResourcesDepartmentDataSource : BasePostgresTableDataSource<Hu
     protected override Row MapTableEntityToRow(HumanResourcesDepartment entity, DbOperationType dbOperationType)
     {
         var row = new Row();
-        if (dbOperationType != DbOperationType.Insert)
-        {
-            row.Entries.Add(new RowEntry { Column = "departmentid", Value = new Value { StringValue = entity.DepartmentId.ToString() } });
-        }
+
+        // For Postgres, we can pass in all columns.
+        row.Entries.Add(new RowEntry { Column = "departmentid", Value = new Value { StringValue = entity.DepartmentId.ToString() } });
         row.Entries.Add(new RowEntry { Column = "name", Value = new Value { StringValue = entity.Name } });
         row.Entries.Add(new RowEntry { Column = "groupname", Value = new Value { StringValue = entity.GroupName } });
         if (entity.ModifiedDate != DateTime.MinValue)

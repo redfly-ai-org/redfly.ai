@@ -286,18 +286,18 @@ internal class Program
                 //    return;
                 //}
 
-                //Console.WriteLine("Are you using the AdventureWorks database? (y/n)");
-                //response = Console.ReadLine();
+                Console.WriteLine("Are you using the AdventureWorks database? (y/n)");
+                response = Console.ReadLine();
 
-                //if (response != null &&
-                //    response.ToLower() == "y")
-                //{
-                //    await PostgresGrpcClientApiDemo.Demonstrate();
-                //}
-                //else
-                //{
-                //    Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
-                //}
+                if (response != null &&
+                    response.ToLower() == "y")
+                {
+                    await PostgresGrpcClientApiDemo.Run();
+                }
+                else
+                {
+                    Console.WriteLine("Strongly typed APIs in this repo only work with the AdventureWorks database.");
+                }
 
                 await PostgresGrpcServerApiDemo.Run(channel);
             }
