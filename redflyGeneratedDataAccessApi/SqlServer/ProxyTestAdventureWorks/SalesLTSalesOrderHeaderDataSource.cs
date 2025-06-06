@@ -11,7 +11,7 @@ namespace redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 // redfly SqlServerGrpcPolyLangCompiler on 05/24/25 10:39:40 PM
 // This is only meant to be indicative of the features available in the core product.
 
-public class SalesLTSalesOrderHeader : BaseTableEntity
+public class SalesLTSalesOrderHeader : BaseSqlServerTableSchema
 {
     public int SalesOrderId { get; set; }
     public byte RevisionNumber { get; set; }
@@ -50,7 +50,7 @@ public class SalesLTSalesOrderHeaderRowData : BaseTableRowData
     public SalesLTSalesOrderHeader? Row { get; set; }
 }
 
-public class SalesLTSalesOrderHeaderDataSource : BaseTableDataSource<SalesLTSalesOrderHeader>
+public class SalesLTSalesOrderHeaderDataSource : BaseSqlServerTableDataSource<SalesLTSalesOrderHeader>
 {
     public SalesLTSalesOrderHeaderDataSource() : base()
     {

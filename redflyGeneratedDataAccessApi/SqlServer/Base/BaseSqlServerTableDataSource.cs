@@ -18,14 +18,14 @@ public class GenericRowsData : BaseTableRowsData
     public List<Row> Rows { get; set; } = new();
 }
 
-public abstract class BaseTableDataSource<T> where T : BaseTableEntity
+public abstract class BaseSqlServerTableDataSource<T> where T : BaseSqlServerTableSchema
 {
 
     protected readonly NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient _client;
     protected readonly string _encDbServer, _encDbName, _encClientId, _encDbId, _encConnStr, _encryptionKey;
     protected string _encSchema, _encTable = "";
 
-    protected BaseTableDataSource()
+    protected BaseSqlServerTableDataSource()
     {
         var channel = GrpcChannel.ForAddress(AppGrpcSession.GrpcUrl, new GrpcChannelOptions
         {

@@ -10,7 +10,7 @@ namespace redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 // redfly SqlServerGrpcPolyLangCompiler on 05/24/25 10:39:40 PM
 // This is only meant to be indicative of the features available in the core product.
 
-public class SalesLTAddress : BaseTableEntity
+public class SalesLTAddress : BaseSqlServerTableSchema
 {
     public int AddressId { get; set; }
     public string AddressLine1 { get; set; } = string.Empty;
@@ -36,7 +36,7 @@ public class SalesLTAddressRowData : BaseTableRowData
     public SalesLTAddress? Row { get; set; }
 }
 
-public class SalesLTAddressDataSource : BaseTableDataSource<SalesLTAddress>
+public class SalesLTAddressDataSource : BaseSqlServerTableDataSource<SalesLTAddress>
 {
     public SalesLTAddressDataSource() : base()
     {

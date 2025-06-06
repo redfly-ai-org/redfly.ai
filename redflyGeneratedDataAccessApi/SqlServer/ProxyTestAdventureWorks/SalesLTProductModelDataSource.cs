@@ -10,7 +10,7 @@ namespace redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 // redfly SqlServerGrpcPolyLangCompiler on 05/24/25 10:39:40 PM
 // This is only meant to be indicative of the features available in the core product.
 
-public class SalesLTProductModel : BaseTableEntity
+public class SalesLTProductModel : BaseSqlServerTableSchema
 {
     public int ProductModelId { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -32,7 +32,7 @@ public class SalesLTProductModelRowData : BaseTableRowData
     public SalesLTProductModel? Row { get; set; }
 }
 
-public class SalesLTProductModelDataSource : BaseTableDataSource<SalesLTProductModel>
+public class SalesLTProductModelDataSource : BaseSqlServerTableDataSource<SalesLTProductModel>
 {
     public SalesLTProductModelDataSource() : base()
     {

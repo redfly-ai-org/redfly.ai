@@ -31,6 +31,7 @@
 
   <ItemGroup>
     <Folder Include="Postgres\AdventureWorks\" />
+    <Folder Include="Postgres\Base\" />
   </ItemGroup>
 
 </Project>

@@ -10,7 +10,7 @@ namespace redflyGeneratedDataAccessApi.SqlServer.ProxyTestAdventureWorks;
 // redfly SqlServerGrpcPolyLangCompiler on 05/24/25 10:39:40 PM
 // This is only meant to be indicative of the features available in the core product.
 
-public class ErrorLog : BaseTableEntity
+public class ErrorLog : BaseSqlServerTableSchema
 {
     public int ErrorLogId { get; set; }
     public DateTime ErrorTime { get; set; }
@@ -36,7 +36,7 @@ public class ErrorLogRowData : BaseTableRowData
     public ErrorLog? Row { get; set; }
 }
 
-public class ErrorLogDataSource : BaseTableDataSource<ErrorLog>
+public class ErrorLogDataSource : BaseSqlServerTableDataSource<ErrorLog>
 {
     public ErrorLogDataSource() : base()
     {
