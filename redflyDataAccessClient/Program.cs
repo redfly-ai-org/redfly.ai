@@ -99,11 +99,15 @@ internal class Program
             bool isMongoSync = false;
             bool isSqlServerSync = false;
 
-            Console.WriteLine("Are you trying to read data from a Postgres database? (y/n)");
+            Console.WriteLine();
+            Console.WriteLine("Pick the Database Type:");
+            Console.WriteLine("Postgres (1)");
+            Console.WriteLine("SQL Server (2)");
+
             response = Console.ReadLine();
 
             if (response != null &&
-                response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+                response.Equals("1", StringComparison.CurrentCultureIgnoreCase))
             {
                 isPostgresSync = true;
 
@@ -118,26 +122,19 @@ internal class Program
                 }
             }
 
-            if (!isPostgresSync &&
-                !isMongoSync)
+            if (response != null &&
+                response.Equals("2", StringComparison.CurrentCultureIgnoreCase))
             {
-                Console.WriteLine("Are you trying to read data from a Sql Server database? (y/n)");
-                response = Console.ReadLine();
+                isSqlServerSync = true;
 
-                if (response != null &&
-                    response.Equals("y", StringComparison.CurrentCultureIgnoreCase))
+                if (!SqlServerReady.ForChakraSync(offerToPrepAgain: false))
                 {
-                    isSqlServerSync = true;
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("redfly SQL Server Data APIs cannot be used without syncing the Sql Server database.");
+                    Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
+                    Console.ResetColor();
 
-                    if (!SqlServerReady.ForChakraSync(offerToPrepAgain: false))
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine("redfly SQL Server Data APIs cannot be used without syncing the Sql Server database.");
-                        Console.WriteLine("Please sync the Sql Server database using the redflyDatabaseSyncProxy app and try again.");
-                        Console.ResetColor();
-
-                        return;
-                    }
+                    return;
                 }
             }
 
@@ -231,8 +228,10 @@ internal class Program
                 Console.ResetColor();
                 Console.WriteLine();
 
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("Do you want to generate the API classes for your database now? (y/n)");
                 Console.WriteLine("Entering 'y' will require you to exit the app after code generation so that the app can recompile.");
+                Console.ResetColor();
                 response = Console.ReadLine();
 
                 if (response != null &&
@@ -270,8 +269,10 @@ internal class Program
                 Console.ResetColor();
                 Console.WriteLine();
 
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.WriteLine("Do you want to generate the API classes for your database now? (y/n)");
                 Console.WriteLine("Entering 'y' will require you to exit the app after code generation so that the app can recompile.");
+                Console.ResetColor();
                 response = Console.ReadLine();
 
                 if (response != null &&

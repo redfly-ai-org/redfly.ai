@@ -17,9 +17,9 @@ internal class PostgresGrpcClientApiDemo
 
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Create the data source object.");
-        Console.WriteLine("var departmentDataSource = new HumanResourcesDepartmentDataSource();");
+        Console.WriteLine("var departmentDataSource = new HumanresourcesDepartmentDataSource();");
         Console.ResetColor();
-        var departmentDataSource = new HumanResourcesDepartmentDataSource();
+        var departmentDataSource = new HumanresourcesDepartmentDataSource();
 
         await ShowTotalRowCountApiUsage(departmentDataSource);
 
@@ -74,12 +74,12 @@ internal class PostgresGrpcClientApiDemo
         Console.WriteLine("Completed demonstrating the Postgres Grpc Client API.");
     }
 
-    private static async Task ShowDeleteApiUsage(HumanResourcesDepartmentDataSource departmentDataSource, HumanResourcesDepartmentInsertedData inserted)
+    private static async Task ShowDeleteApiUsage(HumanresourcesDepartmentDataSource departmentDataSource, HumanresourcesDepartmentInsertedData inserted)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine($"// Delete the record");
         Console.WriteLine("// Call the delete method with the primary key value.");
-        Console.WriteLine($"var deleted = await departmentDataSource.DeleteAsync({inserted.InsertedRow.DepartmentId});");
+        Console.WriteLine($"var deleted = await departmentDataSource.DeleteAsync({inserted.InsertedRow.Departmentid});");
         Console.ResetColor();
 
         var watch = new Stopwatch();
@@ -89,7 +89,7 @@ internal class PostgresGrpcClientApiDemo
         try
         {
             watch.Restart();
-            var deleted = await departmentDataSource.DeleteAsync(inserted.InsertedRow.DepartmentId);
+            var deleted = await departmentDataSource.DeleteAsync(inserted.InsertedRow.Departmentid);
             watch.Stop();
 
             cts.Cancel();
@@ -108,7 +108,7 @@ internal class PostgresGrpcClientApiDemo
         }
     }
 
-    private static async Task ShowUpdateApiUsage(HumanResourcesDepartmentDataSource departmentDataSource, HumanResourcesDepartmentInsertedData inserted)
+    private static async Task ShowUpdateApiUsage(HumanresourcesDepartmentDataSource departmentDataSource, HumanresourcesDepartmentInsertedData inserted)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine($"// Update the name from '{inserted.InsertedRow.Name}' to 'Updated Department'");
@@ -146,24 +146,24 @@ internal class PostgresGrpcClientApiDemo
         }
     }
 
-    private static async Task<HumanResourcesDepartmentInsertedData?> ShowInsertApiUsage(HumanResourcesDepartmentDataSource departmentDataSource)
+    private static async Task<HumanresourcesDepartmentInsertedData?> ShowInsertApiUsage(HumanresourcesDepartmentDataSource departmentDataSource)
     {
-        var newDepartment = new HumanResourcesDepartment
+        var newDepartment = new HumanresourcesDepartment
         {
-            DepartmentId = 99,
+            Departmentid = 99,
             Name = "Test Department",
-            GroupName = "Test Group",
-            ModifiedDate = DateTime.Now
+            Groupname = "Test Group",
+            Modifieddate = DateTime.Now
         };
 
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Create a new object to insert it into the database.");
-        Console.WriteLine("var newDepartment = new HumanResourcesDepartment");
+        Console.WriteLine("var newDepartment = new HumanresourcesDepartment");
         Console.WriteLine("{");
-        Console.WriteLine("    DepartmentId = 99,");
+        Console.WriteLine("    Departmentid = 99,");
         Console.WriteLine("    Name = \"Test Department\",");
-        Console.WriteLine("    GroupName = \"Test Group\",");
-        Console.WriteLine("    ModifiedDate = DateTime.Now");
+        Console.WriteLine("    Groupname = \"Test Group\",");
+        Console.WriteLine("    Modifieddate = DateTime.Now");
         Console.WriteLine("};");
 
         Console.WriteLine();
@@ -174,7 +174,7 @@ internal class PostgresGrpcClientApiDemo
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
         var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
-        HumanResourcesDepartmentInsertedData? inserted = null;
+        HumanresourcesDepartmentInsertedData? inserted = null;
 
         try
         {
@@ -200,14 +200,14 @@ internal class PostgresGrpcClientApiDemo
         return inserted;
     }
 
-    private static async Task<HumanResourcesDepartmentRowData?> ShowGetApiUsage(HumanResourcesDepartmentDataSource departmentDataSource, HumanResourcesDepartment department)
+    private static async Task<HumanresourcesDepartmentRowData?> ShowGetApiUsage(HumanresourcesDepartmentDataSource departmentDataSource, HumanresourcesDepartment department)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get a row by its primary key");
-        Console.WriteLine("var rowData = await departmentDataSource.GetAsync(department.DepartmentId);");
+        Console.WriteLine("var rowData = await departmentDataSource.GetAsync(department.Departmentid);");
         Console.ResetColor();
 
-        HumanResourcesDepartmentRowData? rowData = null;
+        HumanresourcesDepartmentRowData? rowData = null;
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
         var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
@@ -215,7 +215,7 @@ internal class PostgresGrpcClientApiDemo
         try
         {
             watch.Restart();
-            rowData = await departmentDataSource.GetAsync(department.DepartmentId);
+            rowData = await departmentDataSource.GetAsync(department.Departmentid);
             watch.Stop();
 
             cts.Cancel();
@@ -236,14 +236,14 @@ internal class PostgresGrpcClientApiDemo
         return rowData;
     }
 
-    private static async Task<HumanResourcesDepartmentRowsData?> ShowGetRowsApiUsage(HumanResourcesDepartmentDataSource departmentDataSource)
+    private static async Task<HumanresourcesDepartmentRowsData?> ShowGetRowsApiUsage(HumanresourcesDepartmentDataSource departmentDataSource)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Get rows with support for pagination");
         Console.WriteLine("var rowsData = await departmentDataSource.GetRowsAsync(pageNo: 1, pageSize: 5);");
         Console.ResetColor();
 
-        HumanResourcesDepartmentRowsData? rowsData = null;
+        HumanresourcesDepartmentRowsData? rowsData = null;
         var watch = new Stopwatch();
         var cts = new CancellationTokenSource();
         var progressTask = RedflyConsole.ShowWaitAnimation(cts.Token);
@@ -276,7 +276,7 @@ internal class PostgresGrpcClientApiDemo
         return rowsData;
     }
 
-    private static async Task ShowSqlRowsApiUsage(HumanResourcesDepartmentDataSource departmentDataSource)
+    private static async Task ShowSqlRowsApiUsage(HumanresourcesDepartmentDataSource departmentDataSource)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Execute a custom SQL query");
@@ -352,7 +352,7 @@ internal class PostgresGrpcClientApiDemo
         Console.WriteLine();
     }
 
-    private static async Task ShowTotalRowCountApiUsage(HumanResourcesDepartmentDataSource departmentDataSource)
+    private static async Task ShowTotalRowCountApiUsage(HumanresourcesDepartmentDataSource departmentDataSource)
     {
         Console.ForegroundColor = ConsoleColor.DarkCyan;
         Console.WriteLine("// Make the method call");

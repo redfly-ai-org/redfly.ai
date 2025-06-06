@@ -1,3 +1,4 @@
+using Humanizer;
 using Newtonsoft.Json;
 using Npgsql;
 using redflyDatabaseAdapters;
@@ -177,12 +178,23 @@ public class PostgresGrpcPolyLangCompiler
         if (string.IsNullOrEmpty(input)) return input;
         input = RemoveSpaces(input);
         if (input.Length == 1) return input.ToLowerInvariant();
-        
-        // First convert to PascalCase to handle all word boundaries correctly
-        var pascal = ToPascalCase(input);
-        
-        // Then convert first character to lowercase
-        return char.ToLowerInvariant(pascal[0]) + pascal.Substring(1);
+
+        // Use Humanizer to convert to camel case
+        var camelize = input.Camelize();
+
+        // Handle known abbreviations
+        foreach (var abbr in KnownAbbreviations)
+        {
+            string lowerAbbr = abbr.ToLowerInvariant();
+            if (camelize.Contains(lowerAbbr, StringComparison.OrdinalIgnoreCase))
+            {
+                // First char of abbreviation should be lowercase in camelCase
+                string replacement = char.ToLowerInvariant(abbr[0]) + abbr.Substring(1);
+                camelize = Regex.Replace(camelize, $"\\b{lowerAbbr}\\b", replacement, RegexOptions.IgnoreCase);
+            }
+        }
+
+        return camelize;
     }
 
     private static readonly HashSet<string> KnownAbbreviations = new(StringComparer.OrdinalIgnoreCase)
@@ -196,41 +208,31 @@ public class PostgresGrpcPolyLangCompiler
         input = RemoveSpaces(input);
         if (input.Length == 1) return input.ToUpperInvariant();
 
-        // Split by underscores, hyphens, and spaces
-        var parts = Regex.Split(input, "[_\\-\\s]+")
-            .Where(s => !string.IsNullOrEmpty(s))
-            .ToList();
+        // Use Humanizer's Pascalize method
+        var pascalized = input.Pascalize();
 
-        var words = new List<string>();
-        foreach (var part in parts)
+        // Handle known abbreviations
+        foreach (var abbr in KnownAbbreviations)
         {
-            if (KnownAbbreviations.Contains(part.ToUpperInvariant()))
+            if (pascalized.Contains(abbr, StringComparison.OrdinalIgnoreCase))
             {
-                words.Add(part.ToUpperInvariant());
-            }
-            else if (part.Length > 1 && part.All(char.IsUpper))
-            {
-                // If the part is all uppercase but not a known abbreviation, treat as normal word
-                words.Add(char.ToUpperInvariant(part[0]) + part.Substring(1).ToLowerInvariant());
-            }
-            else
-            {
-                words.Add(char.ToUpperInvariant(part[0]) + (part.Length > 1 ? part.Substring(1).ToLowerInvariant() : ""));
+                pascalized = Regex.Replace(pascalized, $"\\b{abbr}\\b", abbr, RegexOptions.IgnoreCase);
             }
         }
-        return string.Join("", words);
+
+        return pascalized;
     }
 
     private string ToParameterCase(string input)
     {
-        // PascalCase to camelCase, but also handle ID -> Id, GUID -> Guid, etc.
+        // PascalCase to camelCase using Humanizer
         if (string.IsNullOrEmpty(input)) return input;
-        
-        // First ensure proper Pascal casing with proper handling of compound words
+
+        // First ensure proper Pascal casing with Humanizer
         var pascal = ToPascalCase(input);
-        
-        // Then convert first character to lowercase
-        return char.ToLowerInvariant(pascal[0]) + pascal.Substring(1);
+
+        // Then convert to camelCase
+        return pascal.Camelize();
     }
 
     private string GenerateCodeForTable(string classBaseName, (string Schema, string Name) table, List<(string Name, string Type, bool IsNullable, bool IsPrimaryKey)> columns)
