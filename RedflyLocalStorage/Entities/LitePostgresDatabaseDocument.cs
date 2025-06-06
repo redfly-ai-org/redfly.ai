@@ -26,4 +26,33 @@ public class LitePostgresDatabaseDocument : BaseLiteDocument
 
     public bool DatabasePrepped { get; set; } = false;
 
+    public string DecryptedServerName
+    {
+        get
+        {
+            return RedflyEncryption.Decrypt(EncryptedServerName);
+        }
+    }
+
+    public string DecryptedDatabaseName
+    {
+        get
+        {
+            return RedflyEncryption.Decrypt(EncryptedDatabaseName);
+        }
+    }
+
+    public string DecryptedUserName
+    {
+        get
+        {
+            return RedflyEncryption.Decrypt(EncryptedUserName);
+        }
+    }
+
+    public string GetPassword()
+    {
+        return RedflyEncryption.Decrypt(EncryptedPassword);
+    }
+
 }
