@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyGeneratedDataAccessApi.SqlServer;
-public class TotalRowCount
+namespace redflyGeneratedDataAccessApi.Base;
+
+public abstract class BaseTableRowData
 {
-    public long Total { get; set; }
+    public bool Success { get; set; }
     public bool FromCache { get; set; }
     public string? Message { get; set; }
 }

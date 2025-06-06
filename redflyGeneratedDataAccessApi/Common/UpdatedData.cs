@@ -4,13 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyGeneratedDataAccessApi.SqlServer;
+namespace redflyGeneratedDataAccessApi.Common;
 
-public abstract class BaseTableInsertedData
+public class UpdatedData
 {
-
     public bool Success { get; set; }
+    public int UpdatedCount { get; set; }
     public bool CacheUpdated { get; set; }
     public string? Message { get; set; }
-
 }

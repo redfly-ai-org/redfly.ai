@@ -8,6 +8,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using redflyGeneratedDataAccessApi.Protos.SqlServer;
+using redflyGeneratedDataAccessApi.Common;
+using redflyGeneratedDataAccessApi.Base;
 
 namespace redflyGeneratedDataAccessApi.SqlServer;
 

@@ -1,5 +1,7 @@
 using RedflyCoreFramework;
 using redflyDatabaseAdapters;
+using redflyGeneratedDataAccessApi.Base;
+using redflyGeneratedDataAccessApi.Common;
 using redflyGeneratedDataAccessApi.Protos.DatabaseApi;
 using redflyGeneratedDataAccessApi.Protos.DatabaseApi;
 

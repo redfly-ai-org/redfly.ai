@@ -4,11 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyGeneratedDataAccessApi.SqlServer;
-
-public abstract class BaseTableRowData
+namespace redflyGeneratedDataAccessApi.Common;
+public class DeletedData
 {
     public bool Success { get; set; }
-    public bool FromCache { get; set; }
+    public bool CacheUpdated { get; set; }
     public string? Message { get; set; }
 }

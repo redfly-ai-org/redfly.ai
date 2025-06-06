@@ -167,6 +167,8 @@ public class SqlServerGrpcPolyLangCompiler
         // Usings
         sb.AppendLine("using RedflyCoreFramework;");
         sb.AppendLine("using redflyDatabaseAdapters;");
+        sb.AppendLine("using redflyGeneratedDataAccessApi.Base;");
+        sb.AppendLine("using redflyGeneratedDataAccessApi.Common;");
         sb.AppendLine("using redflyGeneratedDataAccessApi.Protos.DatabaseApi;");
         sb.AppendLine();
         // Add comments as in SalesLTAddressDataSource

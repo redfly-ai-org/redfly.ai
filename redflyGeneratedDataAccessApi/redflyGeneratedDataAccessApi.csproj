@@ -29,4 +29,8 @@
 	<Protobuf Include="protos\database-api.proto" GrpcServices="None" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Postgres\AdventureWorks\" />
+  </ItemGroup>
+
 </Project>
