@@ -581,85 +581,15 @@ public class PostgresGrpcPolyLangCompiler
             string varName = $"v{varCounter}";
             string colName = col.Name.ToLower();
             
-            // Non-nullable value types
-            if (csharpType == "int")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && int.TryParse({varName}, out var i{varCounter}) ? i{varCounter} : 0,");
-            else if (csharpType == "long")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && long.TryParse({varName}, out var l{varCounter}) ? l{varCounter} : 0L,");
-            else if (csharpType == "short")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && short.TryParse({varName}, out var s{varCounter}) ? s{varCounter} : (short)0,");
-            else if (csharpType == "byte")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && byte.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : (byte)0,");
-            else if (csharpType == "bool")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && bool.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : false,");
-            else if (csharpType == "decimal")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && decimal.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : 0m,");
-            else if (csharpType == "double")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && double.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : 0.0,");
-            else if (csharpType == "float")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && float.TryParse({varName}, out var f{varCounter}) ? f{varCounter} : 0f,");
-            else if (csharpType == "DateTime")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && DateTime.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : DateTime.MinValue,");
-            else if (csharpType == "Guid")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && Guid.TryParse({varName}, out var g{varCounter}) ? g{varCounter} : Guid.Empty,");
-            // Nullable value types
-            else if (csharpType == "int?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && int.TryParse({varName}, out var i{varCounter}) ? i{varCounter} : null,");
-            else if (csharpType == "long?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && long.TryParse({varName}, out var l{varCounter}) ? l{varCounter} : null,");
-            else if (csharpType == "short?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && short.TryParse({varName}, out var s{varCounter}) ? s{varCounter} : null,");
-            else if (csharpType == "byte?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && byte.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : null,");
-            else if (csharpType == "bool?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && bool.TryParse({varName}, out var b{varCounter}) ? b{varCounter} : null,");
-            else if (csharpType == "decimal?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && decimal.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : null,");
-            else if (csharpType == "double?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && double.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : null,");
-            else if (csharpType == "float?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && float.TryParse({varName}, out var f{varCounter}) ? f{varCounter} : null,");
-            else if (csharpType == "DateTime?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && DateTime.TryParse({varName}, out var d{varCounter}) ? d{varCounter} : null,");
-            else if (csharpType == "Guid?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) && Guid.TryParse({varName}, out var g{varCounter}) ? g{varCounter} : null,");
-            // Byte array
-            else if (csharpType == "byte[]")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) ? Convert.FromBase64String({varName} ?? \"\") : Array.Empty<byte>(),");
-            else if (csharpType == "byte[]?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? Convert.FromBase64String({varName}) : null,");
-            // JSON (JObject)
-            else if (csharpType == "JObject")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<JObject>({varName}) ?? new JObject() : new JObject(),");
-            else if (csharpType == "JObject?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<JObject>({varName}) : null,");
-            // JSON Array (JArray)
-            else if (csharpType == "JArray")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<JArray>({varName}) ?? new JArray() : new JArray(),");
-            else if (csharpType == "JArray?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<JArray>({varName}) : null,");
-            // List<string>
-            else if (csharpType == "List<string>")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<List<string>>({varName}) ?? new List<string>() : new List<string>(),");
-            else if (csharpType == "List<string>?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<List<string>>({varName}) : null,");
-            // List<int>
-            else if (csharpType == "List<int>")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<List<int>>({varName}) ?? new List<int>() : new List<int>(),");
-            else if (csharpType == "List<int>?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<List<int>>({varName}) : null,");
-            // List<long>
-            else if (csharpType == "List<long>")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<List<long>>({varName}) ?? new List<long>() : new List<long>(),");
-            else if (csharpType == "List<long>?")
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? JsonConvert.DeserializeObject<List<long>>({varName}) : null,");
-            // String
-            else if (csharpType == "string" && !col.IsNullable)
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) ? {varName} ?? string.Empty : string.Empty,");
-            else if (csharpType == "string?" || (csharpType == "string" && col.IsNullable))
-                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) ? {varName} : null,");
+            // Ensure proper handling of nullable and non-nullable types
+            if (csharpType.EndsWith("?"))
+            {
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? ({csharpType.TrimEnd('?')})Convert.ChangeType({varName}, typeof({csharpType.TrimEnd('?')})) : null,");
+            }
             else
-                sb.AppendLine($"            {propName} = /* parse from dict[\"{colName}\"] as {csharpType} */ default,");
+            {
+                sb.AppendLine($"            {propName} = dict.TryGetValue(\"{colName}\", out var {varName}) && !string.IsNullOrEmpty({varName}) ? ({csharpType})Convert.ChangeType({varName}, typeof({csharpType})) : default({csharpType}),");
+            }
             
             varCounter++;
         }
@@ -691,7 +621,7 @@ public class PostgresGrpcPolyLangCompiler
                 else if (csharpType == "byte[]" || csharpType == "byte[]?")
                     sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp} != null ? Convert.ToBase64String(entity.{pkProp}) : null }} }});");
                 else
-                    sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}?.ToString() }} }});");
+                    sb.AppendLine($"            row.Entries.Add(new RowEntry {{ Column = \"{pk.Name.ToLower()}\", Value = new Value {{ StringValue = entity.{pkProp}.ToString() }} }});");
             }
             sb.AppendLine();
         }
