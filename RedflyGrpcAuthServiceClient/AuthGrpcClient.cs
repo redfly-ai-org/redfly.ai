@@ -54,19 +54,19 @@ namespace RedflyGrpcAuthServiceClient
                 {
                     if (SecureCredentials.Exist())
                     {
-                        Console.WriteLine("Do you want to login using the saved credentials? (y/n)");
-                        var response = Console.ReadLine();
+                        //Console.WriteLine("Do you want to login using the saved credentials? (y/n)");
+                        //var response = Console.ReadLine();
 
-                        if (response?.ToLower() == "y")
-                        {
+                        //if (response?.ToLower() == "y")
+                        //{
                             (userName, passwordBuilder) = SecureCredentials.Get();
                             credentialsLoadedFromDisk = true;
                             Console.WriteLine("Using saved login credentials...");
-                        }
-                        else
-                        {
-                            PromptUserForLogin(out userName, out passwordBuilder, out credentialsLoadedFromDisk);
-                        }
+                        //}
+                        //else
+                        //{
+                        //    PromptUserForLogin(out userName, out passwordBuilder, out credentialsLoadedFromDisk);
+                        //}
                     }
                     else
                     {
