@@ -57,7 +57,7 @@ public class PostgresGrpcPolyLangCompiler
             var fileName = Path.Combine(outputFolder, $"{classBaseName}DataSource.cs");
             File.WriteAllText(fileName, code);
             
-            Console.WriteLine($"  Generated file: {fileName}");
+            Console.WriteLine($"  Generated file: {Path.GetFileName(fileName)}");
         }
         
         Console.WriteLine("Code generation complete.");
@@ -185,71 +185,40 @@ public class PostgresGrpcPolyLangCompiler
         return char.ToLowerInvariant(pascal[0]) + pascal.Substring(1);
     }
 
+    private static readonly HashSet<string> KnownAbbreviations = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "ID", "GUID", "URL", "API", "SKU", "XML", "JSON", "IP", "SQL", "DB", "UID"
+    };
+
     private string ToPascalCase(string input)
     {
         if (string.IsNullOrEmpty(input)) return input;
         input = RemoveSpaces(input);
         if (input.Length == 1) return input.ToUpperInvariant();
 
-        // Known words for splitting compound identifiers
-        var knownWords = new[]
-        {
-            "human", "resources", "sales", "customer", "product", "production", "purchasing", "person", "employee", "finance", "accounting", "inventory", "marketing", "research", "development", "warehouse", "logistics",
-            "order", "detail", "header", "modified", "created", "date", "time", "timestamp", "group", "name", "department", "category", "subcategory", "description", "address", "line", "city", "state", "province", "country", "region", "postal", "zip", "code", "credit", "card", "payment", "method", "price", "cost", "quantity", "amount", "currency", "tax", "discount", "total", "subtotal", "shipping", "billing", "status", "type", "number", "phone", "email", "user", "password", "login", "account", "transaction", "first", "last", "middle", "initial", "prefix", "suffix", "title", "start", "end", "due", "version", "rate", "percent", "unit", "measure", "color", "size", "weight", "height", "width", "depth", "dimension", "id", "guid", "flag", "node", "row", "pay", "frequency", "hire", "birth", "marital", "hours", "organization"
-        };
-
         // Split by underscores, hyphens, and spaces
-        var parts = Regex.Split(input.ToLowerInvariant(), "[_\\-\\s]")
+        var parts = Regex.Split(input, "[_\\-\\s]+")
             .Where(s => !string.IsNullOrEmpty(s))
             .ToList();
-
-        // Recursively split each part by known words
-        List<string> SplitByKnownWords(string s)
-        {
-            var result = new List<string>();
-            int i = 0;
-            while (i < s.Length)
-            {
-                string match = null;
-                foreach (var word in knownWords.OrderByDescending(w => w.Length))
-                {
-                    if (s.Substring(i).StartsWith(word, StringComparison.OrdinalIgnoreCase))
-                    {
-                        match = word;
-                        break;
-                    }
-                }
-                if (match != null)
-                {
-                    result.Add(match);
-                    i += match.Length;
-                }
-                else
-                {
-                    // If no match, take one character and continue
-                    result.Add(s[i].ToString());
-                    i++;
-                }
-            }
-            return result;
-        }
 
         var words = new List<string>();
         foreach (var part in parts)
         {
-            var split = SplitByKnownWords(part);
-            words.AddRange(split);
+            if (KnownAbbreviations.Contains(part.ToUpperInvariant()))
+            {
+                words.Add(part.ToUpperInvariant());
+            }
+            else if (part.Length > 1 && part.All(char.IsUpper))
+            {
+                // If the part is all uppercase but not a known abbreviation, treat as normal word
+                words.Add(char.ToUpperInvariant(part[0]) + part.Substring(1).ToLowerInvariant());
+            }
+            else
+            {
+                words.Add(char.ToUpperInvariant(part[0]) + (part.Length > 1 ? part.Substring(1).ToLowerInvariant() : ""));
+            }
         }
-
-        // Capitalize each word
-        var result = string.Join("", words.Where(w => !string.IsNullOrEmpty(w)).Select(w => char.ToUpperInvariant(w[0]) + (w.Length > 1 ? w.Substring(1) : "")));
-
-        // Handle special cases like ID, IDs, etc.
-        result = Regex.Replace(result, "Id([^a-zA-Z]|$)", "Id$1", RegexOptions.IgnoreCase);
-        result = Regex.Replace(result, "Ids([^a-zA-Z]|$)", "Ids$1", RegexOptions.IgnoreCase);
-        result = Regex.Replace(result, "Guid([^a-zA-Z]|$)", "Guid$1", RegexOptions.IgnoreCase);
-
-        return result;
+        return string.Join("", words);
     }
 
     private string ToParameterCase(string input)
