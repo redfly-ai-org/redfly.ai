@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace redflyGeneratedDataAccessApi.Postgres.Base;
+namespace redflyGeneratedDataAccessApi.Postgres;
 
 public abstract class BasePostgresTableSchema : BaseDatabaseTableSchema
 {

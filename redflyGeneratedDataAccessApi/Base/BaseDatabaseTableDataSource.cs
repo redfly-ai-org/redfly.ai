@@ -13,7 +13,7 @@ public abstract class BaseDatabaseTableDataSource
 {
 
     protected GrpcChannel _channel;
-    protected readonly string _encDbServer, _encDbName, _encryptionKey;
+    protected readonly string _encryptionKey;
     protected string _encTable = "";
 
     protected BaseDatabaseTableDataSource()
@@ -31,8 +31,6 @@ public abstract class BaseDatabaseTableDataSource
             HttpVersion = new Version(2, 0) // Ensure HTTP/2 is used
         });
 
-        _encDbServer = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.HostName);
-        _encDbName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name);
         _encryptionKey = RedflyEncryptionKeys.AesKey;
     }
 

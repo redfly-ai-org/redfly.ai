@@ -7,166 +7,159 @@ package databaseapi;
 
 // Request for GetTotalRowCount.
 message GetTotalRowCountRequest {
-  string client_session_id = 1;
-  string encryptedClientId = 2;
-  string encryptedClientName = 3;
-  string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encryptedRedisServerName = 9;
-  int32 redisPortNo = 10;
-  string encryptedRedisPassword = 11;
-  bool redisUsesSsl = 12;
-  string redisSslProtocol = 13;
-  bool redisAbortConnect = 14;
-  int32 redisConnectTimeout = 15;
-  int32 redisSyncTimeout = 16;
-  int32 redisAsyncTimeout = 17;
-  string encrypted_table_schema_name = 18;
-  string encrypted_table_name = 19;
+  string encryptedClientId = 1;
+  string encryptedClientName = 2;
+  string encryptionKey = 3;
+  string encryptedPostgresServerName = 4;
+  string encryptedPostgresDatabaseName = 5;
+  string encryptedPostgresUserName = 6;
+  string encryptedPostgresPassword = 7;
+  string encryptedRedisServerName = 8;
+  int32 redisPortNo = 9;
+  string encryptedRedisPassword = 10;
+  bool redisUsesSsl = 11;
+  string redisSslProtocol = 12;
+  bool redisAbortConnect = 13;
+  int32 redisConnectTimeout = 14;
+  int32 redisSyncTimeout = 15;
+  int32 redisAsyncTimeout = 16;
+  string encrypted_table_schema_name = 17;
+  string encrypted_table_name = 18;
 }
 
 // Request for Delete.
 message DeleteRequest {
-  string client_session_id = 1;
-  string encryptedClientId = 2;
-  string encryptedClientName = 3;
-  string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encryptedRedisServerName = 9;
-  int32 redisPortNo = 10;
-  string encryptedRedisPassword = 11;
-  bool redisUsesSsl = 12;
-  string redisSslProtocol = 13;
-  bool redisAbortConnect = 14;
-  int32 redisConnectTimeout = 15;
-  int32 redisSyncTimeout = 16;
-  int32 redisAsyncTimeout = 17;
-  string encrypted_table_schema_name = 18;
-  string encrypted_table_name = 19;
-  map<string, string> primary_key_values = 20; // key: PK column name, value: PK value
-  bool modify_cache = 21;
+  string encryptedClientId = 1;
+  string encryptedClientName = 2;
+  string encryptionKey = 3;
+  string encryptedPostgresServerName = 4;
+  string encryptedPostgresDatabaseName = 5;
+  string encryptedPostgresUserName = 6;
+  string encryptedPostgresPassword = 7;
+  string encryptedRedisServerName = 8;
+  int32 redisPortNo = 9;
+  string encryptedRedisPassword = 10;
+  bool redisUsesSsl = 11;
+  string redisSslProtocol = 12;
+  bool redisAbortConnect = 13;
+  int32 redisConnectTimeout = 14;
+  int32 redisSyncTimeout = 15;
+  int32 redisAsyncTimeout = 16;
+  string encrypted_table_schema_name = 17;
+  string encrypted_table_name = 18;
+  map<string, string> primary_key_values = 19; // key: PK column name, value: PK value
+  bool modify_cache = 20;
 }
 
 // Request for GetRows.
 message GetRowsRequest {
-  string client_session_id = 1;
-  string encryptedClientId = 2;
-  string encryptedClientName = 3;
-  string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encryptedRedisServerName = 9;
-  int32 redisPortNo = 10;
-  string encryptedRedisPassword = 11;
-  bool redisUsesSsl = 12;
-  string redisSslProtocol = 13;
-  bool redisAbortConnect = 14;
-  int32 redisConnectTimeout = 15;
-  int32 redisSyncTimeout = 16;
-  int32 redisAsyncTimeout = 17;
-  string encrypted_table_schema_name = 18;
-  string encrypted_table_name = 19;
-  int32 page_no = 20;
-  int32 page_size = 21;
-  string orderby_column_name = 22;
-  string orderby_column_sort = 23; // "asc" or "desc"
+  string encryptedClientId = 1;
+  string encryptedClientName = 2;
+  string encryptionKey = 3;
+  string encryptedPostgresServerName = 4;
+  string encryptedPostgresDatabaseName = 5;
+  string encryptedPostgresUserName = 6;
+  string encryptedPostgresPassword = 7;
+  string encryptedRedisServerName = 8;
+  int32 redisPortNo = 9;
+  string encryptedRedisPassword = 10;
+  bool redisUsesSsl = 11;
+  string redisSslProtocol = 12;
+  bool redisAbortConnect = 13;
+  int32 redisConnectTimeout = 14;
+  int32 redisSyncTimeout = 15;
+  int32 redisAsyncTimeout = 16;
+  string encrypted_table_schema_name = 17;
+  string encrypted_table_name = 18;
+  int32 page_no = 19;
+  int32 page_size = 20;
+  string orderby_column_name = 21;
+  string orderby_column_sort = 22; // "asc" or "desc"
 }
 
 // Request for GetSqlRows.
 message GetSqlRowsRequest {
-  string client_session_id = 1;
-  string encryptedClientId = 2;
-  string encryptedClientName = 3;
-  string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encrypted_table_schema_name = 9;
-  string encrypted_table_name = 10;
-  string encryptedSqlQuery = 11;
+  string encryptedClientId = 1;
+  string encryptedClientName = 2;
+  string encryptionKey = 3;
+  string encryptedPostgresServerName = 4;
+  string encryptedPostgresDatabaseName = 5;
+  string encryptedPostgresUserName = 6;
+  string encryptedPostgresPassword = 7;
+  string encrypted_table_schema_name = 8;
+  string encrypted_table_name = 9;
+  string encryptedSqlQuery = 10;
 }
 
 // Request for Insert.
 message InsertRequest {
-  string client_session_id = 1;
-  string encryptedClientId = 2;
-  string encryptedClientName = 3;
-  string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encryptedRedisServerName = 9;
-  int32 redisPortNo = 10;
-  string encryptedRedisPassword = 11;
-  bool redisUsesSsl = 12;
-  string redisSslProtocol = 13;
-  bool redisAbortConnect = 14;
-  int32 redisConnectTimeout = 15;
-  int32 redisSyncTimeout = 16;
-  int32 redisAsyncTimeout = 17;
-  string encrypted_table_schema_name = 18;
-  string encrypted_table_name = 19;
-  Row row = 20;
-  bool modify_cache = 21;
+  string encryptedClientId = 1;
+  string encryptedClientName = 2;
+  string encryptionKey = 3;
+  string encryptedPostgresServerName = 4;
+  string encryptedPostgresDatabaseName = 5;
+  string encryptedPostgresUserName = 6;
+  string encryptedPostgresPassword = 7;
+  string encryptedRedisServerName = 8;
+  int32 redisPortNo = 9;
+  string encryptedRedisPassword = 10;
+  bool redisUsesSsl = 11;
+  string redisSslProtocol = 12;
+  bool redisAbortConnect = 13;
+  int32 redisConnectTimeout = 14;
+  int32 redisSyncTimeout = 15;
+  int32 redisAsyncTimeout = 16;
+  string encrypted_table_schema_name = 17;
+  string encrypted_table_name = 18;
+  Row row = 19;
+  bool modify_cache = 20;
 }
 
 // Request for Get.
 message GetRequest {
-  string client_session_id = 1;
-  string encryptedClientId = 2;
-  string encryptedClientName = 3;
-  string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encryptedRedisServerName = 9;
-  int32 redisPortNo = 10;
-  string encryptedRedisPassword = 11;
-  bool redisUsesSsl = 12;
-  string redisSslProtocol = 13;
-  bool redisAbortConnect = 14;
-  int32 redisConnectTimeout = 15;
-  int32 redisSyncTimeout = 16;
-  int32 redisAsyncTimeout = 17;
-  string encrypted_table_schema_name = 18;
-  string encrypted_table_name = 19;
-  map<string, string> primary_key_values = 20; // key: PK column name, value: PK value
+  string encryptedClientId = 1;
+  string encryptedClientName = 2;
+  string encryptionKey = 3;
+  string encryptedPostgresServerName = 4;
+  string encryptedPostgresDatabaseName = 5;
+  string encryptedPostgresUserName = 6;
+  string encryptedPostgresPassword = 7;
+  string encryptedRedisServerName = 8;
+  int32 redisPortNo = 9;
+  string encryptedRedisPassword = 10;
+  bool redisUsesSsl = 11;
+  string redisSslProtocol = 12;
+  bool redisAbortConnect = 13;
+  int32 redisConnectTimeout = 14;
+  int32 redisSyncTimeout = 15;
+  int32 redisAsyncTimeout = 16;
+  string encrypted_table_schema_name = 17;
+  string encrypted_table_name = 18;
+  map<string, string> primary_key_values = 19; // key: PK column name, value: PK value
 }
 
 // Request for Update.
 message UpdateRequest {
-  string client_session_id = 1;
-  string encryptedClientId = 2;
-  string encryptedClientName = 3;
-  string encryptionKey = 4;
-  string encryptedPostgresServerName = 5;
-  string encryptedPostgresDatabaseName = 6;
-  string encryptedPostgresUserName = 7;
-  string encryptedPostgresPassword = 8;
-  string encryptedRedisServerName = 9;
-  int32 redisPortNo = 10;
-  string encryptedRedisPassword = 11;
-  bool redisUsesSsl = 12;
-  string redisSslProtocol = 13;
-  bool redisAbortConnect = 14;
-  int32 redisConnectTimeout = 15;
-  int32 redisSyncTimeout = 16;
-  int32 redisAsyncTimeout = 17;
-  string encrypted_table_schema_name = 18;
-  string encrypted_table_name = 19;
-  Row row = 20;
-  bool modify_cache = 21;
+  string encryptedClientId = 1;
+  string encryptedClientName = 2;
+  string encryptionKey = 3;
+  string encryptedPostgresServerName = 4;
+  string encryptedPostgresDatabaseName = 5;
+  string encryptedPostgresUserName = 6;
+  string encryptedPostgresPassword = 7;
+  string encryptedRedisServerName = 8;
+  int32 redisPortNo = 9;
+  string encryptedRedisPassword = 10;
+  bool redisUsesSsl = 11;
+  string redisSslProtocol = 12;
+  bool redisAbortConnect = 13;
+  int32 redisConnectTimeout = 14;
+  int32 redisSyncTimeout = 15;
+  int32 redisAsyncTimeout = 16;
+  string encrypted_table_schema_name = 17;
+  string encrypted_table_name = 18;
+  Row row = 19;
+  bool modify_cache = 20;
 }
 
 // The generic SQL Server API service.

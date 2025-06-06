@@ -17,7 +17,7 @@ public abstract class BaseSqlServerTableDataSource<T> : BaseDatabaseTableDataSou
 {
 
     protected readonly NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient _client;
-    protected readonly string _encClientId, _encDbId, _encConnStr;
+    protected readonly string _encDbServer, _encDbName, _encClientId, _encDbId, _encConnStr;
     protected string _encSchema = "";
 
     protected BaseSqlServerTableDataSource() : base()
@@ -25,6 +25,8 @@ public abstract class BaseSqlServerTableDataSource<T> : BaseDatabaseTableDataSou
         _client = new NativeGrpcSqlServerApiService.NativeGrpcSqlServerApiServiceClient(_channel);
 
         //Everything else comes from the environment.        
+        _encDbServer = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile!.Database.HostName);
+        _encDbName = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Name);
         _encClientId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.ClientId);
         _encDbId = RedflyEncryption.EncryptToString(AppGrpcSession.SyncProfile.Database.Id);
         _encConnStr = RedflyEncryption.EncryptToString($"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;");        
