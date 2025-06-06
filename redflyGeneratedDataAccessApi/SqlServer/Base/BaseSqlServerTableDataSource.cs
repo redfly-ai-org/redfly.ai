@@ -13,11 +13,6 @@ using redflyGeneratedDataAccessApi.Base;
 
 namespace redflyGeneratedDataAccessApi.SqlServer;
 
-public class GenericRowsData : BaseTableRowsData
-{
-    public List<Row> Rows { get; set; } = new();
-}
-
 public abstract class BaseSqlServerTableDataSource<T> where T : BaseSqlServerTableSchema
 {
 
