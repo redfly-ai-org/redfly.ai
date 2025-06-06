@@ -1,11 +1,12 @@
 using Microsoft.Data.SqlClient;
+using redflyDatabaseAdapters;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Globalization;
 
 namespace redflyGeneratedDataAccessApi.Compilers;
 
@@ -16,10 +17,11 @@ public class SqlServerGrpcPolyLangCompiler
 {
     private string _connectionString = "";
 
-    public void GenerateForDatabase(string connectionString, string outputFolder)
+    public void GenerateForDatabase(string outputFolder)
     {
-        _connectionString = connectionString;
-        var tables = GetTables(connectionString);
+        _connectionString = $"Server=tcp:{AppGrpcSession.SyncProfile.Database.HostName},1433;Persist Security Info=False;User ID={AppDbSession.SqlServerDatabase!.DecryptedUserName};Password={AppDbSession.SqlServerDatabase.GetPassword()};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=True;Connection Timeout=30;application name=ArcApp;Initial Catalog={AppDbSession.SqlServerDatabase!.DecryptedDatabaseName};";
+
+        var tables = GetTables(_connectionString);
 
         foreach (var table in tables)
         {
@@ -29,7 +31,7 @@ public class SqlServerGrpcPolyLangCompiler
                 continue;
             }
 
-            var columns = GetColumns(connectionString, table.Schema, table.Name);
+            var columns = GetColumns(_connectionString, table.Schema, table.Name);
 
             Console.WriteLine($"Generating code for {table.Schema}.{table.Name}...");
             var classBaseName = table.Schema.Equals("dbo", StringComparison.OrdinalIgnoreCase)
