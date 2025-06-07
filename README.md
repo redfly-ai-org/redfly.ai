@@ -42,7 +42,7 @@ Provide source code that:
    - Grpc Client Code Generation (Done ✔️)
      - Template (Done ✔️)
      - Code Generation (Done ✔️)
-   - Postgres support (TBD ⌚)
+   - Postgres support (Done ✔️)
    - MongoDB support (TBD ⌚)
   
 5. **redflyRemoteSync** Project: The ability to sync massive amounts of data from remote sites with spotty internet connectivity, over the public internet securely (TBD ⌚).
