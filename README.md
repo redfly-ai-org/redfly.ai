@@ -4,13 +4,15 @@ _Never lose a customer to the database again._
 
 Our team has been building data-driven apps for 20+ years. Tired of fighting database performance, scalability, and cost, we realized that it's possible to bypass most of the issues with disk-based databases if we could cache all our reads, using the database mainly as a data store with Redis as the front end. 
 
-This enables interacting with data using strongly typed, object-oriented paradigms, enabling a grab-and-go coding style more intuitive to application developers than SQL queries. This has never been possible before. We did not believe it would work for an application before extensive R&D and solving numerous problems along the way. 
+This enables interacting with data using strongly typed, object-oriented paradigms, enabling a grab-and-go coding style more intuitive to application developers than SQL queries. This has never been possible before. We did not believe it would work for an application before extensive R&D and solving numerous, significant problems along the way. 
 
-Some of the largest companies in the world synchronize their database directly with the cache so that they can seamlessly access their data without worrying about optimizing SQL queries or scaling up their disk-based databases. Now, for the first time in history, we have made it possible for anybody to implement the same thing without spending several million dollars and years in R&D costs. 
+Some of the largest companies in the world synchronize their database directly with the cache so that they can seamlessly access their data without worrying about optimizing SQL queries or scaling up their disk-based databases. Now, for the first time in history, we have made it possible for anybody to do the same without spending several million dollars and years in R&D costs. 
 
-redfly is the world's first schema-agnostic caching system. No other company has done or will do this. Why build a data-agnostic system when you could _more_ easily (still non-trivial) make something that works solely with your database? This made it possible to cache any database. The second step was to build on that foundation a new way of interacting with the database, which we could only imagine for many years.
+redfly is the world's first schema-agnostic caching system. No other company has done or will do this. Why build a data-agnostic system when you could _more_ easily (still non-trivial) make something that works solely with your database? 
 
-This open-source repo is intended to make it easy for developers to understand and try out a novel system that is sure to fire all their neurons when they see what is truly possible.
+The foundation of redfly is the ability to cache any database. The next technological leap was to imagine a new way of interacting with the database. Then we built the PolyLang Compiler to automate this manual process. It has been a long journey to reach this point.
+
+This open-source repo is intended to make it easy for developers to understand and try out a novel system that is sure to fire all your neurons when you understand what is truly possible to do without SQL taking full advantage of the tech available today.
 
 **We don’t do everything but we try to be exceptional at the few things we do.**
 
