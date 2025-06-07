@@ -2,7 +2,7 @@
 
 _Never lose a customer to the database again._
 
-Our team has been building data-driven apps for 20+ years. Tired of fighting database performance, scalability, and cost, we realized that it's possible to bypass most of the issues with disk-based databases if we could effectively cache all our reads, using the database mainly as a data store with Redis as the front end. 
+Our team has been building data-driven apps for 20+ years. Tired of fighting database performance, scalability, and cost, we realized that it's possible to bypass most of the issues with disk-based databases if we could cache all our reads, using the database mainly as a data store with Redis as the front end. 
 
 This enables interacting with data using strongly typed, object-oriented paradigms, enabling a grab-and-go coding style more intuitive to application developers than SQL queries. This has never been possible before. We did not believe it would work for an application before extensive R&D and solving numerous problems along the way. 
 
