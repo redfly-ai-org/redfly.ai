@@ -117,10 +117,10 @@ namespace RedflyGrpcAuthServiceClient
         private static void PromptUserForLogin(out string? userName, out StringBuilder passwordBuilder, out bool credentialsLoadedFromDisk)
         {
             Console.WriteLine("\r\nInstructions: ");
-            Console.WriteLine("You can register your account here: https://transparent.azurewebsites.net/Identity/Account/Register");
+            Console.WriteLine("You can register your account here: https://redfly.azurewebsites.net/Identity/Account/Register");
             Console.WriteLine("Be sure to check your Junk folder for the verification email after you register.");
             Console.WriteLine("Make sure you setup your User Account and Organization after you login.");
-            Console.WriteLine("https://transparent.azurewebsites.net/user-setup");
+            Console.WriteLine("https://redfly.azurewebsites.net/user-setup");
             Console.WriteLine("Registration & Organization setup is necessary to fully access our secure cloud services.\r\n");
 
             do
