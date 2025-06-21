@@ -59,7 +59,7 @@ These applications do not require complex configuration or modifications to work
 ## Pre-requisites
 
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/>
-https://transparent.azurewebsites.net/Identity/Account/Register
+https://redfly.azurewebsites.net/Identity/Account/Register
 
 Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder. No - there is no way to spoof this. Domain trust & reputation is earned over time (as it should be).
 
