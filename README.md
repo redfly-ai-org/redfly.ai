@@ -34,7 +34,7 @@ Provide source code that:
       - **MongoDB** Support (Done ✔️)
         - MongoDB Caching for our Infrastructure (WIP🏃🏽‍♀️‍➡️)
       
-4. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (WIP🏃🏽‍♀️‍➡️).
+4. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism.
    - Generic API implementation (this is what the generated code will call under the scenes) (Done ✔️)
      - GetTotalRowCount (Done ✔️)
      - Delete (Server Done ✔️)
