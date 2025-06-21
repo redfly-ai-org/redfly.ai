@@ -31,7 +31,8 @@ Provide source code that:
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - **SQL Server** Support (Available since day 1 ✔️)
       - **Postgres** Support (Done ✔️)
-      - **MongoDB** Support (Done ✔️, MongoDB Caching for our Infrastructure - WIP🏃🏽‍♀️‍➡️) 
+      - **MongoDB** Support (Done ✔️)
+        - MongoDB Caching for our Infrastructure - WIP🏃🏽‍♀️‍➡️
       
 4. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (WIP🏃🏽‍♀️‍➡️).
    - Generic API implementation (this is what the generated code will call under the scenes) (Done ✔️)
