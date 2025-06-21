@@ -31,9 +31,10 @@ Provide source code that:
    - Support for synchronizing databases which are hosted online (Done ✔️)
       - **SQL Server** Support (Available since day 1 ✔️)
       - **Postgres** Support (Done ✔️)
-      - **MongoDB** Support (Done ✔️, Dog food Mongo Caching for our internals TBD ⌚) 
+      - **MongoDB** Support (Done ✔️)
+        - MongoDB Caching for our Infrastructure (WIP🏃🏽‍♀️‍➡️)
       
-4. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism (WIP🏃🏽‍♀️‍➡️).
+4. **redflyDataAccessClient** Project: Generates strongly typed client code based on your database schema that retrieves your data mostly from Redis, using the database only as a failback mechanism.
    - Generic API implementation (this is what the generated code will call under the scenes) (Done ✔️)
      - GetTotalRowCount (Done ✔️)
      - Delete (Server Done ✔️)
@@ -58,7 +59,7 @@ These applications do not require complex configuration or modifications to work
 ## Pre-requisites
 
 Authentication is necessary to connect to our cloud services hosted on Azure. You can register with us here:<br/>
-https://transparent.azurewebsites.net/Identity/Account/Register
+https://redfly.azurewebsites.net/Identity/Account/Register
 
 Check your junk folder for emails from redfly.ai. Since this is a new domain, emails will go to the junk folder. No - there is no way to spoof this. Domain trust & reputation is earned over time (as it should be).
 
