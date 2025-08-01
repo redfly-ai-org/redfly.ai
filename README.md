@@ -14,7 +14,7 @@ The foundation of redfly is the ability to cache any database. The next technolo
 
 This open-source repo is intended to make it easy for developers to understand and try out a novel system that is sure to fire all your neurons when you understand what is truly possible to do without SQL taking full advantage of the tech available today.
 
-[Braindump](http://braindump.redfly.ai/) is our showcase consumer app built on the redfly platform.
+[Braindump](http://braindump.redfly.ai/) is an excellent example of a consumer app built on the redfly platform.
 
 **We don’t do everything but we try to be exceptional at the few things we do.**
 
