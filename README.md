@@ -48,7 +48,11 @@ Provide source code that:
      - Template (Done ✔️)
      - Code Generation (Done ✔️)
    - Postgres support (Done ✔️)
-   - MongoDB support (TBD ⌚)
+   - MongoDB support (WIP🏃🏽‍♀️‍➡️)
+     - PoC (Done ✔️)
+     - Manual Implementation in Production (Done ✔️) 
+     - Template (TBD ⌚)
+     - Code Generation (TBD ⌚)
   
 5. **redflyRemoteSync** Project: The ability to sync massive amounts of data from remote sites with spotty internet connectivity, over the public internet securely (TBD ⌚).
 
