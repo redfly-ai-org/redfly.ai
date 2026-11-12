@@ -1,4 +1,4 @@
-﻿using Grpc.Core;
+using Grpc.Core;
 using Grpc.Net.Client;
 using RedflyCoreFramework;
 using System;
@@ -47,6 +47,7 @@ internal class ChakraMongoSyncServiceClient : ChakraDatabaseSyncServiceClientBas
                                                     EncryptedMongoDatabaseName = AppDbSession.MongoDatabase!.EncryptedDatabaseName,
                                                     EncryptedMongoUserName = AppDbSession.MongoDatabase!.EncryptedUserName,
                                                     EncryptedMongoPassword = AppDbSession.MongoDatabase!.EncryptedPassword,
+                                                    EncryptedMongoReplicaSetName = AppDbSession.MongoDatabase!.EncryptedReplicaSetName,
                                                     EncryptedRedisServerName = AppDbSession.RedisServer!.EncryptedServerName,
                                                     RedisPortNo = AppDbSession.RedisServer!.Port,
                                                     EncryptedRedisPassword = AppDbSession.RedisServer!.EncryptedPassword,

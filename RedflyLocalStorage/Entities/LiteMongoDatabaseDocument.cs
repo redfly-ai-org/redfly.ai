@@ -1,4 +1,4 @@
-﻿using RedflyCoreFramework;
+using RedflyCoreFramework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +17,8 @@ public class LiteMongoDatabaseDocument : BaseLiteDocument
     public required string EncryptedUserName { get; set; }
 
     public required string EncryptedPassword { get; set; }
+
+    public string EncryptedReplicaSetName { get; set; } = string.Empty;
 
     public bool DatabasePrepped { get; set; } = false;
 

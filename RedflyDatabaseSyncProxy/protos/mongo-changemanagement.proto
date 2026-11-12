@@ -27,6 +27,7 @@ message StartChakraSyncRequest {
   string encryptedMongoDatabaseName = 6;
   string encryptedMongoUserName = 7;
   string encryptedMongoPassword = 8;
+  string encryptedMongoReplicaSetName = 9;
   string encryptedRedisServerName = 12;
   int32 redisPortNo = 13;
   string encryptedRedisPassword = 14;

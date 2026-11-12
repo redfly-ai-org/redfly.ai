@@ -1,4 +1,4 @@
-﻿using LiteDB;
+using LiteDB;
 using RedflyCoreFramework;
 using RedflyLocalStorage.Collections;
 using RedflyLocalStorage;
@@ -56,7 +56,12 @@ namespace redflyDatabaseAdapters
             // Verify that we can connect to the database
             while (!RedflyMongo.VerifyConnectivity(serverName, databaseName, userName, password));
 
-            AppDbSession.MongoDatabase = SaveDatabaseDetailsToLocalStorage(serverName, databaseName, userName, password);
+            Console.WriteLine("Please enter the Mongo replica set name (or press Enter to skip):");
+            var replicaSetName = Console.ReadLine() ?? string.Empty;
+
+            AppDbSession.MongoDatabase = SaveDatabaseDetailsToLocalStorage(serverName, databaseName, userName, password, replicaSetName);
+
+            
 
             return (AppDbSession.MongoDatabase != null);
         }
@@ -112,7 +117,8 @@ namespace redflyDatabaseAdapters
             string serverName,
             string databaseName,
             string userName,
-            string password)
+            string password,
+            string replicaSetName)
         {
             var collection = new LiteMongoDatabaseCollection();
 
@@ -125,7 +131,8 @@ namespace redflyDatabaseAdapters
                     EncryptedServerName = RedflyEncryption.EncryptToString(serverName),
                     EncryptedDatabaseName = RedflyEncryption.EncryptToString(databaseName),
                     EncryptedUserName = RedflyEncryption.EncryptToString(userName),
-                    EncryptedPassword = RedflyEncryption.EncryptToString(password)
+                    EncryptedPassword = RedflyEncryption.EncryptToString(password),
+                    EncryptedReplicaSetName = RedflyEncryption.EncryptToString(replicaSetName)
                 };
 
                 collection.Add(document);
@@ -161,6 +168,12 @@ namespace redflyDatabaseAdapters
                 if (found.EncryptedPassword != RedflyEncryption.EncryptToString(password))
                 {
                     found.EncryptedPassword = RedflyEncryption.EncryptToString(password);
+                    changed = true;
+                }
+
+                if (found.EncryptedReplicaSetName != RedflyEncryption.EncryptToString(replicaSetName))
+                {
+                    found.EncryptedReplicaSetName = RedflyEncryption.EncryptToString(replicaSetName);
                     changed = true;
                 }
 
