@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using RedflyDatabaseSyncProxy.Protos.Postgres;
-using Azure.Core;
 using Microsoft.Extensions.Logging;
 using System.Threading;
 using RedflyDatabaseSyncProxy.Config;

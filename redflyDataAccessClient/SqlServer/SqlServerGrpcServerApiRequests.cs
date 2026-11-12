@@ -1,5 +1,4 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using RedflyCoreFramework;
+﻿using RedflyCoreFramework;
 using redflyDatabaseAdapters;
 using redflyGeneratedDataAccessApi.Protos.DatabaseApi;
 using redflyGeneratedDataAccessApi.Protos.SqlServer;
@@ -56,7 +55,7 @@ internal class SqlServerGrpcServerApiRequests
 
         foreach (var kvp in insertedData)
         {
-            insertRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
+            insertRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = string.IsNullOrEmpty(kvp.Value) ? null : kvp.Value } });
         }
 
         return insertRequest;
@@ -81,7 +80,7 @@ internal class SqlServerGrpcServerApiRequests
 
         foreach (var kvp in updatedData)
         {
-            updateRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value } });
+            updateRequest.Row.Entries.Add(new RowEntry() { Column = kvp.Key, Value = new Value() { StringValue = string.IsNullOrEmpty(kvp.Value) ? null : kvp.Value } });
         }
 
         return updateRequest;

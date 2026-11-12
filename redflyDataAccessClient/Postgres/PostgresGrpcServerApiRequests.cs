@@ -1,4 +1,3 @@
-using Microsoft.IdentityModel.Tokens;
 using RedflyCoreFramework;
 using redflyDatabaseAdapters;
 using PostgresProtos = redflyGeneratedDataAccessApi.Protos.Postgres;
@@ -80,7 +79,7 @@ internal class PostgresGrpcServerApiRequests
                 Column = kvp.Key, 
                 Value = new Value() 
                 { 
-                    StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value 
+                    StringValue = string.IsNullOrEmpty(kvp.Value) ? null : kvp.Value 
                 } 
             });
         }
@@ -122,7 +121,7 @@ internal class PostgresGrpcServerApiRequests
                 Column = kvp.Key, 
                 Value = new Value() 
                 { 
-                    StringValue = kvp.Value.IsNullOrEmpty() ? null : kvp.Value 
+                    StringValue = string.IsNullOrEmpty(kvp.Value) ? null : kvp.Value 
                 } 
             });
         }
